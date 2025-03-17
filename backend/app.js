@@ -1,6 +1,6 @@
 const express = require('express');
-const cors = require('cors');
 const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
 const db = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 
@@ -11,8 +11,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
-app.use(cors()); // Permite requisições de diferentes origens (CORS)
 app.use(express.json()); // Habilita o parsing de JSON no corpo das requisições
 
 // Rotas
