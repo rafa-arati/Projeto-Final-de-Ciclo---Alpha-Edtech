@@ -1,0 +1,19 @@
+# Ignora node_modules (dependências do Node.js)
+node_modules/
+
+# Ignora o arquivo .env (contém credenciais sensíveis)
+.env
+
+# Ignora arquivos de log
+*.log
+
+# Ignora arquivos de configuração local
+*.local
+
+# Ignora arquivos de IDE/editor
+.vscode/
+.idea/
+
+# Ignora arquivos de sistema operacional
+.DS_Store
+Thumbs.db
