@@ -7,7 +7,7 @@ dotenv.config();
 
 // Função para registrar um novo usuário
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, gender, birth_date } = req.body;
 
   try {
     // Verifica se o usuário já existe
@@ -16,8 +16,19 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Email já cadastrado' });
     }
 
-    // Cria o usuário
-    const newUser = await User.create({ name, email, password });
+    // Converte a data de DD-MM-YYYY para YYYY-MM-DD
+    const [day, month, year] = birth_date.split('-');
+    const formattedDate = `${year}-${month}-${day}`;
+
+    // Cria o usuário com a data formatada
+    const newUser = await User.create({
+      name,
+      email,
+      password, // Passa a senha diretamente (não o hash)
+      gender,
+      birth_date: formattedDate,
+    });
+
     res.status(201).json(newUser);
   } catch (error) {
     console.error(error);
