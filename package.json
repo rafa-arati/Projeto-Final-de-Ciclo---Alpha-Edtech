@@ -8,13 +8,22 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.14.0"
-  }
+    "pg": "^8.14.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafa-arati/Projeto-Final-de-Ciclo---Alpha-Edtech.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rafa-arati/Projeto-Final-de-Ciclo---Alpha-Edtech/issues"
+  },
+  "homepage": "https://github.com/rafa-arati/Projeto-Final-de-Ciclo---Alpha-Edtech#readme",
+  "description": ""
 }

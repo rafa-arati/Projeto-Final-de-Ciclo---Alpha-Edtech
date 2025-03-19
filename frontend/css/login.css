@@ -1,0 +1,43 @@
+/* Específico para tela de login */
+.login-container {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.login-container.fade-out {
+    opacity: 0;
+}
+
+.toggle-form {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.toggle-btn {
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: none;
+    background-color: #222;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.toggle-btn.active {
+    background: linear-gradient(45deg, #439DFE, #8000FF);
+    color: white;
+}
+
+.forgot-password {
+    text-align: center;
+    margin: 20px 0;
+    color: #8000FF;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
