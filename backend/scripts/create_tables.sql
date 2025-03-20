@@ -18,6 +18,18 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
+-- Criar a nova tabela eventos
+CREATE TABLE events (
+  id SERIAL PRIMARY KEY,
+  event_name VARCHAR(200) NOT NULL,
+  event_date DATE NOT NULL,
+  event_time TIME NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  location VARCHAR(200) NOT NULL,
+  event_link VARCHAR(200),
+  description TEXT,
+  photo_url VARCHAR(200)
+);
 
 -- Criar tipo ENUM para roles
 CREATE TYPE user_role AS ENUM ('user', 'admin');

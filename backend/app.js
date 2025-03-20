@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path'); // Adicione este módulo para lidar com caminhos
 const db = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const eventRoutes = require('./routes/eventRoutes');
 
 // Carrega as variáveis de ambiente do arquivo .env
 dotenv.config();
@@ -24,6 +25,7 @@ app.use((req, res, next) => {
 
 // Rotas da API
 app.use('/api/auth', authRoutes); // Rotas de autenticação
+app.use('/api', eventRoutes); // Registra as rotas de eventos
 
 // Rota de teste para a API
 app.get('/api/test', (req, res) => {
