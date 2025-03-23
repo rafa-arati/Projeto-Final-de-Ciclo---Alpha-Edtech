@@ -5,6 +5,7 @@ const path = require('path'); // Adicione este módulo para lidar com caminhos
 const db = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const passwordRoutes = require('./routes/passwordRoutes'); // Importe as novas rotas de recuperação de senha
 
 // Carrega as variáveis de ambiente do arquivo .env
 dotenv.config();
@@ -14,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware para parsing de JSON e cookies
-app.use(express.json());
+app.use(express.json()); // Equivalente ao body-parser.json()
 app.use(cookieParser());
 
 // Log de todas as requisições
@@ -25,7 +26,8 @@ app.use((req, res, next) => {
 
 // Rotas da API
 app.use('/api/auth', authRoutes); // Rotas de autenticação
-app.use('/api', eventRoutes); // Registra as rotas de eventos
+app.use('/api', eventRoutes); // Rotas de eventos
+app.use('/api/password', passwordRoutes); // Rotas de recuperação de senha
 
 // Rota de teste para a API
 app.get('/api/test', (req, res) => {

@@ -41,3 +41,21 @@ ADD COLUMN role user_role NOT NULL DEFAULT 'user';
 -- Conceder permissões ao usuário meu_usuario
 GRANT ALL PRIVILEGES ON TABLE users TO meu_usuario;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO meu_usuario;
+
+
+-- Tabela para armazenar tokens de recuperação de senha
+CREATE TABLE password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela para rastrear tentativas de recuperação de senha por IP
+CREATE TABLE reset_attempts (
+    id SERIAL PRIMARY KEY,
+    ip_address VARCHAR(45) NOT NULL,
+    attempt_count INT DEFAULT 1,
+    last_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
