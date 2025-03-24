@@ -35,7 +35,7 @@ const register = async (req, res) => {
       }
     }
 
-    // Converte a data de DD-MM-YYYY para<ctrl3348>-MM-DD
+    // Converte a data de DD-MM-YYYY para YYYY-MM-DD
     const [day, month, year] = birthDate.split('-');
     const formattedDate = `${year}-${month}-${day}`;
     console.log("Data formatada:", formattedDate);
@@ -46,7 +46,7 @@ const register = async (req, res) => {
       email,
       password, // Passa a senha diretamente (não o hash)
       gender,
-      birthDate: formattedDate,
+      birthDate: formattedDate, // Usa a data formatada
       username
     });
 

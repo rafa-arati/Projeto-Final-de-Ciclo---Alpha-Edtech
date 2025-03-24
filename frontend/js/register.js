@@ -1,4 +1,5 @@
 import { showMessage } from './app.js'; // Importe a função showMessage
+import { registerUser } from './auth.js'; // Importe a função registerUser
 
 export function renderRegister() {
     const appContainer = document.getElementById('app');
@@ -86,7 +87,7 @@ export function renderRegister() {
                     <input type="password" id="password" placeholder="Senha" required>
                 </div>
 
-                <div class="password-requirements" id="passwordRequirements">
+                <div class="password-requirements" id="passwordRequirements" style="display: none;">
                     A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.
                 </div>
 
@@ -132,7 +133,12 @@ function setupRegisterEvents() {
     const passwordRequirementsDiv = document.getElementById('passwordRequirements');
 
     if (passwordInput) {
+        passwordInput.addEventListener('focus', () => {
+            passwordRequirementsDiv.style.display = 'block';
+        });
+
         passwordInput.addEventListener('input', () => {
+            passwordRequirementsDiv.style.display = 'block';
             const password = passwordInput.value;
             const meetsRequirements = password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password) && /[^\w\s]/.test(password);
             if (meetsRequirements) {
@@ -144,6 +150,12 @@ function setupRegisterEvents() {
             } else {
                 passwordRequirementsDiv.textContent = 'A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.';
                 passwordRequirementsDiv.className = 'password-requirements';
+            }
+        });
+
+        passwordInput.addEventListener('blur', () => {
+            if (passwordInput.value === '') {
+                passwordRequirementsDiv.style.display = 'none';
             }
         });
     }
@@ -162,7 +174,7 @@ function setupRegisterEvents() {
 
     const birthDateInput = document.getElementById('birthDate');
     if (birthDateInput) {
-        birthDateInput.addEventListener('input', function() {
+        birthDateInput.addEventListener('input', function () {
             let value = this.value.replace(/\D/g, ''); // Remove não-dígitos
             if (value.length > 8) {
                 value = value.slice(0, 8); // Limita a 8 dígitos

@@ -2,7 +2,7 @@
 const API_URL = '/api/auth';
 
 // Função para fazer login
-async function loginUser(identifier, password, userType) {
+export async function loginUser(identifier, password, userType) {
     try {
         // Determinar se o identifier é um email
         const isEmail = identifier.includes('@');
@@ -46,7 +46,7 @@ async function loginUser(identifier, password, userType) {
 }
 
 // Função para registrar um novo usuário
-async function registerUser(userData) {
+export async function registerUser(userData) {
     try {
         const response = await fetch(`${API_URL}/register`, {
             method: 'POST',
@@ -69,7 +69,7 @@ async function registerUser(userData) {
 }
 
 // Função para fazer logout
-async function logoutUser() {
+export async function logoutUser() {
     try {
         const response = await fetch(`${API_URL}/logout`, {
             method: 'POST',
@@ -92,7 +92,7 @@ async function logoutUser() {
 }
 
 // Verificar se o usuário está logado
-function isUserLoggedIn() {
+export function isUserLoggedIn() {
     const user = localStorage.getItem('user');
     if (!user) return false;
 
@@ -105,7 +105,7 @@ function isUserLoggedIn() {
 }
 
 // Obter dados do usuário logado
-function getLoggedInUser() {
+export function getLoggedInUser() {
     const user = localStorage.getItem('user');
     if (!user) return null;
 
@@ -117,13 +117,13 @@ function getLoggedInUser() {
 }
 
 // Verificar se o usuário é um administrador
-function isAdmin() {
+export function isAdmin() {
     const user = getLoggedInUser();
     return user && (user.userType === 'admin' || user.role === 'admin');
 }
 
 // Redirecionar para a página de dashboard após login
-function redirectToDashboard() {
+export function redirectToDashboard() {
     // Esta função será implementada quando você criar o dashboard
     // Por enquanto, só exibe uma mensagem
     showMessage('Login bem-sucedido! Redirecionando...');

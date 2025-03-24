@@ -2,11 +2,21 @@ const pool = require('../config/db');
 
 // Função para criar um evento
 const createEvent = async (eventName, eventDate, eventTime, category, location, eventLink, description, photoUrl) => {
-  const result = await pool.query(
-    'INSERT INTO events (event_name, event_date, event_time, category, location, event_link, description, photo_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-    [eventName, eventDate, eventTime, category, location, eventLink, description, photoUrl]
-  );
-  return result.rows[0];
+  console.log("Executando createEvent com parâmetros:", {
+    eventName, eventDate, eventTime, category, location, eventLink, description, photoUrl
+  });
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO events (event_name, event_date, event_time, category, location, event_link, description, photo_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [eventName, eventDate, eventTime, category, location, eventLink, description, photoUrl]
+    );
+    console.log("Resultado da inserção:", result.rows[0]);
+    return result.rows[0];
+  } catch (error) {
+    console.error("Erro ao inserir evento no banco:", error);
+    throw error;
+  }
 };
 
 // Função para atualizar um evento

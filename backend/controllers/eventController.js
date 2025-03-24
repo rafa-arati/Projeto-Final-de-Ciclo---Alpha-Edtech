@@ -1,10 +1,28 @@
 const { createEvent } = require('../models/Event');
 
 const addEvent = async (req, res) => {
+  console.log("Requisição recebida em /api/events", {
+    body: req.body,
+    file: req.file ? "Arquivo recebido" : "Nenhum arquivo",
+    user: req.user
+  });
+
   const { nome, data, horario, categoria, localizacao, link, descricao } = req.body;
   const imagem = req.file; // Informações do arquivo enviado
 
   try {
+    // Verificar se o usuário está autenticado
+    if (!req.user) {
+      console.log("Usuário não autenticado");
+      return res.status(401).json({ message: 'Usuário não autenticado' });
+    }
+
+    // Verificar se o usuário é admin
+    if (req.user.role !== 'admin') {
+      console.log("Usuário não é admin:", req.user.role);
+      return res.status(403).json({ message: 'Apenas administradores podem criar eventos' });
+    }
+
     let photoUrl = null;
     if (imagem) {
       // Aqui você precisará implementar a lógica para salvar a imagem
@@ -15,7 +33,15 @@ const addEvent = async (req, res) => {
       console.log('Arquivo de imagem recebido:', imagem); // Para depuração
     }
 
+    // Verificar se os campos necessários estão presentes
+    if (!nome || !data) {
+      console.log("Campos obrigatórios ausentes");
+      return res.status(400).json({ message: 'Nome e data são obrigatórios' });
+    }
+
+    console.log("Tentando criar evento com:", { nome, data, horario, categoria, localizacao, link, descricao, photoUrl });
     const newEvent = await createEvent(nome, data, horario, categoria, localizacao, link, descricao, photoUrl);
+    console.log("Evento criado com sucesso:", newEvent);
     res.status(201).json(newEvent);
   } catch (error) {
     console.error('Erro ao adicionar evento:', error);

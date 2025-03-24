@@ -21,16 +21,24 @@
 
 .password-requirements {
     font-size: 0.8em;
-    color: #ff6347; /* Cor padrão da mensagem */
+    color: #ff6347;
     margin-top: 5px;
-    height: 2.4em; /* Ajustado para acomodar duas linhas de texto */
-    overflow: hidden; /* Oculta qualquer texto que exceda a altura */
+    margin-bottom: 15px;
+    /* Adiciona espaço abaixo da mensagem */
+    height: auto;
+    /* Permite que a altura se ajuste ao conteúdo */
+    overflow: visible;
+    /* Permite que o texto seja totalmente visível */
+    line-height: 1.4;
+    /* Melhora o espaçamento entre linhas */
 }
 
 .password-requirements.strong {
-    color: #32cd32; /* Cor para senha forte */
+    color: #32cd32;
+    /* Cor para senha forte */
 }
 
 .password-requirements.weak {
-    color: #ffa500; /* Cor para senha fraca */
+    color: #ffa500;
+    /* Cor para senha fraca */
 }
