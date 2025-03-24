@@ -1,0 +1,49 @@
+/* ===== MEDIA QUERIES ===== */
+
+/* Telas pequenas (até 600px) */
+@media (max-width: 600px) {
+    .header-title {
+        font-size: 20px;
+    }
+
+    .search-bar {
+        margin: 0 10px 10px 10px;
+    }
+
+    .event-card {
+        width: 180px;
+        height: 230px;
+    }
+}
+
+/* Telas médias (601px a 900px) */
+@media (min-width: 601px) and (max-width: 900px) {
+    .app-container {
+        max-width: 800px;
+    }
+
+    .carousel {
+        gap: 20px;
+    }
+
+    .event-card {
+        width: 220px;
+        height: 270px;
+    }
+}
+
+/* Telas grandes (901px em diante) */
+@media (min-width: 901px) {
+    .app-container {
+        max-width: 1000px;
+    }
+
+    .carousel {
+        gap: 25px;
+    }
+
+    .event-card {
+        width: 250px;
+        height: 300px;
+    }
+}
