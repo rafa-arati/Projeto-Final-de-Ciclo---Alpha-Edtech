@@ -2,7 +2,7 @@ const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 
 class User {
-  static async create({ name, email, password, gender, birth_date, username }) {
+  static async create({ name, email, password, gender, birthDate, username }) {
     // Verifica se a senha foi fornecida
     if (!password) {
       throw new Error('Senha é obrigatória');
@@ -24,12 +24,12 @@ class User {
       name,
       email,
       gender,
-      birth_date,
+      birth_date: birthDate, // Altere para birthDate, que é o parâmetro correto
       username,
       passwordHashExists: !!passwordHash
     });
 
-    const values = [name, email, passwordHash, gender, birth_date, username];
+    const values = [name, email, passwordHash, gender, birthDate, username];
 
     try {
       const { rows } = await pool.query(query, values);

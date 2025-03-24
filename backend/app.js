@@ -5,7 +5,6 @@ const path = require('path');
 const db = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
-const multer = require('multer'); // Import multer
 
 dotenv.config();
 

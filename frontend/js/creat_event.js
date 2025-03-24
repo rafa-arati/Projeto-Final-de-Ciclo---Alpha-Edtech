@@ -73,6 +73,19 @@ export function renderCriarEvento() {
             
             <div id="mensagem" class="message" style="display: none;"></div>
         </form>
+        
+        <!-- Modal de confirmação para cancelar evento -->
+        <div class="modal" id="cancelarModal">
+            <div class="modal-content">
+                <span class="close-modal" id="fecharCancelarModal">&times;</span>
+                <h3>Confirmar cancelamento</h3>
+                <p>Tem certeza que deseja cancelar? Os dados não salvos serão perdidos.</p>
+                <div class="modal-buttons">
+                    <button id="confirmarCancelar" class="btn">Sim, cancelar</button>
+                    <button id="negarCancelar" class="btn secondary">Não, continuar editando</button>
+                </div>
+            </div>
+        </div>
     `;
 
     const form = document.getElementById('criarEventoForm');
@@ -82,6 +95,10 @@ export function renderCriarEvento() {
     const mensagemDiv = document.getElementById('mensagem');
     const cancelarButton = document.getElementById('cancelarEvento');
     const btnAdicionarFoto = document.getElementById('btnAdicionarFoto');
+    const cancelarModal = document.getElementById('cancelarModal');
+    const fecharCancelarModal = document.getElementById('fecharCancelarModal');
+    const confirmarCancelar = document.getElementById('confirmarCancelar');
+    const negarCancelar = document.getElementById('negarCancelar');
 
     // Ativar input de arquivo ao clicar no botão de adicionar foto
     btnAdicionarFoto.addEventListener('click', () => {
@@ -103,25 +120,60 @@ export function renderCriarEvento() {
         }
     });
 
+    // Configurar modal de cancelamento
+    cancelarButton.addEventListener('click', () => {
+        cancelarModal.classList.add('active');
+    });
+
+    fecharCancelarModal.addEventListener('click', () => {
+        cancelarModal.classList.remove('active');
+    });
+
+    negarCancelar.addEventListener('click', () => {
+        cancelarModal.classList.remove('active');
+    });
+
+    confirmarCancelar.addEventListener('click', () => {
+        form.reset();
+        imagemPrevia.src = '#';
+        imagemPrevia.style.display = 'none';
+        cancelarModal.classList.remove('active');
+        window.location.hash = '/login'; // Redireciona para a tela de login
+    });
+
+    // Fechar o modal ao clicar fora dele
+    window.addEventListener('click', (event) => {
+        if (event.target === cancelarModal) {
+            cancelarModal.classList.remove('active');
+        }
+    });
+
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-    
+
         const formData = new FormData(form);
-    
+
         try {
-            const response = await fetch('/admin/events', {
+            // Caminho da rota API correto
+            const response = await fetch('/api/events', {
                 method: 'POST',
                 body: formData,
+                credentials: 'include' // Para enviar cookies de autenticação
             });
-    
+
             const data = await response.json();
-    
+
             if (response.ok) {
+                // Mostrar mensagem de sucesso sem redirecionar
                 showMessage('Evento criado com sucesso!', 'success');
+
+                // Limpar o formulário sem redirecionar
                 form.reset();
                 imagemPrevia.src = '#';
                 imagemPrevia.style.display = 'none';
-                window.location.hash = '/admin/events'; // Redirecionar para a listagem de eventos
+
+                // Não redirecione, apenas mostre a mensagem de sucesso
+                // window.location.hash = '/admin/events'; 
             } else {
                 showMessage(data.message || 'Erro ao criar evento.', 'error');
             }
@@ -130,7 +182,7 @@ export function renderCriarEvento() {
             showMessage('Erro inesperado ao criar evento.', 'error');
         }
     });
-    
+
     // Função para mostrar mensagem temporária
     function showMessage(text, type) {
         const mensagemDiv = document.getElementById('mensagem');
@@ -138,7 +190,7 @@ export function renderCriarEvento() {
         mensagemDiv.className = `message ${type}`;
         mensagemDiv.style.display = 'block';
         mensagemDiv.classList.add('fade-out');
-        
+
         // Remover após 3.5 segundos (3s delay + 0.5s animação)
         setTimeout(() => {
             mensagemDiv.style.display = 'none';
