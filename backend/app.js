@@ -1,15 +1,14 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
-const path = require('path'); // Adicione este módulo para lidar com caminhos
+const path = require('path');
 const db = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const multer = require('multer'); // Import multer
 
-// Carrega as variáveis de ambiente do arquivo .env
 dotenv.config();
 
-// Inicializa o Express
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -24,8 +23,8 @@ app.use((req, res, next) => {
 });
 
 // Rotas da API
-app.use('/api/auth', authRoutes); // Rotas de autenticação
-app.use('/api', eventRoutes); // Registra as rotas de eventos
+app.use('/api/auth', authRoutes);
+app.use('/api', eventRoutes);
 
 // Rota de teste para a API
 app.get('/api/test', (req, res) => {
@@ -35,8 +34,7 @@ app.get('/api/test', (req, res) => {
 // Servir arquivos estáticos da pasta frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Rota "catch-all" para o SPA (Single Page Application)
-// Redireciona qualquer requisição não tratada pelas rotas acima para o index.html
+// Rota "catch-all" para o SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
@@ -50,5 +48,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Exporta o app para ser usado no server.js
 module.exports = app;

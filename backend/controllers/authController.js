@@ -7,14 +7,14 @@ dotenv.config();
 
 // Função para registrar um novo usuário
 const register = async (req, res) => {
-  const { name, email, password, gender, birth_date, username } = req.body;
+  const { name, email, password, gender, birthDate, username } = req.body;
 
   console.log("Recebida solicitação de registro:", {
     name,
     email,
     passwordProvided: !!password,
     gender,
-    birth_date,
+    birthDate,
     username
   });
 
@@ -35,8 +35,8 @@ const register = async (req, res) => {
       }
     }
 
-    // Converte a data de DD-MM-YYYY para YYYY-MM-DD
-    const [day, month, year] = birth_date.split('-');
+    // Converte a data de DD-MM-YYYY para<ctrl3348>-MM-DD
+    const [day, month, year] = birthDate.split('-');
     const formattedDate = `${year}-${month}-${day}`;
     console.log("Data formatada:", formattedDate);
 
@@ -46,7 +46,7 @@ const register = async (req, res) => {
       email,
       password, // Passa a senha diretamente (não o hash)
       gender,
-      birth_date: formattedDate,
+      birthDate: formattedDate,
       username
     });
 
