@@ -1,10 +1,9 @@
 import { loginUser } from '../modules/auth.js';
 import { navigateTo } from '../modules/router.js';
 import { showMessage, transitionToPage } from '../modules/utils.js';
-import { showRegisterForm } from './register.js';
 
 // Exporta a função principal da página
-export function showLoginForm() {
+export default function renderLogin(queryParams) {
   const appContainer = document.getElementById('app');
   appContainer.innerHTML = `
        <div class="container login-container">
@@ -170,7 +169,8 @@ function setupSocialButtons() {
 
 // Helper: Link para cadastro
 function setupRegisterLink() {
-  document.getElementById('goToRegister')?.addEventListener('click', () => {
-    transitionToPage('login', showRegisterForm);
+  document.getElementById('goToRegister')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    transitionToPage('login', 'register');
   });
 }

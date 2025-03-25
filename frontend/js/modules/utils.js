@@ -1,4 +1,5 @@
-// Gerenciamento do Modal
+import { navigateTo } from './router.js';// Gerenciamento do Modal
+
 export function setupModal() {
   const modal = document.getElementById('message-modal');
   const closeModal = document.querySelector('.close-modal');
@@ -22,10 +23,20 @@ export function showMessage(message) {
 }
 
 // Transição entre páginas
-export function transitionToPage(currentPage, newPageFunction) {
+export function transitionToPage(currentPage, targetPage) {
   const container = document.querySelector(`.${currentPage}-container`);
-  if (container) container.classList.add('fade-out');
-  setTimeout(() => newPageFunction(), 500);
+
+  if (container) {
+    container.classList.add('fade-out');
+
+    // Aguarda a animação terminar antes de navegar
+    setTimeout(() => {
+      navigateTo(targetPage);
+    }, 500); // 500ms = duração da animação CSS
+  } else {
+    // Fallback se não encontrar o container
+    navigateTo(targetPage);
+  }
 }
 
 // Validação de senha (pode ser movida para um módulo específico de validação depois)

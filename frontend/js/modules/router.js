@@ -17,29 +17,19 @@ export function initRouter() {
 
 async function loadPage(page) {
   try {
-    // Verifica autenticação para rotas protegidas
-    if (page === 'dashboard' && !getLoggedInUser()) {
-      showMessage('Faça login para acessar esta página.');
-      window.location.hash = 'login';
-      return;
-    }
+    // Extrai parâmetros da URL (como ?token=abc123)
+    const queryParams = new URLSearchParams(window.location.search);
 
-    // Carrega dinamicamente o módulo da página
-    const pageModule = await import(`../pages/${page}.js`);
+    // Carrega a página dinamicamente
+    const { default: renderPage } = await import(`../pages/${page}.js`);
 
-    // Chama a função principal da página (showLoginForm, showRegisterForm, etc)
-    if (pageModule.default) {
-      pageModule.default(); // Para páginas que usam export default
-    } else if (pageModule[`show${page.charAt(0).toUpperCase() + page.slice(1)}Form`]) {
-      // Para páginas que exportam funções nomeadas (showLoginForm, showRegisterForm)
-      pageModule[`show${page.charAt(0).toUpperCase() + page.slice(1)}Form`]();
-    } else {
-      throw new Error(`Função de renderização não encontrada em ${page}.js`);
-    }
+    // Chama a função da página passando os parâmetros
+    renderPage(queryParams);
+
   } catch (error) {
     console.error('Erro ao carregar página:', error);
-    window.location.hash = 'login'; // Fallback
-    showMessage('Página não encontrada. Redirecionando...');
+    navigateTo('login'); // Fallback para login
+    showMessage('Página não encontrada');
   }
 }
 

@@ -1,9 +1,9 @@
 import { registerUser } from '../modules/auth.js';
 import { showMessage, transitionToPage } from '../modules/utils.js';
-import { showLoginForm } from './login.js';
+import { navigateTo } from '../modules/router.js';
 
 // Exporta a função principal da página
-export function showRegisterForm() {
+export default function renderRegisterForm(queryParams) {
   const appContainer = document.getElementById('app');
   appContainer.innerHTML = `
         <div class="container register-container">
@@ -132,8 +132,9 @@ function setupRegisterForm() {
 
 // Helper: Link para login
 function setupLoginLink() {
-  document.getElementById('goToLogin')?.addEventListener('click', () => {
-    transitionToPage('register', showLoginForm);
+  document.getElementById('goToLogin')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    transitionToPage('register', 'login');
   });
 }
 
@@ -156,7 +157,7 @@ async function handleRegistration() {
   try {
     await registerUser(userData);
     showMessage('Cadastro realizado com sucesso! Redirecionando para login...');
-    setTimeout(() => transitionToPage('register', showLoginForm), 2000);
+    transitionToPage('register', 'login')
   } catch (error) {
     showMessage(error.message || 'Erro ao cadastrar. Tente novamente.');
   }
