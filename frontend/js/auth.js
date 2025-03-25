@@ -33,6 +33,7 @@ export async function loginUser(identifier, password, userType) {
         localStorage.setItem('user', JSON.stringify({
             id: data.user.id,
             email: data.user.email,
+            name: data.user.name,
             username: data.user.username,
             userType: data.user.role || userType,
             isLoggedIn: true
@@ -76,17 +77,19 @@ export async function logoutUser() {
             credentials: 'include' // Importante para cookies
         });
 
+        // Mesmo se o servidor retornar erro, ainda removemos os dados do usuário do localStorage
+        localStorage.removeItem('user');
+
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Erro ao fazer logout');
         }
 
-        // Limpar informações do usuário do localStorage
-        localStorage.removeItem('user');
-
         return await response.json();
     } catch (error) {
         console.error('Erro no logout:', error);
+        // Mesmo em caso de erro, garantimos que os dados locais são removidos
+        localStorage.removeItem('user');
         throw error;
     }
 }
@@ -120,24 +123,4 @@ export function getLoggedInUser() {
 export function isAdmin() {
     const user = getLoggedInUser();
     return user && (user.userType === 'admin' || user.role === 'admin');
-}
-
-// Redirecionar para a página de dashboard após login
-export function redirectToDashboard() {
-    // Esta função será implementada quando você criar o dashboard
-    // Por enquanto, só exibe uma mensagem
-    showMessage('Login bem-sucedido! Redirecionando...');
-
-    // Simulação de redirecionamento
-    setTimeout(() => {
-        if (isAdmin()) {
-            // Redirecionar para dashboard admin
-            console.log('Redirecionando para dashboard de administrador');
-            // window.location.href = '/admin';
-        } else {
-            // Redirecionar para dashboard de usuário
-            console.log('Redirecionando para dashboard de usuário');
-            // window.location.href = '/dashboard';
-        }
-    }, 2000);
 }

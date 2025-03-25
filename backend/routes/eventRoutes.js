@@ -13,9 +13,9 @@ router.get('/events', eventController.listAllEvents);
 // Rota para adicionar um evento (somente admin)
 router.post('/events', authenticate, isAdmin, upload.single('imagem'), eventController.addEvent);
 
-// Rotas para obter eventos (acesso a todos os usuários autenticados)
+// Rotas para obter, atualizar e excluir eventos
 router.get('/events/:id', eventController.getEventById);
-router.put('/events/:id', authenticate, isAdmin, eventController.updateEvent);
+router.put('/events/:id', authenticate, isAdmin, upload.single('imagem'), eventController.updateEvent);
 router.delete('/events/:id', authenticate, isAdmin, eventController.deleteEvent);
 
 module.exports = router;

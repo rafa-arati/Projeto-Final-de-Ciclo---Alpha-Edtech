@@ -1,13 +1,22 @@
-export function renderCriarEvento() {
+import { showMessage } from './app.js';
+
+export function renderCriarEvento(isEditing = false) {
     const container = document.getElementById('app');
     if (!container) return;
 
+    // Verificar se estamos no modo de edição
+    const editEventId = isEditing ? localStorage.getItem('editEventId') : null;
+    const titulo = isEditing ? 'Editar Evento' : 'Criar Novo Evento';
+    const btnText = isEditing ? 'Salvar Alterações' : 'Adicionar Evento';
+
     container.innerHTML = `
         <div class="header">
-            <a href="#/admin/events">←</a>
-            <h1>Gerenciar Evento</h1>
+            <a href="#/eventos">←</a>
+            <h1>${titulo}</h1>
         </div>
         <form id="criarEventoForm">
+            <input type="hidden" id="eventoId" value="${editEventId || ''}">
+            
             <div class="left-column">
                 <div class="form-group">
                     <label for="nome">Nome do evento</label>
@@ -65,7 +74,7 @@ export function renderCriarEvento() {
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="white"/>
                         </svg>
-                        Adicionar evento
+                        ${btnText}
                     </button>
                     <button type="button" class="secondary-button" id="cancelarEvento">Cancelar</button>
                 </div>
@@ -99,6 +108,11 @@ export function renderCriarEvento() {
     const fecharCancelarModal = document.getElementById('fecharCancelarModal');
     const confirmarCancelar = document.getElementById('confirmarCancelar');
     const negarCancelar = document.getElementById('negarCancelar');
+
+    // Se estivermos no modo de edição, carregar os dados do evento
+    if (isEditing && editEventId) {
+        carregarDadosEvento(editEventId);
+    }
 
     // Ativar input de arquivo ao clicar no botão de adicionar foto
     btnAdicionarFoto.addEventListener('click', () => {
@@ -138,7 +152,7 @@ export function renderCriarEvento() {
         imagemPrevia.src = '#';
         imagemPrevia.style.display = 'none';
         cancelarModal.classList.remove('active');
-        window.location.hash = '/login'; // Redireciona para a tela de login
+        window.location.hash = '/eventos'; // Redireciona para a tela de eventos
     });
 
     // Fechar o modal ao clicar fora dele
@@ -152,11 +166,20 @@ export function renderCriarEvento() {
         event.preventDefault();
 
         const formData = new FormData(form);
+        const eventoId = document.getElementById('eventoId').value;
 
         try {
-            // Caminho da rota API correto
-            const response = await fetch('/api/events', {
-                method: 'POST',
+            let url = '/api/events';
+            let method = 'POST';
+
+            // Se estivermos editando, usar PUT e incluir o ID na URL
+            if (isEditing && eventoId) {
+                url = `/api/events/${eventoId}`;
+                method = 'PUT';
+            }
+
+            const response = await fetch(url, {
+                method: method,
                 body: formData,
                 credentials: 'include' // Para enviar cookies de autenticação
             });
@@ -164,24 +187,66 @@ export function renderCriarEvento() {
             const data = await response.json();
 
             if (response.ok) {
-                // Mostrar mensagem de sucesso sem redirecionar
-                showMessage('Evento criado com sucesso!', 'success');
+                // Mostrar mensagem de sucesso
+                showMessage(isEditing ? 'Evento atualizado com sucesso!' : 'Evento criado com sucesso!', 'success');
 
-                // Limpar o formulário sem redirecionar
+                // Limpar o formulário
                 form.reset();
                 imagemPrevia.src = '#';
                 imagemPrevia.style.display = 'none';
 
-                // Não redirecione, apenas mostre a mensagem de sucesso
-                // window.location.hash = '/admin/events'; 
+                // Redirecionar após um breve delay
+                setTimeout(() => {
+                    window.location.hash = '/eventos';
+                }, 1500);
             } else {
-                showMessage(data.message || 'Erro ao criar evento.', 'error');
+                showMessage(data.message || 'Erro ao processar evento.', 'error');
             }
         } catch (error) {
             console.error('Erro ao enviar formulário:', error);
-            showMessage('Erro inesperado ao criar evento.', 'error');
+            showMessage('Erro inesperado ao processar evento.', 'error');
         }
     });
+
+    // Função para carregar os dados do evento para edição
+    async function carregarDadosEvento(id) {
+        try {
+            const response = await fetch(`/api/events/${id}`, {
+                credentials: 'include' // Para enviar cookies de autenticação
+            });
+
+            if (!response.ok) {
+                throw new Error('Erro ao buscar dados do evento');
+            }
+
+            const evento = await response.json();
+
+            // Preencher o formulário com os dados do evento
+            document.getElementById('nome').value = evento.event_name || '';
+
+            // Formatar a data para o formato do input date (YYYY-MM-DD)
+            if (evento.event_date) {
+                const date = new Date(evento.event_date);
+                const formattedDate = date.toISOString().split('T')[0];
+                document.getElementById('data').value = formattedDate;
+            }
+
+            document.getElementById('horario').value = evento.event_time || '';
+            document.getElementById('categoria').value = evento.category || '';
+            document.getElementById('localizacao').value = evento.location || '';
+            document.getElementById('link').value = evento.event_link || '';
+            document.getElementById('descricao').value = evento.description || '';
+
+            // Exibir a imagem se existir
+            if (evento.photo_url) {
+                imagemPrevia.src = evento.photo_url;
+                imagemPrevia.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados do evento:', error);
+            showMessage('Erro ao carregar dados do evento. Tente novamente.', 'error');
+        }
+    }
 
     // Função para mostrar mensagem temporária
     function showMessage(text, type) {
