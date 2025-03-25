@@ -208,27 +208,23 @@ async function handleRegister(event) {
     }
 
     try {
-        const response = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, username, email, birthDate, gender, password }),
-        });
+        const userData = {
+            name,
+            username,
+            email,
+            birthDate,
+            gender,
+            password
+        };
 
-        const data = await response.json();
+        const result = await registerUser(userData);
 
-        if (response.ok) {
-            showMessage('Cadastro realizado com sucesso! Redirecionando para a página de login...');
-            setTimeout(() => {
-                window.location.hash = '/login';
-            }, 2000);
-        } else {
-            console.log('Erro no registro - Dados recebidos:', data);
-            showMessage(data.message || 'Erro ao cadastrar usuário.');
-        }
+        showMessage('Cadastro realizado com sucesso! Redirecionando para a página de login...');
+        setTimeout(() => {
+            window.location.hash = '/login';
+        }, 2000);
     } catch (error) {
         console.error('Erro ao registrar:', error);
-        showMessage('Erro inesperado ao cadastrar.');
+        showMessage(error.message || 'Erro inesperado ao cadastrar.');
     }
 }

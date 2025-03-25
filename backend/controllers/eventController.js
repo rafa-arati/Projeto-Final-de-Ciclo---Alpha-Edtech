@@ -1,4 +1,4 @@
-const { createEvent } = require('../models/Event');
+const Event = require('../models/Event');
 
 const addEvent = async (req, res) => {
   console.log("Requisição recebida em /api/events", {
@@ -40,7 +40,7 @@ const addEvent = async (req, res) => {
     }
 
     console.log("Tentando criar evento com:", { nome, data, horario, categoria, localizacao, link, descricao, photoUrl });
-    const newEvent = await createEvent(nome, data, horario, categoria, localizacao, link, descricao, photoUrl);
+    const newEvent = await Event.createEvent(nome, data, horario, categoria, localizacao, link, descricao, photoUrl);
     console.log("Evento criado com sucesso:", newEvent);
     res.status(201).json(newEvent);
   } catch (error) {
@@ -51,14 +51,49 @@ const addEvent = async (req, res) => {
 
 const updateEvent = async (req, res) => {
   const { id } = req.params;
-  const { eventName, eventDate, eventTime, category, location, eventLink, description, photoUrl } = req.body;
+  const { nome, data, horario, categoria, localizacao, link, descricao } = req.body;
+  const imagem = req.file;
 
   try {
-    // Lógica para atualizar o evento no banco de dados
-    const updatedEvent = await updateEventInDatabase(id, eventName, eventDate, eventTime, category, location, eventLink, description, photoUrl);
+    // Verificar se o usuário está autenticado
+    if (!req.user) {
+      return res.status(401).json({ message: 'Usuário não autenticado' });
+    }
+
+    // Verificar se o usuário é admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Apenas administradores podem editar eventos' });
+    }
+
+    // Verificar se o evento existe
+    const existingEvent = await Event.getEventById(id);
+    if (!existingEvent) {
+      return res.status(404).json({ message: 'Evento não encontrado' });
+    }
+
+    let photoUrl = existingEvent.photo_url;
+    if (imagem) {
+      // Lógica para processar a nova imagem 
+      photoUrl = `/uploads/${imagem.originalname}`;
+    }
+
+    // Atualizar o evento
+    const updatedEvent = await Event.updateEventInDatabase(
+      id,
+      nome,
+      data,
+      horario,
+      categoria,
+      localizacao,
+      link,
+      descricao,
+      photoUrl
+    );
+
     res.status(200).json(updatedEvent);
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao atualizar evento', error });
+    console.error('Erro ao atualizar evento:', error);
+    res.status(500).json({ message: 'Erro ao atualizar evento', error: error.message });
   }
 };
 
@@ -66,18 +101,35 @@ const deleteEvent = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Lógica para remover o evento do banco de dados
-    await deleteEventFromDatabase(id);
+    // Verificar se o usuário está autenticado
+    if (!req.user) {
+      return res.status(401).json({ message: 'Usuário não autenticado' });
+    }
+
+    // Verificar se o usuário é admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Apenas administradores podem excluir eventos' });
+    }
+
+    // Verificar se o evento existe
+    const existingEvent = await Event.getEventById(id);
+    if (!existingEvent) {
+      return res.status(404).json({ message: 'Evento não encontrado' });
+    }
+
+    // Excluir o evento
+    await Event.deleteEventFromDatabase(id);
     res.status(200).json({ message: 'Evento removido com sucesso' });
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao remover evento', error });
+    console.error('Erro ao remover evento:', error);
+    res.status(500).json({ message: 'Erro ao remover evento', error: error.message });
   }
 };
 
 // Função para listar todos os eventos
 const listAllEvents = async (req, res) => {
   try {
-    const events = await getAllEvents();
+    const events = await Event.getAllEvents();
     res.status(200).json(events);
   } catch (error) {
     console.error('Erro ao listar eventos:', error); // Log detalhado do erro
@@ -85,11 +137,11 @@ const listAllEvents = async (req, res) => {
   }
 };
 
-// Função para obter um evento por ID (adicionado conforme a rota no routes)
+// Função para obter um evento por ID
 const getEventById = async (req, res) => {
   const { id } = req.params;
   try {
-    const event = await getEventByIdFromDatabase(id); // Assumindo que você tenha essa função no seu model
+    const event = await Event.getEventById(id);
     if (event) {
       res.status(200).json(event);
     } else {
@@ -101,4 +153,10 @@ const getEventById = async (req, res) => {
   }
 };
 
-module.exports = { addEvent, updateEvent, deleteEvent, listAllEvents, getEventById };
+module.exports = {
+  addEvent,
+  updateEvent,
+  deleteEvent,
+  listAllEvents,
+  getEventById
+};

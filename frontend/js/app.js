@@ -1,25 +1,59 @@
 // Gerenciamento da SPA
-// Importe a função renderCriarEvento
 import { renderCriarEvento } from './creat_event.js';
-import { renderLogin } from './login.js'; // Importe a função renderLogin
-import { renderRegister } from './register.js'; // Importe a função renderRegister
+import { renderLogin } from './login.js';
+import { renderRegister } from './register.js';
+import { renderTelaInicial } from './tela-inicial.js';
+import { renderEventos } from './eventos.js';
+import { isUserLoggedIn, isAdmin } from './auth.js';
 
 function handleRouteChange() {
     const path = window.location.hash.substring(1); // Remove o '#' inicial
-
-    const container = document.getElementById('app'); // Seleciona o container usando o ID 'app'
+    const container = document.getElementById('app');
     if (!container) return;
     container.innerHTML = ''; // Limpa o conteúdo anterior
 
-    if (path === '/login') {
-        renderLogin();
-    } else if (path === '/register') {
-        renderRegister();
-    } else if (path === '/admin/eventos/novo') {
-        renderCriarEvento();
-    } else {
-        // Renderize a página de login como página inicial
-        renderLogin();
+    // Verifica se o usuário está logado para rotas protegidas
+    if (path.startsWith('/admin') || path.startsWith('/eventos')) {
+        if (!isUserLoggedIn()) {
+            window.location.hash = '/login';
+            return;
+        }
+    }
+
+    // Roteamento da aplicação
+    switch (path) {
+        case '/login':
+            renderLogin();
+            break;
+        case '/register':
+            renderRegister();
+            break;
+        case '/eventos':
+            renderEventos();
+            break;
+        case '/admin/eventos/novo':
+            // Só administradores podem acessar esta rota
+            if (!isAdmin()) {
+                window.location.hash = '/eventos';
+                return;
+            }
+            renderCriarEvento();
+            break;
+        case '/admin/eventos/editar':
+            // Só administradores podem acessar esta rota
+            if (!isAdmin()) {
+                window.location.hash = '/eventos';
+                return;
+            }
+            renderCriarEvento(true); // true indica modo de edição
+            break;
+        case '/inicial':
+        case '/':
+            renderTelaInicial();
+            break;
+        default:
+            // Redireciona para a página inicial por padrão
+            renderTelaInicial();
     }
 }
 
@@ -27,7 +61,10 @@ function handleRouteChange() {
 window.addEventListener('hashchange', handleRouteChange);
 
 // Renderize a página inicial na primeira carga
-handleRouteChange();
+document.addEventListener('DOMContentLoaded', () => {
+    handleRouteChange();
+    setupModal();
+});
 
 // Configurar o modal de mensagens
 function setupModal() {
@@ -36,14 +73,18 @@ function setupModal() {
     const confirmButton = document.getElementById('modal-confirm');
 
     // Fechar ao clicar no X
-    closeModal.addEventListener('click', function () {
-        modal.classList.remove('active');
-    });
+    if (closeModal) {
+        closeModal.addEventListener('click', function () {
+            modal.classList.remove('active');
+        });
+    }
 
     // Fechar ao clicar no botão de confirmação
-    confirmButton.addEventListener('click', function () { // Correção do erro de digitação
-        modal.classList.remove('active');
-    });
+    if (confirmButton) {
+        confirmButton.addEventListener('click', function () {
+            modal.classList.remove('active');
+        });
+    }
 
     // Fechar ao clicar fora do modal
     window.addEventListener('click', function (event) {
@@ -58,9 +99,11 @@ export function showMessage(message) {
     const modal = document.getElementById('message-modal');
     const modalMessage = document.getElementById('modal-message');
 
-    modalMessage.textContent = message;
-    modal.classList.add('active');
+    if (modal && modalMessage) {
+        modalMessage.textContent = message;
+        modal.classList.add('active');
+    } else {
+        console.error('Modal ou elemento de mensagem não encontrado');
+        alert(message); // Fallback para alert
+    }
 }
-
-// Inicializar o modal
-document.addEventListener('DOMContentLoaded', setupModal);

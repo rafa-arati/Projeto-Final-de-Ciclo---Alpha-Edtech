@@ -75,17 +75,9 @@ async function handleLogin(event) {
         // Se chegar aqui, o login foi bem-sucedido
         showMessage('Login bem-sucedido! Redirecionando...');
 
-        // Redireciona com base na função do usuário
+        // Redireciona para a tela de eventos (para todos os usuários)
         setTimeout(() => {
-            // Assumindo que 'result.user.role' contém a função do usuário ('admin' ou outra)
-            const userRole = result && result.user && result.user.role;
-
-            if (userRole === 'admin') {
-                window.location.hash = '/admin/eventos/novo';
-            } else {
-                // Redireciona para a listagem de eventos para usuários não administradores
-                window.location.hash = '/admin/eventos';
-            }
+            window.location.hash = '/eventos';
         }, 1500);
 
     } catch (error) {
