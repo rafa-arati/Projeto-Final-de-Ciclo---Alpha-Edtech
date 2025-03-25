@@ -78,3 +78,34 @@ export async function logoutUser() {
 // - isUserLoggedIn() → Use getLoggedInUser() do store.js
 // - isAdmin() → Moved to store.js
 // - redirectToDashboard() → Substituída por navigateTo() no router.js
+
+export async function sendPasswordResetEmail(email) {
+  try {
+    const response = await fetch('/api/password/request-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      // Lança o erro com a mensagem do servidor, se disponível
+      throw new Error(responseData.message || 'Falha ao enviar email');
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error('Erro na solicitação de recuperação de senha:', error);
+    throw error;
+  }
+}
+
+export async function resetPassword(token, newPassword) {
+  const response = await fetch('/api/password/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, newPassword })
+  });
+  if (!response.ok) throw new Error('Token inválido ou expirado');
+}

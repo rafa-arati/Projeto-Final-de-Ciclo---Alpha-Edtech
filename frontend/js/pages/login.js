@@ -153,8 +153,9 @@ function setupLoginForm() {
 
 // Helper: Link "Esqueceu a senha"
 function setupForgotPassword() {
-  document.querySelector('.forgot-password')?.addEventListener('click', () => {
-    showMessage('Recurso de recuperação de senha em desenvolvimento.');
+  document.querySelector('.forgot-password')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    transitionToPage('login', 'forgot-password');
   });
 }
 

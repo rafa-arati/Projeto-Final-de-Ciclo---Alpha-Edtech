@@ -4,21 +4,27 @@ import { getLoggedInUser } from './store.js';
 export function initRouter() {
   // Carrega a página inicial baseada no hash
   window.addEventListener('DOMContentLoaded', () => {
-    const path = window.location.hash.replace('#', '') || 'login';
-    loadPage(path);
+    const fullHash = window.location.hash.replace('#', '');
+    const [path, queryString] = fullHash.split('?');
+
+    const queryParams = new URLSearchParams(queryString || '');
+    loadPage(path, queryParams);
   });
 
   // Atualiza quando o hash muda
   window.addEventListener('hashchange', () => {
-    const path = window.location.hash.replace('#', '');
-    loadPage(path);
+    const fullHash = window.location.hash.replace('#', '');
+    const [path, queryString] = fullHash.split('?');
+
+    const queryParams = new URLSearchParams(queryString || '');
+    loadPage(path, queryParams);
   });
 }
 
-async function loadPage(page) {
+async function loadPage(page, queryParams) {
   try {
-    // Extrai parâmetros da URL (como ?token=abc123)
-    const queryParams = new URLSearchParams(window.location.search);
+    console.log('Carregando página:', page);
+    console.log('Parâmetros:', Object.fromEntries(queryParams));
 
     // Carrega a página dinamicamente
     const { default: renderPage } = await import(`../pages/${page}.js`);
@@ -28,12 +34,17 @@ async function loadPage(page) {
 
   } catch (error) {
     console.error('Erro ao carregar página:', error);
-    navigateTo('login'); // Fallback para login
+    navigateTo('login');
     showMessage('Página não encontrada');
   }
 }
 
 // Navega para uma página específica
-export function navigateTo(page) {
-  window.location.hash = page;
+export function navigateTo(page, queryParams = {}) {
+  const queryString = new URLSearchParams(queryParams).toString();
+  const hashUrl = queryString
+    ? `#${page}?${queryString}`
+    : `#${page}`;
+
+  window.location.hash = hashUrl;
 }
