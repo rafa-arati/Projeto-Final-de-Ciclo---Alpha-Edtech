@@ -1,9 +1,12 @@
-// Função para renderizar a tela inicial
-export function renderTelaInicial() {
-    const appContainer = document.getElementById('app');
-    if (!appContainer) return;
+import { navigateTo } from '../modules/router.js';
+import { showMessage, transitionToPage } from '../modules/utils.js';
 
-    const initialHTML = `
+// Função principal que renderiza a tela inicial
+export default function renderHome(queryParams) {
+  const appContainer = document.getElementById('app');
+  if (!appContainer) return;
+
+  appContainer.innerHTML = `
         <div class="container">
             <div class="status-bar">
                 <span>${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -45,40 +48,40 @@ export function renderTelaInicial() {
         </div>
     `;
 
-    appContainer.innerHTML = initialHTML;
-    setupInitialEvents();
+  setupInitialEvents();
 }
 
+// Configura os eventos da tela inicial
 function setupInitialEvents() {
-    // Botão para criar conta
-    const createAccountBtn = document.getElementById('create-account-btn');
-    if (createAccountBtn) {
-        createAccountBtn.addEventListener('click', () => {
-            window.location.hash = '/register';
-        });
-    }
+  // Botão para criar conta
+  const createAccountBtn = document.getElementById('create-account-btn');
+  if (createAccountBtn) {
+    createAccountBtn.addEventListener('click', () => {
+      transitionToPage('welcome-screen', 'register');
+    });
+  }
 
-    // Botão para login
-    const loginBtn = document.getElementById('login-btn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', () => {
-            window.location.hash = '/login';
-        });
-    }
+  // Botão para login
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      transitionToPage('welcome-screen', 'login');
+    });
+  }
 
-    // Botões de login social
-    const googleLoginBtn = document.getElementById('google-login');
-    const appleLoginBtn = document.getElementById('apple-login');
+  // Botões de login social
+  const googleLoginBtn = document.getElementById('google-login');
+  const appleLoginBtn = document.getElementById('apple-login');
 
-    if (googleLoginBtn) {
-        googleLoginBtn.addEventListener('click', () => {
-            alert('Login com Google ainda não implementado');
-        });
-    }
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', () => {
+      showMessage('Login com Google ainda não implementado');
+    });
+  }
 
-    if (appleLoginBtn) {
-        appleLoginBtn.addEventListener('click', () => {
-            alert('Login com Apple ainda não implementado');
-        });
-    }
+  if (appleLoginBtn) {
+    appleLoginBtn.addEventListener('click', () => {
+      showMessage('Login com Apple ainda não implementado');
+    });
+  }
 }

@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { hashPassword } = require('../utils/passwordUtils');
 
 class User {
   static async create({ name, email, password, gender, birthDate, username }) {
@@ -81,6 +82,35 @@ class User {
       console.error("Erro ao buscar por ID:", error.message);
       throw error;
     }
+  }
+
+  // Método para atualizar a senha do usuário
+  static async updatePassword(userId, newPassword) {
+    console.log("Atualizando senha do usuário com ID:", userId);
+
+    // Gera o hash da nova senha
+    const hashedPassword = await hashPassword(newPassword);
+
+    const query = `
+      UPDATE users
+      SET password_hash = $1
+      WHERE id = $2
+      RETURNING id;
+    `;
+
+    try {
+      const { rows } = await pool.query(query, [hashedPassword, userId]);
+      console.log("Senha atualizada com sucesso para o usuário com ID:", rows[0].id);
+      return rows[0];
+    } catch (error) {
+      console.error("Erro ao atualizar a senha:", error.message);
+      throw error;
+    }
+  }
+
+  // Método para buscar um usuário por email (já existe, mas pode ser usado para recuperação de senha)
+  static async findUserByEmail(email) {
+    return this.findByEmail(email);
   }
 }
 

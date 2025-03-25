@@ -1,44 +1,44 @@
 /* Específico para tela de cadastro */
 .register-container {
-    opacity: 1;
-    transition: opacity 0.5s ease;
+  opacity: 1;
+  transition: opacity 0.5s ease;
 }
 
 .register-container.fade-out {
-    opacity: 0;
+  opacity: 0;
 }
 
 .date-input {
-    position: relative;
+  position: relative;
 }
 
 .date-input input[type="date"]::-webkit-calendar-picker-indicator {
-    background-color: #8000FF;
-    border-radius: 50%;
-    padding: 5px;
-    cursor: pointer;
+  background-color: #8000FF;
+  border-radius: 50%;
+  padding: 5px;
+  cursor: pointer;
 }
 
 .password-requirements {
-    font-size: 0.8em;
-    color: #ff6347;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    /* Adiciona espaço abaixo da mensagem */
-    height: auto;
-    /* Permite que a altura se ajuste ao conteúdo */
-    overflow: visible;
-    /* Permite que o texto seja totalmente visível */
-    line-height: 1.4;
-    /* Melhora o espaçamento entre linhas */
+  font-size: 0.8em;
+  color: #ff6347;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  /* Adiciona espaço abaixo da mensagem */
+  height: auto;
+  /* Permite que a altura se ajuste ao conteúdo */
+  overflow: visible;
+  /* Permite que o texto seja totalmente visível */
+  line-height: 1.4;
+  /* Melhora o espaçamento entre linhas */
 }
 
 .password-requirements.strong {
-    color: #32cd32;
-    /* Cor para senha forte */
+  color: #32cd32;
+  /* Cor para senha forte */
 }
 
 .password-requirements.weak {
-    color: #ffa500;
-    /* Cor para senha fraca */
+  color: #ffa500;
+  /* Cor para senha fraca */
 }

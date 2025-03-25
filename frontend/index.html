@@ -2,33 +2,41 @@
 <html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rota Cultural - Gerenciador de Eventos</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/login.css">
-    <link rel="stylesheet" href="css/register.css">
-    <link rel="stylesheet" href="css/create_event.css">
-    <link rel="stylesheet" href="css/evento.css">
-    <link rel="stylesheet" href="css/resposive-evento.css">
-    <link rel="stylesheet" href="css/tela-inicial.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rota Cultural - Gerenciador de Eventos</title>
+
+  <!-- CSS Principal -->
+  <link rel="stylesheet" href="css/common.css">
+
+  <!-- CSS das Páginas (Serão carregados dinamicamente pelo sistema SPA) -->
+  <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/register.css">
+  <link rel="stylesheet" href="css/create_event.css">
+  <link rel="stylesheet" href="css/evento.css">
+  <link rel="stylesheet" href="css/tela-inicial.css">
+
+  <!-- CSS Responsivo -->
+  <link rel="stylesheet" href="css/resposive-evento.css">
 </head>
 
 <body>
-    <div id="app">
-        <!-- Conteúdo carregado dinamicamente pelo JavaScript -->
-    </div>
+  <!-- Container Principal da SPA -->
+  <div id="app">
+    <!-- Conteúdo será injetado dinamicamente pelo router -->
+  </div>
 
-    <div id="message-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <p id="modal-message"></p>
-            <button id="modal-confirm" class="btn">OK</button>
-        </div>
+  <!-- Modal para Mensagens (gerenciado por utils.js) -->
+  <div id="message-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <p id="modal-message"></p>
+      <button id="modal-confirm" class="btn">OK</button>
     </div>
+  </div>
 
-    <script type="module" src="js/app.js"></script>
-    <script type="module" src="js/auth.js"></script>
+  <!-- Único script necessário (carrega todo o SPA) -->
+  <script type="module" src="js/app.js"></script>
 </body>
 
 </html>

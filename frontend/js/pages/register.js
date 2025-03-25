@@ -1,12 +1,12 @@
-import { showMessage } from './app.js'; // Importe a função showMessage
-import { registerUser } from './auth.js'; // Importe a função registerUser
+import { registerUser } from '../modules/auth.js';
+import { showMessage, transitionToPage } from '../modules/utils.js';
+import { navigateTo } from '../modules/router.js';
 
-export function renderRegister() {
-    const appContainer = document.getElementById('app');
-    if (!appContainer) return;
-
-    const registerHTML = `
-        <div class="container register-container" id="registerContainer">
+// Exporta a função principal da página
+export default function renderRegisterForm(queryParams) {
+  const appContainer = document.getElementById('app');
+  appContainer.innerHTML = `
+        <div class="container register-container">
             <div class="logo"><span>R</span>OTA<span>CULTURAL</span></div>
             <div class="welcome">Crie sua conta</div>
 
@@ -87,7 +87,7 @@ export function renderRegister() {
                     <input type="password" id="password" placeholder="Senha" required>
                 </div>
 
-                <div class="password-requirements" id="passwordRequirements" style="display: none;">
+                <div class="password-requirements">
                     A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.
                 </div>
 
@@ -110,121 +110,156 @@ export function renderRegister() {
             </div>
         </div>
     `;
-
-    appContainer.innerHTML = registerHTML;
-    setupRegisterEvents();
+  setupRegisterEvents();
 }
 
+// Configura eventos da página
 function setupRegisterEvents() {
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
-    }
-
-    const goToLoginLink = document.getElementById('goToLogin');
-    if (goToLoginLink) {
-        goToLoginLink.addEventListener('click', () => {
-            window.location.hash = '/login';
-        });
-    }
-
-    const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirmPassword');
-    const passwordRequirementsDiv = document.getElementById('passwordRequirements');
-
-    if (passwordInput) {
-        passwordInput.addEventListener('focus', () => {
-            passwordRequirementsDiv.style.display = 'block';
-        });
-
-        passwordInput.addEventListener('input', () => {
-            passwordRequirementsDiv.style.display = 'block';
-            const password = passwordInput.value;
-            const meetsRequirements = password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password) && /[^\w\s]/.test(password);
-            if (meetsRequirements) {
-                passwordRequirementsDiv.textContent = 'Senha forte.';
-                passwordRequirementsDiv.className = 'password-requirements strong';
-            } else if (password.length >= 8) {
-                passwordRequirementsDiv.textContent = 'Senha com 8+ caracteres, mas faltando letras, números ou símbolos.';
-                passwordRequirementsDiv.className = 'password-requirements weak';
-            } else {
-                passwordRequirementsDiv.textContent = 'A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.';
-                passwordRequirementsDiv.className = 'password-requirements';
-            }
-        });
-
-        passwordInput.addEventListener('blur', () => {
-            if (passwordInput.value === '') {
-                passwordRequirementsDiv.style.display = 'none';
-            }
-        });
-    }
-
-    if (confirmPasswordInput) {
-        confirmPasswordInput.addEventListener('input', () => {
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-            if (password !== confirmPassword) {
-                confirmPasswordInput.setCustomValidity('As senhas não coincidem.');
-            } else {
-                confirmPasswordInput.setCustomValidity('');
-            }
-        });
-    }
-
-    const birthDateInput = document.getElementById('birthDate');
-    if (birthDateInput) {
-        birthDateInput.addEventListener('input', function () {
-            let value = this.value.replace(/\D/g, ''); // Remove não-dígitos
-            if (value.length > 8) {
-                value = value.slice(0, 8); // Limita a 8 dígitos
-            }
-            let formattedValue = '';
-            for (let i = 0; i < value.length; i++) {
-                if (i === 2 || i === 4) {
-                    formattedValue += '-';
-                }
-                formattedValue += value[i];
-            }
-            this.value = formattedValue;
-        });
-    }
+  setupRegisterForm();
+  setupLoginLink();
+  setupPasswordValidation();
+  setupBirthDateInput();
 }
 
-async function handleRegister(event) {
-    event.preventDefault();
+// Helper: Formulário de cadastro
+function setupRegisterForm() {
+  const registerForm = document.getElementById('registerForm');
+  registerForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await handleRegistration();
+  });
+}
 
-    const name = document.getElementById('name').value;
-    const username = document.getElementById('username').value;
-    const email = document.getElementById('email').value;
-    const birthDate = document.getElementById('birthDate').value;
-    const gender = document.getElementById('gender').value;
+// Helper: Link para login
+function setupLoginLink() {
+  document.getElementById('goToLogin')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    transitionToPage('register', 'login');
+  });
+}
+
+// Helper: Validação de senha em tempo real (versão melhorada)
+function setupPasswordValidation() {
+  const passwordInput = document.getElementById('password');
+  const passwordRequirementsDiv = document.querySelector('.password-requirements');
+
+  if (!passwordInput || !passwordRequirementsDiv) return;
+
+  passwordInput.addEventListener('focus', () => {
+    passwordRequirementsDiv.style.display = 'block';
+  });
+
+  passwordInput.addEventListener('input', () => {
+    const password = passwordInput.value;
+    const meetsRequirements = password.length >= 8 &&
+      /[a-zA-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[^\w\s]/.test(password);
+
+    if (meetsRequirements) {
+      passwordRequirementsDiv.textContent = 'Senha forte!';
+      passwordRequirementsDiv.style.color = '#4CAF50';
+    } else if (password.length >= 8) {
+      passwordRequirementsDiv.textContent = 'Senha com 8+ caracteres, mas faltando letras, números ou símbolos.';
+      passwordRequirementsDiv.style.color = '#FFA500';
+    } else {
+      passwordRequirementsDiv.textContent = 'A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.';
+      passwordRequirementsDiv.style.color = '#888';
+    }
+  });
+
+  passwordInput.addEventListener('blur', () => {
+    if (passwordInput.value === '') {
+      passwordRequirementsDiv.style.display = 'none';
+    }
+  });
+
+  // Validação de confirmação de senha em tempo real
+  document.getElementById('confirmPassword')?.addEventListener('input', function () {
     const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-
-    if (password !== confirmPassword) {
-        showMessage('As senhas não coincidem.');
-        return;
+    if (this.value !== password) {
+      this.setCustomValidity('As senhas não coincidem.');
+    } else {
+      this.setCustomValidity('');
     }
+  });
+}
 
-    try {
-        const userData = {
-            name,
-            username,
-            email,
-            birthDate,
-            gender,
-            password
-        };
-
-        const result = await registerUser(userData);
-
-        showMessage('Cadastro realizado com sucesso! Redirecionando para a página de login...');
-        setTimeout(() => {
-            window.location.hash = '/login';
-        }, 2000);
-    } catch (error) {
-        console.error('Erro ao registrar:', error);
-        showMessage(error.message || 'Erro inesperado ao cadastrar.');
+// Helper: Formatação de data de nascimento (versão melhorada)
+function setupBirthDateInput() {
+  const birthDateInput = document.getElementById('birthDate');
+  birthDateInput?.addEventListener('input', function () {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length > 8) {
+      value = value.slice(0, 8);
     }
+    let formattedValue = '';
+    for (let i = 0; i < value.length; i++) {
+      if (i === 2 || i === 4) {
+        formattedValue += '-';
+      }
+      formattedValue += value[i];
+    }
+    this.value = formattedValue;
+  });
+}
+
+// Manipula o envio do formulário
+async function handleRegistration() {
+  const userData = collectFormData();
+
+  if (!validateForm(userData)) return;
+
+  try {
+    await registerUser(userData);
+    showMessage('Cadastro realizado com sucesso! Redirecionando para login...');
+    setTimeout(() => {
+      transitionToPage('register', 'login');
+    }, 2000);
+  } catch (error) {
+    showMessage(error.message || 'Erro ao cadastrar. Tente novamente.');
+  }
+}
+
+// Coleta dados do formulário
+function collectFormData() {
+  return {
+    name: document.getElementById('name').value,
+    username: document.getElementById('username').value,
+    email: document.getElementById('email').value,
+    birth_date: document.getElementById('birthDate').value,
+    gender: document.getElementById('gender').value,
+    password: document.getElementById('password').value,
+    confirmPassword: document.getElementById('confirmPassword').value
+  };
+}
+
+// Valida os dados do formulário
+function validateForm({ name, username, email, birth_date, gender, password, confirmPassword }) {
+  if (!name || !username || !email || !birth_date || !gender || !password || !confirmPassword) {
+    showMessage('Por favor, preencha todos os campos.');
+    return false;
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showMessage('Por favor, insira um email válido.');
+    return false;
+  }
+
+  if (!/^(\d{2})-(\d{2})-(\d{4})$/.test(birth_date)) {
+    showMessage('Por favor, insira a data no formato DD-MM-AAAA.');
+    return false;
+  }
+
+  if (password.length < 8) {
+    showMessage('A senha deve ter pelo menos 8 caracteres.');
+    return false;
+  }
+
+  if (password !== confirmPassword) {
+    showMessage('As senhas não coincidem.');
+    return false;
+  }
+
+  return true;
 }
