@@ -231,12 +231,14 @@ function createEventCard(evento) {
     eventCard.dataset.id = evento.id;
 
     // Determinar a imagem (usar uma imagem padrão se não houver)
-    const imageUrl = evento.photo_url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+    const imageUrl = evento.photo_url 
+    ? evento.photo_url 
+    : 'https://via.placeholder.com/200x250?text=Sem+Imagem';
 
     eventCard.innerHTML = `
-        <img src="${imageUrl}" alt="${evento.event_name}" class="event-image">
+    <img src="${imageUrl}" alt="${evento.event_name}" class="event-image">
         <div class="event-info">
-            <h3 class="event-title">${evento.event_name}</h3>
+            <h3 class="event-title">${evento.event_name}</h3>   
             <p class="event-subtitle">${evento.category || 'Evento'}</p>
         </div>
         <div class="event-date">
@@ -289,6 +291,21 @@ function createEventCard(evento) {
     return eventCard;
 }
 
+async function handleSearch(searchTerm) {
+    try {
+      const response = await fetch(`/api/events?searchTerm=${encodeURIComponent(searchTerm)}`);
+      
+      if (!response.ok) throw new Error('Erro na busca');
+      
+      eventos = await response.json();
+      renderEventosCarrossel();
+      
+    } catch (error) {
+      console.error('Erro na busca:', error);
+      showMessage('Erro ao buscar eventos');
+    }
+  }
+  
 function setupUIEvents() {
     // Botão para criar novo evento (para administradores)
     const criarEventoBtn = document.getElementById('criar-evento-btn');
@@ -303,12 +320,22 @@ function setupUIEvents() {
 
     // Campo de busca
     const searchInput = document.getElementById('search-input');
-    if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase();
-            filterEventos(searchTerm);
-        });
-    }
+    let searchTimeout;
+  
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        handleSearch(e.target.value.trim());
+      }, 300); // Debounce de 300ms
+    });
+  
+    // Busca ao pressionar Enter
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSearch(e.target.value.trim());
+      }
+    });
 
     // Botão do perfil
     const profileBtn = document.getElementById('profile-btn');

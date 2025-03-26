@@ -8,6 +8,7 @@ const eventRoutes = require('./routes/eventRoutes');
 
 dotenv.config();
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -46,5 +47,7 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'production' ? {} : err.message
   });
 });
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 module.exports = app;

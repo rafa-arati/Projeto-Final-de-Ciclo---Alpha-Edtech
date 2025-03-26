@@ -17,3 +17,5 @@ node_modules/
 # Ignora arquivos de sistema operacional
 .DS_Store
 Thumbs.db
+
+.uploads/

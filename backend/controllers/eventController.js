@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const pool = require('../config/db'); // Adicione esta linha
 
 const addEvent = async (req, res) => {
   console.log("Requisição recebida em /api/events", {
@@ -24,13 +25,8 @@ const addEvent = async (req, res) => {
     }
 
     let photoUrl = null;
-    if (imagem) {
-      // Aqui você precisará implementar a lógica para salvar a imagem
-      // Por exemplo, você pode usar um serviço de armazenamento em nuvem
-      // ou salvar o arquivo localmente e armazenar o caminho/URL.
-      // Para este exemplo, vamos apenas simular uma URL.
-      photoUrl = `/uploads/${imagem.originalname}`;
-      console.log('Arquivo de imagem recebido:', imagem); // Para depuração
+    if (req.file) {
+      photoUrl = `/uploads/${req.file.filename}`; // Usa o nome gerado pelo multer
     }
 
     // Verificar se os campos necessários estão presentes
@@ -72,10 +68,10 @@ const updateEvent = async (req, res) => {
     }
 
     let photoUrl = existingEvent.photo_url;
-    if (imagem) {
-      // Lógica para processar a nova imagem 
-      photoUrl = `/uploads/${imagem.originalname}`;
+    if (req.file) {
+      photoUrl = `/uploads/${req.file.filename}`; // Usa o nome gerado pelo multer
     }
+
 
     // Atualizar o evento
     const updatedEvent = await Event.updateEventInDatabase(
@@ -129,10 +125,24 @@ const deleteEvent = async (req, res) => {
 // Função para listar todos os eventos
 const listAllEvents = async (req, res) => {
   try {
-    const events = await Event.getAllEvents();
-    res.status(200).json(events);
+    const searchTerm = req.query.searchTerm;
+    let query = 'SELECT * FROM events';
+    let params = [];
+
+    if (searchTerm) {
+      query += ` WHERE 
+        event_name ILIKE $1 OR 
+        category ILIKE $1 OR 
+        description ILIKE $1`;
+      params.push(`%${searchTerm}%`);
+    }
+
+    query += ' ORDER BY event_date, event_time';
+    
+    const result = await pool.query(query, params);
+    res.status(200).json(result.rows);
   } catch (error) {
-    console.error('Erro ao listar eventos:', error); // Log detalhado do erro
+    console.error('Erro ao listar eventos:', error);
     res.status(500).json({ message: 'Erro ao listar eventos', error: error.message });
   }
 };
