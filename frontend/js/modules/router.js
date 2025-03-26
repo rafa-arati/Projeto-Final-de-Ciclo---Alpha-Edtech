@@ -49,5 +49,5 @@ export function navigateTo(page, queryParams = {}) {
     ? `#${page}?${queryString}`
     : `#${page}`;
 
-  window.location.hash = hashUrl;
+  window.location.hash = hashUrl;a
 }

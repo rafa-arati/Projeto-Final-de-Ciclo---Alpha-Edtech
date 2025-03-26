@@ -393,16 +393,13 @@ function filterEventos(searchTerm) {
 }
 
 function viewEventDetails(eventId) {
+    navigateTo('details', { id: eventId });
   // Buscar o evento pelo ID
   const evento = eventos.find(e => e.id === eventId);
   if (!evento) {
     showMessage('Evento não encontrado.');
     return;
   }
-
-  // Redirecionar para a página de detalhes (a implementar)
-  // Por enquanto, apenas mostrar informações básicas
-  showMessage(`Detalhes do evento "${evento.event_name}" serão implementados em breve.`);
 }
 
 function editEvent(eventId) {
