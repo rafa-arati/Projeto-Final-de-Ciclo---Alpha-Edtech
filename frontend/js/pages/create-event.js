@@ -1,5 +1,5 @@
 import { navigateTo } from '../modules/router.js';
-import { showMessage } from '../modules/utils.js';
+import { showMessage, transitionToPage } from '../modules/utils.js';
 import { getLoggedInUser, isAdmin } from '../modules/store.js';
 import { setupImagePreview, setupCancelModal } from '../modules/form-utils.js';
 import { getEventById, saveEvent } from '../modules/events-api.js';
@@ -24,7 +24,7 @@ export default function renderCreateEvent(queryParams) {
 
   appContainer.innerHTML = `
         <div class="header">
-            <a href="#/eventos">←</a>
+            <a href="#" id="voltar-btn" class="back-button">←</a>
             <h1>${titulo}</h1>
         </div>
         <form id="criarEventoForm">
@@ -123,7 +123,8 @@ async function setupForm(isEditing, eventId) {
     cancelButtonId: 'cancelarEvento',
     closeButtonId: 'fecharCancelarModal',
     confirmButtonId: 'confirmarCancelar',
-    denyButtonId: 'negarCancelar'
+    denyButtonId: 'negarCancelar',
+    onConfirm: () => transitionToPage('create-event', 'events')
   });
 
   // Se for edição, carrega os dados
@@ -183,3 +184,13 @@ function fillForm(evento) {
     imagemPrevia.style.display = 'block';
   }
 }
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#voltar-btn')) {
+    e.preventDefault();
+
+    // Usando sua função transitionToPage existente
+    transitionToPage('create-event', 'events');
+
+  }
+});
