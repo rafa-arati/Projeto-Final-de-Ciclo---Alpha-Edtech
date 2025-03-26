@@ -18,14 +18,21 @@ export async function deleteEvent(eventId) {
   try {
     const response = await fetch(`${API_URL}/${eventId}`, {
       method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       credentials: 'include'
     });
-    if (!response.ok) throw new Error('Erro ao excluir evento');
-    return true;
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao excluir evento');
+    }
+
+    return await response.json(); // Retorna os dados da resposta se necessário
   } catch (error) {
     console.error('Erro ao excluir evento:', error);
-    showMessage('Erro ao excluir evento');
-    throw error;
+    throw error; // Lança o erro para ser tratado no componente
   }
 }
 

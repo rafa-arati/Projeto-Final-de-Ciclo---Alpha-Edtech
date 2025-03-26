@@ -437,13 +437,36 @@ function setupDeleteModal() {
 
   if (confirmDeleteBtn) {
     confirmDeleteBtn.addEventListener('click', async () => {
-      if (currentEventId) {
+      if (!currentEventId) return;
+
+      try {
+        // 1. Executa a exclusão na API
         await deleteEvent(currentEventId);
+
+        // 2. Atualiza a lista local (otimista)
+        eventos = eventos.filter(e => e.id !== currentEventId);
+
+        // 3. Atualiza a interface
+        renderEventosCarrossel();
+
+        // 4. Feedback visual
+        showMessage('Evento excluído com sucesso!', 'success');
+
+      } catch (error) {
+        // 5. Tratamento de erros completo
+        console.error('Falha na exclusão:', error);
+        showMessage(error.message || 'Falha ao excluir evento', 'error');
+
+        // 6. Rollback opcional (se quiser recarregar os dados originais)
+        eventos = await fetchEvents();
+        renderEventosCarrossel();
+
+      } finally {
+        // 7. Fecha o modal em qualquer caso
         deleteModal.classList.remove('active');
       }
     });
   }
-
   // Fechar ao clicar fora do modal
   if (deleteModal) {
     window.addEventListener('click', (event) => {
