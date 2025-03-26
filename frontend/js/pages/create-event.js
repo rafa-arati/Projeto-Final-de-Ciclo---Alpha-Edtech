@@ -5,7 +5,6 @@ import { setupImagePreview, setupCancelModal } from '../modules/form-utils.js';
 import { getEventById, saveEvent } from '../modules/events-api.js';
 
 export default function renderCreateEvent(queryParams) {
-  // Verificação de admin
   if (!isAdmin()) {
     navigateTo('events');
     return;
@@ -14,9 +13,9 @@ export default function renderCreateEvent(queryParams) {
   const appContainer = document.getElementById('app');
   if (!appContainer) return;
 
-  // Modo de edição (via query params)
-  const isEditing = queryParams.get('edit') === 'true';
-  const editEventId = isEditing ? localStorage.getItem('editEventId') : null;
+  // Modo de edição (agora pegando direto da URL)
+  const eventId = queryParams.get('edit');
+  const isEditing = !!eventId;
 
   // Título dinâmico
   const titulo = isEditing ? 'Editar Evento' : 'Criar Novo Evento';
@@ -28,7 +27,7 @@ export default function renderCreateEvent(queryParams) {
             <h1>${titulo}</h1>
         </div>
         <form id="criarEventoForm">
-            <input type="hidden" id="eventoId" value="${editEventId || ''}">
+            <input type="hidden" id="eventoId" value="${eventId || ''}">
             
             <div class="left-column">
                 <div class="form-group">
@@ -108,17 +107,14 @@ export default function renderCreateEvent(queryParams) {
         </div>
     `;
 
-  setupForm(isEditing, editEventId);
+  setupForm(isEditing, eventId);
 }
 
 async function setupForm(isEditing, eventId) {
   const form = document.getElementById('criarEventoForm');
   if (!form) return;
 
-  // Configurar preview de imagem
   setupImagePreview('imagem', 'imagemPrevia', 'btnAdicionarFoto');
-
-  // Configurar modal de cancelamento
   setupCancelModal('cancelarModal', {
     cancelButtonId: 'cancelarEvento',
     closeButtonId: 'fecharCancelarModal',
@@ -127,7 +123,7 @@ async function setupForm(isEditing, eventId) {
     onConfirm: () => transitionToPage('create-event', 'events')
   });
 
-  // Se for edição, carrega os dados
+  // Carrega dados se for edição
   if (isEditing && eventId) {
     try {
       const evento = await getEventById(eventId);
@@ -135,36 +131,34 @@ async function setupForm(isEditing, eventId) {
     } catch (error) {
       showMessage('Falha ao carregar evento para edição');
       console.error(error);
+      navigateTo('events'); // Redireciona se falhar
     }
   }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    await handleSubmit(form, isEditing, eventId);
+    await handleSubmit(form, eventId); // Simplificado - não precisa mais do isEditing
   });
 }
 
-async function handleSubmit(form, isEditing, eventId) {
+async function handleSubmit(form, eventId) {
   const formData = new FormData(form);
 
   try {
-    const savedEvent = await saveEvent(formData, eventId);
+    await saveEvent(formData, eventId || null); // Usa sua função inteligente do events-api.js
 
     showMessage(eventId ? 'Evento atualizado!' : 'Evento criado!', 'success');
     setTimeout(() => navigateTo('events'), 1500);
-
-    return savedEvent;
   } catch (error) {
     showMessage(error.message || 'Erro no processamento', 'error');
     console.error(error);
   }
 }
 
+// Mantenha sua função fillForm exatamente como está
 function fillForm(evento) {
-  // Preenche os campos do formulário
   document.getElementById('nome').value = evento.event_name || '';
 
-  // Formatar a data para o formato do input date (YYYY-MM-DD)
   if (evento.event_date) {
     const date = new Date(evento.event_date);
     const formattedDate = date.toISOString().split('T')[0];
@@ -177,7 +171,6 @@ function fillForm(evento) {
   document.getElementById('link').value = evento.event_link || '';
   document.getElementById('descricao').value = evento.description || '';
 
-  // Exibir a imagem se existir
   const imagemPrevia = document.getElementById('imagemPrevia');
   if (evento.photo_url) {
     imagemPrevia.src = evento.photo_url;
@@ -185,12 +178,10 @@ function fillForm(evento) {
   }
 }
 
+// Mantenha seu event listener para o botão voltar
 document.addEventListener('click', (e) => {
   if (e.target.closest('#voltar-btn')) {
     e.preventDefault();
-
-    // Usando sua função transitionToPage existente
     transitionToPage('create-event', 'events');
-
   }
 });

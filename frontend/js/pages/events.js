@@ -406,11 +406,7 @@ function viewEventDetails(eventId) {
 }
 
 function editEvent(eventId) {
-  // Armazenar o ID do evento em localStorage para recuperar na tela de edição
-  localStorage.setItem('editEventId', eventId);
-
-  // Redirecionar para a tela de edição
-  navigateTo('admin/events/editar');
+  navigateTo('create-event', { edit: eventId }); // Passa o ID na URL
 }
 
 function showDeleteConfirmation(eventId) {
