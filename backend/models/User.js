@@ -3,34 +3,86 @@ const bcrypt = require('bcryptjs');
 const { hashPassword } = require('../utils/passwordUtils');
 
 class User {
-  static async create({ name, email, password, gender, birth_date, username }) {
-    // Verifica se a senha foi fornecida
-    if (!password) {
-      throw new Error('Senha é obrigatória');
+  static async create({ name, email, password, gender, birth_date, username, google_id = null, photo_url = null }) {
+    console.log("Criando usuário...");
+
+    let passwordHash = null;
+
+    // Se for um login normal (não Google), gera o hash da senha
+    if (password) {
+      console.log("Gerando hash da senha...");
+      passwordHash = await bcrypt.hash(password, 10);
+      console.log("Hash gerado com sucesso");
     }
 
-    console.log("Gerando hash da senha...");
-    // Gera o hash da senha
-    const passwordHash = await bcrypt.hash(password, 10);
-    console.log("Hash gerado com sucesso");
+    // Campos a serem inseridos
+    const fields = ['name', 'email'];
+    const values = [name, email];
+    const placeholders = ['$1', '$2'];
+    let paramCount = 2;
 
-    // Query para inserir o usuário no banco de dados
+    // Adiciona password_hash se existir
+    if (passwordHash) {
+      fields.push('password_hash');
+      values.push(passwordHash);
+      placeholders.push(`$${++paramCount}`);
+    }
+
+    // Adiciona gender se existir
+    if (gender) {
+      fields.push('gender');
+      values.push(gender);
+      placeholders.push(`$${++paramCount}`);
+    }
+
+    // Adiciona birth_date se existir
+    if (birth_date) {
+      fields.push('birth_date');
+      // Converte a data se estiver no formato DD-MM-YYYY
+      if (birth_date.includes('-') && birth_date.split('-').length === 3) {
+        const [day, month, year] = birth_date.split('-');
+        const formattedDate = `${year}-${month}-${day}`;
+        values.push(formattedDate);
+      } else {
+        values.push(birth_date);
+      }
+      placeholders.push(`$${++paramCount}`);
+    }
+
+    // Adiciona username se existir
+    if (username) {
+      fields.push('username');
+      values.push(username);
+      placeholders.push(`$${++paramCount}`);
+    }
+
+    // Adiciona google_id se existir
+    if (google_id) {
+      fields.push('google_id');
+      values.push(google_id);
+      placeholders.push(`$${++paramCount}`);
+    }
+
+    // Adiciona photo_url se existir
+    if (photo_url) {
+      fields.push('photo_url');
+      values.push(photo_url);
+      placeholders.push(`$${++paramCount}`);
+    }
+
+    // Adiciona onboarding_completed
+    fields.push('onboarding_completed');
+    values.push(!!gender && !!birth_date); // true se ambos estiverem presentes
+    placeholders.push(`$${++paramCount}`);
+
+    // Cria a query dinâmica
     const query = `
-      INSERT INTO users (name, email, password_hash, gender, birth_date, username)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, name, email, username, gender, birth_date, created_at;
+      INSERT INTO users (${fields.join(', ')})
+      VALUES (${placeholders.join(', ')})
+      RETURNING id, name, email, username, gender, birth_date, photo_url, onboarding_completed, created_at;
     `;
 
-    console.log("Inserindo usuário no banco de dados com valores:", {
-      name,
-      email,
-      gender,
-      birth_date,
-      username,
-      passwordHashExists: !!passwordHash
-    });
-
-    const values = [name, email, passwordHash, gender, birth_date, username];
+    console.log("Inserindo usuário no banco de dados");
 
     try {
       const { rows } = await pool.query(query, values);
@@ -52,6 +104,71 @@ class User {
       return rows[0];
     } catch (error) {
       console.error("Erro ao buscar por email:", error.message);
+      throw error;
+    }
+  }
+
+  static async findByGoogleId(googleId) {
+    console.log("Buscando usuário por Google ID:", googleId);
+    const query = 'SELECT * FROM users WHERE google_id = $1';
+
+    try {
+      const { rows } = await pool.query(query, [googleId]);
+      console.log("Resultado da busca por Google ID:", rows.length > 0 ? "Usuário encontrado" : "Usuário não encontrado");
+      return rows[0];
+    } catch (error) {
+      console.error("Erro ao buscar por Google ID:", error.message);
+      throw error;
+    }
+  }
+
+  static async updateUser(userId, userData) {
+    console.log("Atualizando usuário com ID:", userId);
+
+    const updateFields = [];
+    const values = [];
+    let paramCount = 0;
+
+    // Constrói a query dinamicamente baseada nos campos fornecidos
+    for (const [key, value] of Object.entries(userData)) {
+      if (value !== undefined && value !== null) {
+        // Se for birth_date no formato DD-MM-YYYY, converte para YYYY-MM-DD
+        if (key === 'birth_date' && value.includes('-') && value.split('-').length === 3) {
+          const [day, month, year] = value.split('-');
+          updateFields.push(`${key} = $${++paramCount}`);
+          values.push(`${year}-${month}-${day}`);
+        } else {
+          updateFields.push(`${key} = $${++paramCount}`);
+          values.push(value);
+        }
+      }
+    }
+
+    // Se não há campos para atualizar, retorna
+    if (updateFields.length === 0) {
+      console.log("Nenhum campo para atualizar");
+      return null;
+    }
+
+    // Adiciona updated_at
+    updateFields.push(`updated_at = NOW()`);
+
+    // Adiciona o ID do usuário como último parâmetro
+    values.push(userId);
+
+    const query = `
+      UPDATE users
+      SET ${updateFields.join(', ')}
+      WHERE id = $${++paramCount}
+      RETURNING id, name, email, username, gender, birth_date, photo_url, onboarding_completed;
+    `;
+
+    try {
+      const { rows } = await pool.query(query, values);
+      console.log("Usuário atualizado com sucesso:", rows[0].id);
+      return rows[0];
+    } catch (error) {
+      console.error("Erro ao atualizar usuário:", error.message);
       throw error;
     }
   }
@@ -84,11 +201,9 @@ class User {
     }
   }
 
-  // Método para atualizar a senha do usuário
   static async updatePassword(userId, newPassword) {
     console.log("Atualizando senha do usuário com ID:", userId);
 
-    // Gera o hash da nova senha
     const hashedPassword = await hashPassword(newPassword);
 
     const query = `
@@ -108,9 +223,35 @@ class User {
     }
   }
 
-  // Método para buscar um usuário por email (já existe, mas pode ser usado para recuperação de senha)
   static async findUserByEmail(email) {
     return this.findByEmail(email);
+  }
+
+  static async completeOnboarding(userId, { gender, birth_date }) {
+    console.log("Completando onboarding para usuário ID:", userId);
+
+    // Converte a data se estiver no formato DD-MM-YYYY
+    let formattedDate = birth_date;
+    if (birth_date.includes('-') && birth_date.split('-').length === 3) {
+      const [day, month, year] = birth_date.split('-');
+      formattedDate = `${year}-${month}-${day}`;
+    }
+
+    const query = `
+      UPDATE users
+      SET gender = $1, birth_date = $2, onboarding_completed = TRUE, updated_at = NOW()
+      WHERE id = $3
+      RETURNING id, name, email, username, gender, birth_date, photo_url, onboarding_completed;
+    `;
+
+    try {
+      const { rows } = await pool.query(query, [gender, formattedDate, userId]);
+      console.log("Onboarding completado com sucesso para usuário ID:", rows[0].id);
+      return rows[0];
+    } catch (error) {
+      console.error("Erro ao completar onboarding:", error.message);
+      throw error;
+    }
   }
 }
 
