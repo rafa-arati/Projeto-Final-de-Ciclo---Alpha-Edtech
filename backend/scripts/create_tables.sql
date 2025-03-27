@@ -59,3 +59,7 @@ CREATE TABLE reset_attempts (
     attempt_count INT DEFAULT 1,
     last_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE users 
+ADD COLUMN phone VARCHAR(15),
+ADD COLUMN updated_at TIMESTAMP DEFAULT NOW();

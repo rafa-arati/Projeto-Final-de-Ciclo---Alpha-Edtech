@@ -248,3 +248,53 @@
     .btn.secondary:hover {
         opacity: 1;
     }
+
+    /* Editar Perfil */
+    .profile-form {
+        padding: 20px;
+    }
+    
+    .profile-form .input-group {
+        margin-bottom: 25px;
+    }
+    
+    .profile-form input[disabled] {
+        background-color: #333;
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    .form-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    /* Estilos para campo de telefone */
+    .input-group input[type="tel"] {
+        padding-left: 80px !important; /* Espaço para máscara */
+    }
+    
+    /* Label dos campos */
+    .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #8000FF;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    /* Botão de alterar senha */
+    .btn.secondary {
+        background: linear-gradient(45deg, #606060, #404040);
+        margin-top: 10px;
+    }
+
+    .input-hint {
+        display: block;
+        color: #666;
+        font-size: 0.8em;
+        margin-top: 0.5rem;
+        opacity: 0.8;
+    }
