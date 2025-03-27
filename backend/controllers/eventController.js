@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const { uploadFileToS3, deleteFileFromS3 } = require('../utils/s3Uploader');
 
 const addEvent = async (req, res) => {
   console.log("Requisição recebida em /api/events", {
@@ -8,7 +9,7 @@ const addEvent = async (req, res) => {
   });
 
   const { nome, data, horario, categoria, localizacao, link, descricao } = req.body;
-  const imagem = req.file; // Informações do arquivo enviado
+  const imagem = req.file;
 
   try {
     // Verificar se o usuário está autenticado
@@ -25,12 +26,13 @@ const addEvent = async (req, res) => {
 
     let photoUrl = null;
     if (imagem) {
-      // Aqui você precisará implementar a lógica para salvar a imagem
-      // Por exemplo, você pode usar um serviço de armazenamento em nuvem
-      // ou salvar o arquivo localmente e armazenar o caminho/URL.
-      // Para este exemplo, vamos apenas simular uma URL.
-      photoUrl = `/uploads/${imagem.originalname}`;
-      console.log('Arquivo de imagem recebido:', imagem); // Para depuração
+      // Upload do arquivo para o S3
+      photoUrl = await uploadFileToS3(
+        imagem.buffer,
+        imagem.originalname,
+        imagem.mimetype
+      );
+      console.log('Imagem enviada para o S3:', photoUrl);
     }
 
     // Verificar se os campos necessários estão presentes
@@ -73,8 +75,17 @@ const updateEvent = async (req, res) => {
 
     let photoUrl = existingEvent.photo_url;
     if (imagem) {
-      // Lógica para processar a nova imagem 
-      photoUrl = `/uploads/${imagem.originalname}`;
+      // Upload da nova imagem para o S3
+      photoUrl = await uploadFileToS3(
+        imagem.buffer,
+        imagem.originalname,
+        imagem.mimetype
+      );
+
+      // Excluir a imagem antiga do S3 se existir
+      if (existingEvent.photo_url) {
+        await deleteFileFromS3(existingEvent.photo_url);
+      }
     }
 
     // Atualizar o evento
@@ -117,6 +128,11 @@ const deleteEvent = async (req, res) => {
       return res.status(404).json({ message: 'Evento não encontrado' });
     }
 
+    // Excluir a imagem do S3 se existir
+    if (existingEvent.photo_url) {
+      await deleteFileFromS3(existingEvent.photo_url);
+    }
+
     // Excluir o evento
     await Event.deleteEventFromDatabase(id);
     res.status(200).json({ message: 'Evento removido com sucesso' });
@@ -126,18 +142,17 @@ const deleteEvent = async (req, res) => {
   }
 };
 
-// Função para listar todos os eventos
+// Manter as outras funções sem alteração
 const listAllEvents = async (req, res) => {
   try {
     const events = await Event.getAllEvents();
     res.status(200).json(events);
   } catch (error) {
-    console.error('Erro ao listar eventos:', error); // Log detalhado do erro
+    console.error('Erro ao listar eventos:', error);
     res.status(500).json({ message: 'Erro ao listar eventos', error: error.message });
   }
 };
 
-// Função para obter um evento por ID
 const getEventById = async (req, res) => {
   const { id } = req.params;
   try {
