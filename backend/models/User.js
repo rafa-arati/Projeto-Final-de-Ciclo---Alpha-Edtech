@@ -54,6 +54,8 @@ class User {
       RETURNING id, name, email, username, gender, birth_date, photo_url, onboarding_completed, created_at;
     `;
 
+    console.log("Inserindo usuário no banco de dados");
+
     try {
       const { rows } = await pool.query(query, queryValues);
       return rows[0];
@@ -63,29 +65,40 @@ class User {
     }
   }
 
-  // Rest of the methods remain the same as in the previous implementation
+  // Atualiza um usuário
   static async updateUser(userId, userData) {
+    console.log("Atualizando usuário com ID:", userId);
+
     const updateFields = [];
-    const queryValues = [];
+    const values = [];
     let paramCount = 0;
 
+    // Constrói a query dinamicamente baseada nos campos fornecidos
     for (const [key, value] of Object.entries(userData)) {
       if (value !== undefined && value !== null) {
-        if (key === 'birth_date' && value.includes('-')) {
+        // Se for birth_date no formato DD-MM-YYYY, converte para YYYY-MM-DD
+        if (key === 'birth_date' && value.includes('-') && value.split('-').length === 3) {
           const [day, month, year] = value.split('-');
           updateFields.push(`${key} = $${++paramCount}`);
-          queryValues.push(`${year}-${month}-${day}`);
+          values.push(`${year}-${month}-${day}`);
         } else {
           updateFields.push(`${key} = $${++paramCount}`);
-          queryValues.push(value);
+          values.push(value);
         }
       }
     }
 
-    if (updateFields.length === 0) return null;
+    // Se não há campos para atualizar, retorna
+    if (updateFields.length === 0) {
+      console.log("Nenhum campo para atualizar");
+      return null;
+    }
 
-    updateFields.push('updated_at = NOW()');
-    queryValues.push(userId);
+    // Adiciona updated_at
+    updateFields.push(`updated_at = NOW()`);
+
+    // Adiciona o ID do usuário como último parâmetro
+    values.push(userId);
 
     const query = `
       UPDATE users
@@ -95,13 +108,15 @@ class User {
     `;
 
     try {
-      const { rows } = await pool.query(query, queryValues);
+      const { rows } = await pool.query(query, values);
+      console.log("Usuário atualizado com sucesso:", rows[0].id);
       return rows[0];
     } catch (error) {
-      console.error("Erro na atualização:", error.message);
+      console.error("Erro ao atualizar usuário:", error.message);
       throw error;
     }
   }
+
   // Busca por email
   static async findByEmail(email) {
     const query = 'SELECT * FROM users WHERE email = $1';
@@ -114,11 +129,13 @@ class User {
     }
   }
 
-  // Busca por Google ID
   static async findByGoogleId(googleId) {
+    console.log("Buscando usuário por Google ID:", googleId);
     const query = 'SELECT * FROM users WHERE google_id = $1';
+
     try {
       const { rows } = await pool.query(query, [googleId]);
+      console.log("Resultado da busca por Google ID:", rows.length > 0 ? "Usuário encontrado" : "Usuário não encontrado");
       return rows[0];
     } catch (error) {
       console.error("Erro ao buscar por Google ID:", error.message);
@@ -128,6 +145,7 @@ class User {
 
   // Busca por username
   static async findByUsername(username) {
+    console.log("Buscando usuário por username:", username);
     const query = 'SELECT * FROM users WHERE username = $1';
     try {
       const { rows } = await pool.query(query, [username]);
@@ -177,7 +195,10 @@ class User {
 
   // Atualiza senha
   static async updatePassword(userId, newPassword) {
+    console.log("Atualizando senha do usuário com ID:", userId);
+
     const hashedPassword = await hashPassword(newPassword);
+
     const query = `
       UPDATE users
       SET password_hash = $1
@@ -187,17 +208,25 @@ class User {
 
     try {
       const { rows } = await pool.query(query, [hashedPassword, userId]);
+      console.log("Senha atualizada com sucesso para o usuário com ID:", rows[0].id);
       return rows[0];
     } catch (error) {
-      console.error("Erro ao atualizar senha:", error.message);
+      console.error("Erro ao atualizar a senha:", error.message);
       throw error;
     }
   }
 
+  static async findUserByEmail(email) {
+    return this.findByEmail(email);
+  }
+
   // Completa onboarding
   static async completeOnboarding(userId, { gender, birth_date }) {
+    console.log("Completando onboarding para usuário ID:", userId);
+
+    // Converte a data se estiver no formato DD-MM-YYYY
     let formattedDate = birth_date;
-    if (birth_date.includes('-')) {
+    if (birth_date.includes('-') && birth_date.split('-').length === 3) {
       const [day, month, year] = birth_date.split('-');
       formattedDate = `${year}-${month}-${day}`;
     }
@@ -211,6 +240,7 @@ class User {
 
     try {
       const { rows } = await pool.query(query, [gender, formattedDate, userId]);
+      console.log("Onboarding completado com sucesso para usuário ID:", rows[0].id);
       return rows[0];
     } catch (error) {
       console.error("Erro ao completar onboarding:", error.message);

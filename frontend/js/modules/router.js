@@ -1,6 +1,5 @@
 import { showMessage } from './utils.js';
 import { getLoggedInUser } from './store.js';
-import renderEditProfile from '../pages/edit-profile.js';
 
 export function initRouter() {
   // Carrega a página inicial baseada no hash

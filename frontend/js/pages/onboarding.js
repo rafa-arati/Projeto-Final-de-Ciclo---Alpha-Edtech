@@ -3,17 +3,17 @@ import { showMessage } from '../modules/utils.js';
 import { saveUser } from '../modules/store.js';
 
 export default function render(queryParams) {
-    // Obtém o ID do usuário da URL
-    const userId = queryParams.get('userId');
+  // Obtém o ID do usuário da URL
+  const userId = queryParams.get('userId');
 
-    if (!userId) {
-        showMessage('Erro: ID de usuário não encontrado');
-        navigateTo('login');
-        return;
-    }
+  if (!userId) {
+    showMessage('Erro: ID de usuário não encontrado');
+    navigateTo('login');
+    return;
+  }
 
-    // Renderiza o formulário de onboarding
-    document.getElementById('app').innerHTML = `
+  // Renderiza o formulário de onboarding
+  document.getElementById('app').innerHTML = `
     <div class="container onboarding-container">
       <div class="logo"><span>R</span>OTA<span>CULTURAL</span></div>
       <div class="welcome">Precisamos de algumas informações adicionais</div>
@@ -62,76 +62,76 @@ export default function render(queryParams) {
     </div>
   `;
 
-    setupOnboardingEvents();
+  setupOnboardingEvents();
 }
 
 function setupOnboardingEvents() {
-    // Formatação de data de nascimento
-    document.getElementById('birthDate')?.addEventListener('input', formatBirthDate);
+  // Formatação de data de nascimento
+  document.getElementById('birthDate')?.addEventListener('input', formatBirthDate);
 
-    // Envio do formulário
-    document.getElementById('onboardingForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await completeOnboarding();
-    });
+  // Envio do formulário
+  document.getElementById('onboardingForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await completeOnboarding();
+  });
 }
 
 // Função para formatação automática da data
 function formatBirthDate() {
-    const input = document.getElementById('birthDate');
-    let value = input.value.replace(/\D/g, '');
+  const input = document.getElementById('birthDate');
+  let value = input.value.replace(/\D/g, '');
 
-    if (value.length > 8) value = value.substring(0, 8);
+  if (value.length > 8) value = value.substring(0, 8);
 
-    if (value.length > 4) {
-        value = `${value.substring(0, 2)}-${value.substring(2, 4)}-${value.substring(4)}`;
-    } else if (value.length > 2) {
-        value = `${value.substring(0, 2)}-${value.substring(2)}`;
-    }
+  if (value.length > 4) {
+    value = `${value.substring(0, 2)}-${value.substring(2, 4)}-${value.substring(4)}`;
+  } else if (value.length > 2) {
+    value = `${value.substring(0, 2)}-${value.substring(2)}`;
+  }
 
-    input.value = value;
+  input.value = value;
 }
 
 // Função para enviar as informações de onboarding
 async function completeOnboarding() {
-    const userId = document.getElementById('userId').value;
-    const birthDate = document.getElementById('birthDate').value;
-    const gender = document.getElementById('gender').value;
+  const userId = document.getElementById('userId').value;
+  const birthDate = document.getElementById('birthDate').value;
+  const gender = document.getElementById('gender').value;
 
-    // Validação básica
-    if (!userId || !birthDate || !gender) {
-        showMessage('Por favor, preencha todos os campos.');
-        return;
+  // Validação básica
+  if (!userId || !birthDate || !gender) {
+    showMessage('Por favor, preencha todos os campos.');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/auth/complete-onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, birth_date: birthDate, gender })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao completar cadastro');
     }
 
-    try {
-        const response = await fetch('/api/auth/complete-onboarding', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, birth_date: birthDate, gender })
-        });
+    const data = await response.json();
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Erro ao completar cadastro');
-        }
+    // Salva os dados do usuário na sessão
+    saveUser({
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.name,
+      username: data.user.username,
+      photo_url: data.user.photo_url,
+      role: data.user.role || 'user'
+    });
 
-        const data = await response.json();
-
-        // Salva os dados do usuário na sessão
-        saveUser({
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.name,
-            username: data.user.username,
-            photo_url: data.user.photo_url,
-            role: data.user.role || 'user'
-        });
-
-        showMessage('Cadastro completado com sucesso! Redirecionando...');
-        setTimeout(() => navigateTo('dashboard'), 1500);
-    } catch (error) {
-        console.error('Erro ao completar onboarding:', error);
-        showMessage(error.message || 'Erro ao completar cadastro. Tente novamente.');
-    }
+    showMessage('Cadastro completado com sucesso! Redirecionando...');
+    setTimeout(() => navigateTo('events'), 1500);
+  } catch (error) {
+    console.error('Erro ao completar onboarding:', error);
+    showMessage(error.message || 'Erro ao completar cadastro. Tente novamente.');
+  }
 }

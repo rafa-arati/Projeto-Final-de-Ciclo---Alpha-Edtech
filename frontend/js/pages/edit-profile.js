@@ -54,8 +54,9 @@ export default async function renderEditProfile(queryParams) {
   `;
 
     // Configura eventos
-    document.getElementById('back-btn').addEventListener('click', () => {
-      window.history.back();
+    document.getElementById('back-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      navigateTo('events');
     });
 
     // Formatação rigorosa do telefone durante a digitação
@@ -79,7 +80,7 @@ export default async function renderEditProfile(queryParams) {
     console.error('Erro ao carregar perfil:', error);
     showMessage('Erro ao carregar dados do perfil', 'error');
     // Você pode redirecionar para outra página ou mostrar uma UI de erro
-    navigateTo('dashboard'); // ou outra rota apropriada
+    navigateTo('events'); // ou outra rota apropriada
   }
 
 

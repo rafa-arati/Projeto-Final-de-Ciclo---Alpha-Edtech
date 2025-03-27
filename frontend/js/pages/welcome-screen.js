@@ -75,7 +75,7 @@ function setupInitialEvents() {
 
   if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', () => {
-      showMessage('Login com Google ainda não implementado');
+      window.location.href = '/api/auth/google';
     });
   }
 
