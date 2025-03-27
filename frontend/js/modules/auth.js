@@ -1,8 +1,8 @@
 import { saveUser, clearUser } from './store.js';
+import { showMessage } from './utils.js';
 
 const API_URL = '/api/auth';
 const PASSWORD_API_URL = '/api/password';
-
 
 export async function loginUser(identifier, password, userType) {
   try {
@@ -20,6 +20,7 @@ export async function loginUser(identifier, password, userType) {
 
     const data = await response.json();
 
+    // Salva o usuário usando a função do store.js
     saveUser({
       id: data.user.id,
       email: data.user.email,
@@ -33,7 +34,6 @@ export async function loginUser(identifier, password, userType) {
     throw error;
   }
 }
-
 
 export async function registerUser(userData) {
   try {
@@ -62,12 +62,13 @@ export async function logoutUser() {
       credentials: 'include'
     });
 
-    clearUser();
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Erro ao fazer logout');
     }
+
+    // Limpa o usuário usando a função do store.js
+    clearUser();
 
     return await response.json();
   } catch (error) {
@@ -75,7 +76,6 @@ export async function logoutUser() {
     throw error;
   }
 }
-
 
 export async function sendPasswordResetEmail(email) {
   try {
@@ -85,18 +85,19 @@ export async function sendPasswordResetEmail(email) {
       body: JSON.stringify({ email })
     });
 
+    const responseData = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Falha ao enviar email de recuperação');
+      // Lança o erro com a mensagem do servidor, se disponível
+      throw new Error(responseData.message || 'Falha ao enviar email de recuperação');
     }
 
-    return await response.json();
+    return responseData;
   } catch (error) {
     console.error('Erro ao solicitar recuperação de senha:', error);
     throw error;
   }
 }
-
 
 export async function resetPassword(token, newPassword) {
   try {
@@ -118,6 +119,40 @@ export async function resetPassword(token, newPassword) {
     return await response.json();
   } catch (error) {
     console.error('Erro ao redefinir senha:', error);
+    throw error;
+  }
+}
+
+export function getToken() {
+  // Tenta pegar do localStorage primeiro (se você armazena lá)
+  const storedToken = localStorage.getItem('auth_token');
+
+  // Ou pode pegar dos cookies (se você usa httpOnly cookies)
+  const cookieToken = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('token='))
+    ?.split('=')[1];
+
+  return storedToken || cookieToken || null;
+}
+
+
+export async function fetchCompleteUserData() {
+  try {
+    const response = await fetch('/api/auth/me', {
+      headers: {
+        'Authorization': `Bearer ${getToken()}`, // Implemente getToken() se necessário
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Erro ao buscar dados');
+
+    const userData = await response.json();
+    saveUser(userData); // Atualiza o localStorage com dados completos
+    return userData;
+  } catch (error) {
+    console.error('Erro ao buscar dados completos:', error);
     throw error;
   }
 }

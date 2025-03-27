@@ -4,6 +4,21 @@ import { showMessage, transitionToPage } from '../modules/utils.js';
 
 // Exporta a função principal da página
 export default function renderLogin(queryParams) {
+  // Verifica se há erro na URL
+  const error = queryParams.get('error');
+  if (error) {
+    // Mostra mensagem de erro específica
+    setTimeout(() => {
+      if (error === 'google_login_failed') {
+        showMessage('Falha ao fazer login com Google. Tente novamente.');
+      } else if (error === 'auth_failed') {
+        showMessage('Autenticação falhou. Tente novamente.');
+      } else if (error === 'server_error') {
+        showMessage('Erro no servidor. Tente novamente mais tarde.');
+      }
+    }, 500);
+  }
+
   const appContainer = document.getElementById('app');
   appContainer.innerHTML = `
        <div class="container login-container">
@@ -161,7 +176,15 @@ function setupForgotPassword() {
 
 // Helper: Botões de login social
 function setupSocialButtons() {
-  document.querySelectorAll('.social-btn').forEach(button => {
+  // Configuração do botão de login com Google
+  document.getElementById('googleLoginBtn')?.addEventListener('click', () => {
+    // Redireciona para a rota de autenticação do Google no backend
+    window.location.href = '/api/auth/google';
+  });
+
+  // Outros botões sociais (Facebook, Instagram) - ainda não implementados
+  const otherSocialBtns = document.querySelectorAll('.social-btn:not(.google)');
+  otherSocialBtns.forEach(button => {
     button.addEventListener('click', () => {
       showMessage('Login social em desenvolvimento.');
     });

@@ -1,0 +1,67 @@
+/* Estilos específicos para a página de onboarding */
+.onboarding-container {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.onboarding-container.fade-out {
+    opacity: 0;
+}
+
+.onboarding-container .welcome {
+    margin-bottom: 30px;
+    text-align: center;
+    font-size: 18px;
+    color: #e0e0e0;
+}
+
+.onboarding-container .bottom-text {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+    line-height: 1.5;
+}
+
+/* Estilos para a imagem do perfil do Google */
+.profile-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: block;
+    border: 3px solid #8000FF;
+}
+
+/* Animação de entrada para os elementos */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.onboarding-container form>* {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.onboarding-container form>*:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.onboarding-container form>*:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.onboarding-container form>*:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.onboarding-container form>*:nth-child(4) {
+    animation-delay: 0.4s;
+}

@@ -413,12 +413,6 @@ function viewEventDetails(eventId) {
     showMessage("Evento não encontrado.");
     return;
   }
-
-  // Redirecionar para a página de detalhes (a implementar)
-  // Por enquanto, apenas mostrar informações básicas
-  showMessage(
-    `Detalhes do evento "${evento.event_name}" serão implementados em breve.`
-  );
 }
 
 function editEvent(eventId) {

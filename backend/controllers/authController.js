@@ -159,4 +159,28 @@ const logout = (req, res) => {
   res.status(200).json({ message: 'Logout bem-sucedido' });
 };
 
-module.exports = { register, login, logout };
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id); // req.user.id vem do JWT
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    res.status(200).json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      username: user.username,
+      role: user.role,
+      phone: user.phone,
+      gender: user.gender,
+      birth_date: user.birth_date,
+      // outros campos necessários...
+    });
+  } catch (error) {
+    console.error("Erro ao buscar usuário:", error);
+    res.status(500).json({ message: 'Erro ao buscar dados do usuário' });
+  }
+};
+
+module.exports = { register, login, logout, getCurrentUser };

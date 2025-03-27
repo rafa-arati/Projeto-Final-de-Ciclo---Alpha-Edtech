@@ -16,6 +16,9 @@ export function saveUser(userData) {
     username: userData.username,
     name: userData.name || '',
     role: userData.role || 'user',
+    phone: userData.phone || null,
+    gender: userData.gender || null,
+    birth_date: userData.birth_date || null,
     isLoggedIn: true,
     lastUpdated: Date.now()
   };

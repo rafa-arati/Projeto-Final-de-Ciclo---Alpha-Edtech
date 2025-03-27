@@ -1,12 +1,26 @@
 import { navigateTo } from '../modules/router.js';
 import { showMessage } from '../modules/utils.js';
-import { getLoggedInUser } from '../modules/store.js';
+import { fetchCompleteUserData } from '../modules/auth.js'; // Removida a importação inexistente
 
-export default function renderEditProfile(queryParams) {
-  const user = getLoggedInUser();
-  
-  const appContainer = document.getElementById('app');
-  appContainer.innerHTML = `
+export default async function renderEditProfile(queryParams) {
+  try {
+    // Adicione await aqui para esperar a resposta
+    const user = await fetchCompleteUserData();
+
+    console.log('Usuário completo:', user);
+    console.log('Número do telefone do usuário:', user?.phone);
+    console.log('genero:', user?.gender);
+    console.log('cargo:', user?.role);
+    console.log('nome:', user?.username);
+    console.log('email:', user?.email);
+    console.log('email:', user?.birth_date);
+    // Formata o telefone para exibição inicial apenas se existir no banco
+    const formattedPhone = user?.phone ? formatPhoneNumber(user.phone) : '';
+
+    console.log('Telefone formatado:', formattedPhone);
+
+    const appContainer = document.getElementById('app');
+    appContainer.innerHTML = `
     <div class="container">
       <div class="header">
         <a href="#" id="back-btn" class="back-button">←</a>
@@ -15,7 +29,7 @@ export default function renderEditProfile(queryParams) {
 
       <form id="profileForm" class="profile-form">
         <div class="input-group">
-          <input type="text" id="name" placeholder="Nome" value="${user?.name || ''}" required>
+          <input type="text" id="name" placeholder="Nome" value="${user?.username || ''}" required>
         </div>
 
         <div class="input-group">
@@ -25,9 +39,10 @@ export default function renderEditProfile(queryParams) {
         <div class="input-group">
           <label>Telefone</label>
           <input type="tel" id="phone" 
-                 value="${user?.phone || ''}" 
-                 placeholder="(XX) XXXXX-XXXX">
-          <small class="input-hint">Digite apenas números com DDD (ex: 11999998888)</small>
+                 value="${formattedPhone}" 
+                 placeholder="(XX) XXXXX-XXXX"
+                 maxlength="15"> <!-- Limite de caracteres com formatação -->
+          <small class="input-hint">Digite o DDD + número (11 dígitos)</small>
         </div>
 
         <div class="form-buttons">
@@ -38,33 +53,89 @@ export default function renderEditProfile(queryParams) {
     </div>
   `;
 
-  // Event Listeners
-  document.getElementById('back-btn').addEventListener('click', () => {
-    window.history.back(); // Volta para a página anterior
-  });
-  document.getElementById('phone').addEventListener('input', function(e) {
-    e.target.value = formatPhoneNumber(e.target.value);
-});
+    // Configura eventos
+    document.getElementById('back-btn').addEventListener('click', () => {
+      window.history.back();
+    });
+
+    // Formatação rigorosa do telefone durante a digitação
+    document.getElementById('phone').addEventListener('input', function (e) {
+      const cursorPosition = e.target.selectionStart;
+      const formattedValue = enforcePhoneFormat(e.target.value);
+      e.target.value = formattedValue;
+
+      // Mantém a posição do cursor correta após formatação
+      if (cursorPosition === 1 && formattedValue.length === 1) {
+        e.target.setSelectionRange(2, 2);
+      } else if (cursorPosition === 3 && formattedValue.length === 3) {
+        e.target.setSelectionRange(4, 4);
+      } else if (cursorPosition === 9 && formattedValue.length === 9) {
+        e.target.setSelectionRange(10, 10);
+      } else {
+        e.target.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao carregar perfil:', error);
+    showMessage('Erro ao carregar dados do perfil', 'error');
+    // Você pode redirecionar para outra página ou mostrar uma UI de erro
+    navigateTo('dashboard'); // ou outra rota apropriada
+  }
+
+
   document.getElementById('logout-btn').addEventListener('click', handleLogout);
   document.getElementById('profileForm').addEventListener('submit', handleSubmit);
-  document.getElementById('phone').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 11) value = value.slice(0,11);
-    
-    value = value.replace(/(\d{2})(\d)/, "($1) $2");
-    value = value.replace(/(\d{5})(\d)/, "$1-$2");
-    e.target.value = value;
-  });
+}
+
+// Função que aplica a formatação EXATA (XX) XXXXX-XXXX
+function enforcePhoneFormat(value) {
+  // Remove tudo que não é dígito
+  const numbers = value.replace(/\D/g, '');
+
+  // Limita a 11 dígitos (DDD + 9 dígitos)
+  const limitedNumbers = numbers.slice(0, 11);
+
+  // Aplica a formatação exata
+  if (limitedNumbers.length <= 2) {
+    return limitedNumbers;
+  } else if (limitedNumbers.length <= 7) {
+    return `(${limitedNumbers.slice(0, 2)}) ${limitedNumbers.slice(2)}`;
+  } else {
+    return `(${limitedNumbers.slice(0, 2)}) ${limitedNumbers.slice(2, 7)}-${limitedNumbers.slice(7, 11)}`;
+  }
+}
+
+// Função para formatar o telefone que vem do banco de dados
+function formatPhoneNumber(phoneFromDB) {
+  if (!phoneFromDB) return '';
+
+  // Remove possíveis formatações antigas
+  const numbers = phoneFromDB.toString().replace(/\D/g, '');
+
+  // Aplica a formatação correta
+  if (numbers.length === 11) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+  }
+
+  // Se não tiver 11 dígitos, retorna sem formatação
+  return numbers;
 }
 
 async function handleSubmit(e) {
   e.preventDefault();
   const user = getLoggedInUser();
-  
-  const formData = {
-    name: document.getElementById('name').value,
-    phone: document.getElementById('phone').value
-  };
+
+  const name = document.getElementById('name').value.trim();
+  const rawPhone = document.getElementById('phone').value.replace(/\D/g, '');
+
+  // Validações
+  if (!name) {
+    return showMessage('Nome é obrigatório', 'error');
+  }
+
+  if (rawPhone && rawPhone.length !== 11) {
+    return showMessage('Telefone deve ter exatamente 11 dígitos (DDD + número)', 'error');
+  }
 
   try {
     const response = await fetch('/api/auth/profile', {
@@ -73,15 +144,28 @@ async function handleSubmit(e) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
-      body: JSON.stringify(formData)
+      body: JSON.stringify({
+        name: name,
+        phone: rawPhone || null
+      })
     });
 
-    if (!response.ok) throw new Error('Falha na atualização');
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Falha na atualização');
+    }
+
+    // Atualiza os dados locais
+    if (user) {
+      user.name = name;
+      user.phone = rawPhone;
+    }
 
     showMessage('Perfil atualizado com sucesso!', 'success');
-    setTimeout(() => navigateTo('events'), 1500);
 
   } catch (error) {
+    console.error('Erro na atualização:', error);
     showMessage(error.message || 'Erro ao atualizar perfil', 'error');
   }
 }
@@ -89,19 +173,4 @@ async function handleSubmit(e) {
 async function handleLogout() {
   localStorage.removeItem('token');
   navigateTo('login');
-}
-
-function formatPhoneNumber(value) {
-    if (!value) return '';
-    
-    const numbers = value.replace(/\D/g, '');
-    const match = numbers.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/);
-    
-    if (!match) return value;
-    
-    return [
-      match[1] ? `(${match[1]}` : '',
-      match[2] ? `) ${match[2]}` : '',
-      match[3] ? `-${match[3]}` : ''
-    ].join('');
 }

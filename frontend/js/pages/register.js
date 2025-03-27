@@ -138,70 +138,14 @@ function setupLoginLink() {
   });
 }
 
-// Helper: Validação de senha em tempo real (versão melhorada)
+// Helper: Validação de senha em tempo real
 function setupPasswordValidation() {
-  const passwordInput = document.getElementById('password');
-  const passwordRequirementsDiv = document.querySelector('.password-requirements');
-
-  if (!passwordInput || !passwordRequirementsDiv) return;
-
-  passwordInput.addEventListener('focus', () => {
-    passwordRequirementsDiv.style.display = 'block';
-  });
-
-  passwordInput.addEventListener('input', () => {
-    const password = passwordInput.value;
-    const meetsRequirements = password.length >= 8 &&
-      /[a-zA-Z]/.test(password) &&
-      /[0-9]/.test(password) &&
-      /[^\w\s]/.test(password);
-
-    if (meetsRequirements) {
-      passwordRequirementsDiv.textContent = 'Senha forte!';
-      passwordRequirementsDiv.style.color = '#4CAF50';
-    } else if (password.length >= 8) {
-      passwordRequirementsDiv.textContent = 'Senha com 8+ caracteres, mas faltando letras, números ou símbolos.';
-      passwordRequirementsDiv.style.color = '#FFA500';
-    } else {
-      passwordRequirementsDiv.textContent = 'A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.';
-      passwordRequirementsDiv.style.color = '#888';
-    }
-  });
-
-  passwordInput.addEventListener('blur', () => {
-    if (passwordInput.value === '') {
-      passwordRequirementsDiv.style.display = 'none';
-    }
-  });
-
-  // Validação de confirmação de senha em tempo real
-  document.getElementById('confirmPassword')?.addEventListener('input', function () {
-    const password = document.getElementById('password').value;
-    if (this.value !== password) {
-      this.setCustomValidity('As senhas não coincidem.');
-    } else {
-      this.setCustomValidity('');
-    }
-  });
+  document.getElementById('password')?.addEventListener('input', validatePassword);
 }
 
-// Helper: Formatação de data de nascimento (versão melhorada)
+// Helper: Formatação de data de nascimento
 function setupBirthDateInput() {
-  const birthDateInput = document.getElementById('birthDate');
-  birthDateInput?.addEventListener('input', function () {
-    let value = this.value.replace(/\D/g, '');
-    if (value.length > 8) {
-      value = value.slice(0, 8);
-    }
-    let formattedValue = '';
-    for (let i = 0; i < value.length; i++) {
-      if (i === 2 || i === 4) {
-        formattedValue += '-';
-      }
-      formattedValue += value[i];
-    }
-    this.value = formattedValue;
-  });
+  document.getElementById('birthDate')?.addEventListener('input', formatBirthDate);
 }
 
 // Manipula o envio do formulário
@@ -213,9 +157,7 @@ async function handleRegistration() {
   try {
     await registerUser(userData);
     showMessage('Cadastro realizado com sucesso! Redirecionando para login...');
-    setTimeout(() => {
-      transitionToPage('register', 'login');
-    }, 2000);
+    transitionToPage('register', 'login')
   } catch (error) {
     showMessage(error.message || 'Erro ao cadastrar. Tente novamente.');
   }
@@ -262,4 +204,54 @@ function validateForm({ name, username, email, birth_date, gender, password, con
   }
 
   return true;
+}
+
+// Validação de senha (mantida igual, mas agora é função interna)
+function validatePassword() {
+  const password = document.getElementById('password').value;
+  const requirementsDiv = document.querySelector('.password-requirements');
+
+  const validation = {
+    hasMinLength: password.length >= 8,
+    hasLetter: /[a-zA-Z]/.test(password),
+    hasNumber: /\d/.test(password),
+    hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+  };
+
+  if (!password) {
+    requirementsDiv.textContent = 'A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.';
+    requirementsDiv.style.color = '#888';
+    return;
+  }
+
+  const missing = [
+    !validation.hasMinLength && 'pelo menos 8 caracteres',
+    !validation.hasLetter && 'letras',
+    !validation.hasNumber && 'números',
+    !validation.hasSpecialChar && 'caracteres especiais'
+  ].filter(Boolean);
+
+  if (missing.length === 0) {
+    requirementsDiv.textContent = 'Senha forte!';
+    requirementsDiv.style.color = '#4CAF50';
+  } else {
+    requirementsDiv.textContent = `A senha deve ter: ${missing.join(', ')}`;
+    requirementsDiv.style.color = '#FFA500';
+  }
+}
+
+// Formatação de data (mantida igual, mas agora é função interna)
+function formatBirthDate() {
+  const input = document.getElementById('birthDate');
+  let value = input.value.replace(/\D/g, '');
+
+  if (value.length > 8) value = value.substring(0, 8);
+
+  if (value.length > 4) {
+    value = `${value.substring(0, 2)}-${value.substring(2, 4)}-${value.substring(4)}`;
+  } else if (value.length > 2) {
+    value = `${value.substring(0, 2)}-${value.substring(2)}`;
+  }
+
+  input.value = value;
 }
