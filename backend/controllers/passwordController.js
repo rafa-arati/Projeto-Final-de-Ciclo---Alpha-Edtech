@@ -24,7 +24,7 @@ const requestPasswordReset = async (req, res) => {
     const token = generateToken();
     await saveToken(user.id, token);
 
-    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000/#';
+    const baseUrl = process.env.FRONTEND_URL || 'http://207.246.112.105:3000/#';
     const resetLink = `${baseUrl}reset-password?token=${token}`;
 
     const subject = 'Recuperação de Senha';
