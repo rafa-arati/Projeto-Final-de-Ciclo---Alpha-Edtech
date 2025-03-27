@@ -54,12 +54,12 @@ app.get('/api/test', (req, res) => {
 });
 
 // Servir arquivos estáticos da pasta frontend
-app.use(express.static(path.join(__dirname, '../frontend')));
+//app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Rota "catch-all" para o SPA (Single Page Application)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
-});
+//app.get('*', (req, res) => {
+  //res.sendFile(path.join(__dirname, '../frontend/index.html'));
+//});
 
 // Middleware para tratamento de erros
 app.use((err, req, res, next) => {
