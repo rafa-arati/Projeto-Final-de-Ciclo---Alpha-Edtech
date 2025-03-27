@@ -84,6 +84,41 @@ class User {
     }
   }
 
+  static async updateProfile(userId, updates) {
+    const { name, phone } = updates;
+    
+    const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
+    
+    if (phone && cleanPhone.length < 10) {
+      throw new Error('Número deve ter pelo menos 10 dígitos');
+    }
+  
+    const query = `
+      UPDATE users 
+      SET name = $1, 
+          phone = $2, 
+          updated_at = NOW()
+      WHERE id = $3
+      RETURNING id, name, email, phone, created_at, updated_at
+    `;
+  
+    try {
+      const { rows } = await pool.query(query, [
+        name,
+        cleanPhone || null, // Salva NULL se não houver telefone
+        userId
+      ]);
+      return rows[0];
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', {
+        error: error.message,
+        userId,
+        updates
+      });
+      throw new Error('Erro no servidor ao atualizar perfil');
+    }
+  }
+
   // Método para atualizar a senha do usuário
   static async updatePassword(userId, newPassword) {
     console.log("Atualizando senha do usuário com ID:", userId);
