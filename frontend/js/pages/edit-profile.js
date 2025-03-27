@@ -1,6 +1,7 @@
 import { navigateTo } from '../modules/router.js';
 import { showMessage } from '../modules/utils.js';
 import { fetchCompleteUserData } from '../modules/auth.js'; // Removida a importação inexistente
+import { getLoggedInUser } from '../modules/store.js';
 
 export default async function renderEditProfile(queryParams) {
   try {
