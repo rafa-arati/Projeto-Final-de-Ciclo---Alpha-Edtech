@@ -2,19 +2,17 @@ const express = require('express');
 const router = express.Router();
 const eventController = require('../controllers/eventController');
 const { authenticate, isAdmin } = require('../middleware/authMiddleware');
-const multer = require('multer'); // Import multer
+const multer = require('multer');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Rota para listar todos os eventos (acessível a todos os usuários)
-router.get('/events', eventController.listAllEvents);
-
-// Rota para adicionar um evento (somente admin)
-router.post('/events', authenticate, isAdmin, upload.single('imagem'), eventController.addEvent);
-
-// Rotas para obter, atualizar e excluir eventos
+// Public routes
+router.get('/events', eventController.listEvents);
 router.get('/events/:id', eventController.getEventById);
+
+// Admin-only routes
+router.post('/events', authenticate, isAdmin, upload.single('imagem'), eventController.createEvent);
 router.put('/events/:id', authenticate, isAdmin, upload.single('imagem'), eventController.updateEvent);
 router.delete('/events/:id', authenticate, isAdmin, eventController.deleteEvent);
 

@@ -1,28 +1,67 @@
 const Event = require('../models/Event');
 const { uploadFileToS3, deleteFileFromS3 } = require('../utils/s3Uploader');
 
-const addEvent = async (req, res) => {
-  console.log("Requisição recebida em /api/events", {
-    body: req.body,
-    file: req.file ? "Arquivo recebido" : "Nenhum arquivo",
-    user: req.user
-  });
+// Listar todos os eventos com filtros
+const listEvents = async (req, res) => {
+  try {
+    const {
+      category_id,
+      subcategory_id,
+      start_date,
+      end_date,
+      search
+    } = req.query;
 
-  const { nome, data, horario, categoria, localizacao, link, descricao } = req.body;
-  const imagem = req.file;
+    // Construir objeto de filtros
+    const filters = {};
+    if (category_id) filters.category_id = category_id;
+    if (subcategory_id) filters.subcategory_id = subcategory_id;
+    if (start_date) filters.start_date = start_date;
+    if (end_date) filters.end_date = end_date;
+    if (search) filters.search = search;
 
+    console.log('Filtros aplicados:', filters);
+
+    const events = await Event.getAllEvents(filters);
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('Erro ao listar eventos:', error);
+    res.status(500).json({ message: 'Erro ao listar eventos', error: error.message });
+  }
+};
+
+// Obter evento por ID
+const getEventById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const event = await Event.getEventById(id);
+
+    if (!event) {
+      return res.status(404).json({ message: 'Evento não encontrado' });
+    }
+
+    res.status(200).json(event);
+  } catch (error) {
+    console.error('Erro ao buscar evento por ID:', error);
+    res.status(500).json({ message: 'Erro ao buscar evento', error: error.message });
+  }
+};
+
+// Criar novo evento
+const createEvent = async (req, res) => {
   try {
     // Verificar se o usuário está autenticado
     if (!req.user) {
-      console.log("Usuário não autenticado");
       return res.status(401).json({ message: 'Usuário não autenticado' });
     }
 
     // Verificar se o usuário é admin
     if (req.user.role !== 'admin') {
-      console.log("Usuário não é admin:", req.user.role);
       return res.status(403).json({ message: 'Apenas administradores podem criar eventos' });
     }
+
+    const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id } = req.body;
+    const imagem = req.file;
 
     let photoUrl = null;
     if (imagem) {
@@ -35,27 +74,38 @@ const addEvent = async (req, res) => {
       console.log('Imagem enviada para o S3:', photoUrl);
     }
 
-    // Verificar se os campos necessários estão presentes
-    if (!nome || !data) {
-      console.log("Campos obrigatórios ausentes");
-      return res.status(400).json({ message: 'Nome e data são obrigatórios' });
+    const eventData = {
+      title: req.body.title || nome,
+      description: req.body.description || descricao,
+      start_date: req.body.start_date || data,
+      start_time: req.body.start_time || horario,
+      end_date: req.body.end_date,
+      end_time: req.body.end_time,
+      location: req.body.location || localizacao,
+      event_link: req.body.event_link || link,
+      category_id: category_id,
+      subcategory_id: subcategory_id,
+      photo_url: photoUrl
+    };
+
+    // Validar campos obrigatórios
+    if (!eventData.title || !eventData.start_date) {
+      return res.status(400).json({ message: 'Título e data são obrigatórios' });
     }
 
-    console.log("Tentando criar evento com:", { nome, data, horario, categoria, localizacao, link, descricao, photoUrl });
-    const newEvent = await Event.createEvent(nome, data, horario, categoria, localizacao, link, descricao, photoUrl);
+    console.log("Tentando criar evento com:", eventData);
+    const newEvent = await Event.createEvent(eventData);
     console.log("Evento criado com sucesso:", newEvent);
     res.status(201).json(newEvent);
   } catch (error) {
-    console.error('Erro ao adicionar evento:', error);
-    res.status(500).json({ message: 'Erro ao adicionar evento', error: error.message });
+    console.error('Erro ao criar evento:', error);
+    res.status(500).json({ message: 'Erro ao criar evento', error: error.message });
   }
 };
 
+// Atualizar evento
 const updateEvent = async (req, res) => {
   const { id } = req.params;
-  const { nome, data, horario, categoria, localizacao, link, descricao } = req.body;
-  const imagem = req.file;
-
   try {
     // Verificar se o usuário está autenticado
     if (!req.user) {
@@ -73,6 +123,9 @@ const updateEvent = async (req, res) => {
       return res.status(404).json({ message: 'Evento não encontrado' });
     }
 
+    const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id } = req.body;
+    const imagem = req.file;
+
     let photoUrl = existingEvent.photo_url;
     if (imagem) {
       // Upload da nova imagem para o S3
@@ -88,19 +141,21 @@ const updateEvent = async (req, res) => {
       }
     }
 
-    // Atualizar o evento
-    const updatedEvent = await Event.updateEventInDatabase(
-      id,
-      nome,
-      data,
-      horario,
-      categoria,
-      localizacao,
-      link,
-      descricao,
-      photoUrl
-    );
+    const eventData = {
+      title: req.body.title || nome,
+      description: req.body.description || descricao,
+      start_date: req.body.start_date || data,
+      start_time: req.body.start_time || horario,
+      end_date: req.body.end_date,
+      end_time: req.body.end_time,
+      location: req.body.location || localizacao,
+      event_link: req.body.event_link || link,
+      category_id: category_id,
+      subcategory_id: subcategory_id,
+      photo_url: photoUrl
+    };
 
+    const updatedEvent = await Event.updateEvent(id, eventData);
     res.status(200).json(updatedEvent);
   } catch (error) {
     console.error('Erro ao atualizar evento:', error);
@@ -108,9 +163,9 @@ const updateEvent = async (req, res) => {
   }
 };
 
+// Excluir evento
 const deleteEvent = async (req, res) => {
   const { id } = req.params;
-
   try {
     // Verificar se o usuário está autenticado
     if (!req.user) {
@@ -133,8 +188,7 @@ const deleteEvent = async (req, res) => {
       await deleteFileFromS3(existingEvent.photo_url);
     }
 
-    // Excluir o evento
-    await Event.deleteEventFromDatabase(id);
+    await Event.deleteEvent(id);
     res.status(200).json({ message: 'Evento removido com sucesso' });
   } catch (error) {
     console.error('Erro ao remover evento:', error);
@@ -142,36 +196,10 @@ const deleteEvent = async (req, res) => {
   }
 };
 
-// Manter as outras funções sem alteração
-const listAllEvents = async (req, res) => {
-  try {
-    const events = await Event.getAllEvents();
-    res.status(200).json(events);
-  } catch (error) {
-    console.error('Erro ao listar eventos:', error);
-    res.status(500).json({ message: 'Erro ao listar eventos', error: error.message });
-  }
-};
-
-const getEventById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const event = await Event.getEventById(id);
-    if (event) {
-      res.status(200).json(event);
-    } else {
-      res.status(404).json({ message: 'Evento não encontrado' });
-    }
-  } catch (error) {
-    console.error('Erro ao buscar evento por ID:', error);
-    res.status(500).json({ message: 'Erro ao buscar evento', error: error.message });
-  }
-};
-
 module.exports = {
-  addEvent,
+  listEvents,
+  getEventById,
+  createEvent,
   updateEvent,
-  deleteEvent,
-  listAllEvents,
-  getEventById
+  deleteEvent
 };
