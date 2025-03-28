@@ -27,34 +27,71 @@ const requestPasswordReset = async (req, res) => {
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000/#';
     const resetLink = `${baseUrl}reset-password?token=${token}`;
 
-    const subject = 'Recuperação de Senha';
+    const subject = 'Rota Cultural - Recuperação de Senha';
     const text = `Olá,
     
-    Recebemos uma solicitação para redefinir sua senha. Se você não fez essa solicitação, ignore este email.
-    
+    Recebemos uma solicitação para redefinir sua senha no Rota Cultural. Se você não fez essa solicitação, ignore este email.
+
     Para redefinir sua senha, clique no link abaixo:
     ${resetLink}
-    
+
     O link expira em ${process.env.TOKEN_EXPIRY_HOURS || 1} hora(s).
-    
+
     Atenciosamente,
-    Equipe de Suporte`;
+    Equipe Rota Cultural`;
 
     const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Recuperação de Senha</h2>
-      <p>Olá,</p>
-      <p>Recebemos uma solicitação para redefinir sua senha. Se você não fez essa solicitação, ignore este email.</p>
-      <p>Para redefinir sua senha, clique no botão abaixo:</p>
-      <div style="text-align: center; margin: 25px 0;">
-        <a href="${resetLink}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-          Redefinir Senha
-        </a>
-      </div>
-      <p>Ou use este link: <a href="${resetLink}">${resetLink}</a></p>
-      <p>O link expira em ${process.env.TOKEN_EXPIRY_HOURS || 1} hora(s).</p>
-      <p>Atenciosamente,<br>Equipe de Suporte</p>
-    </div>`;
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Redefinição de Senha - Rota Cultural</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <div style="background: linear-gradient(45deg, #439DFE, #8000FF); padding: 30px 20px; text-align: center; color: white;">
+                <div style="font-weight: bold; font-size: 32px; letter-spacing: 2px; margin-bottom: 10px;">
+                    <span style="color: #fff;">R</span>OTA<span style="color: #8000FF;">CULTURAL</span>
+                </div>
+                <h1 style="margin: 10px 0; font-size: 24px;">Recuperação de Senha</h1>
+            </div>
+
+            <div style="padding: 30px;">
+                <p>Olá,</p>
+                <p>Recebemos uma solicitação para redefinir sua senha no <strong>Rota Cultural</strong>.</p>
+                <p>Para continuar explorando os melhores eventos culturais da cidade, clique no botão abaixo para criar uma nova senha:</p>
+
+                <div style="text-align: center; margin: 25px 0;">
+                    <a href="${resetLink}" style="display: inline-block; background: linear-gradient(45deg, #439DFE, #8000FF); color: white; text-decoration: none; padding: 12px 30px; border-radius: 4px; font-weight: bold;">
+                        REDEFINIR MINHA SENHA
+                    </a>
+                </div>
+                
+                <p>Ou use este link: <a href="${resetLink}" style="color: #439DFE; text-decoration: underline;">${resetLink}</a></p>
+                
+                <p>Este link expirará em ${process.env.TOKEN_EXPIRY_HOURS || 1} hora(s) por questões de segurança.</p>
+                
+                <p>Se você não solicitou esta redefinição, pode ignorar este email com segurança e sua senha permanecerá a mesma.</p>
+                
+                <p>Estamos ansiosos para te ajudar a descobrir os próximos eventos culturais da sua cidade!</p>
+                
+                <p>Atenciosamente,<br>
+                Equipe Rota Cultural</p>
+            </div>
+            
+            <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 14px; color: #666666;">
+                <p style="margin: 5px 0;">© ${new Date().getFullYear()} Rota Cultural - Todos os direitos reservados</p>
+                <div style="margin: 15px 0;">
+                    <span>Facebook</span> |
+                    <span>Instagram</span> |
+                    <span>Twitter</span>
+                </div>
+                <p style="margin: 5px 0;">Se precisar de ajuda, entre em contato: <a href="mailto:suporte@rotacultural.com" style="color: #439DFE;">suporte@rotacultural.com</a></p>
+            </div>
+        </div>
+    </body>
+    </html>`;
 
     await sendEmail(email, subject, text, html);
 
