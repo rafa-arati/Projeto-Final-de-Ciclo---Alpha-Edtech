@@ -19,7 +19,8 @@ body {
 .app-wrapper {
     width: 100%;
     height: 100vh;
-    overflow-y: auto; /* Barra de rolagem aqui */
+    overflow-y: auto;
+    /* Barra de rolagem aqui */
 }
 
 /* Personalização da barra de rolagem */
@@ -39,8 +40,10 @@ body {
 /* ===== CONTAINER PRINCIPAL ===== */
 .app-container {
     width: 100%;
-    max-width: 1000px; /* Largura máxima aumentada */
-    margin: 0 auto; /* Centraliza o container */
+    max-width: 1000px;
+    /* Largura máxima aumentada */
+    margin: 0 auto;
+    /* Centraliza o container */
     display: flex;
     flex-direction: column;
     background-color: #000;
@@ -184,7 +187,7 @@ body {
     left: 0;
     right: 0;
     padding: 15px;
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
 }
 
 .event-title {
@@ -266,6 +269,10 @@ body {
 
 /* ===== ESPAÇO NO FINAL DO ÚLTIMO CARROSSEL ===== */
 .carousel-div {
-    margin-bottom: 100px; 
+    margin-bottom: 100px;
 }
 
+.filter-icon,
+#filter-btn {
+    cursor: pointer;
+}
