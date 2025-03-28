@@ -97,35 +97,28 @@ const createEvent = async (eventData) => {
   } = eventData;
 
   try {
-    // Adaptar para usar tanto nomes antigos quanto novos
+    // Adaptar para usar apenas os campos que existem na tabela
     const query = `
       INSERT INTO events (
         event_name, description, event_date, event_time, 
-        category, location, category_id, 
-        subcategory_id, photo_url, event_link
+        location, category_id, subcategory_id, photo_url, event_link
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
 
-    // Obter o nome da categoria para o campo category
-    let categoryName = "Sem categoria";
-    if (category_id) {
-      const catResult = await pool.query('SELECT name FROM categories WHERE id = $1', [category_id]);
-      if (catResult.rows.length > 0) {
-        categoryName = catResult.rows[0].name;
-      }
-    }
+    // Tratar valores vazios ou nulos para IDs
+    const parsedCategoryId = category_id === "" || category_id === undefined ? null : parseInt(category_id, 10);
+    const parsedSubcategoryId = subcategory_id === "" || subcategory_id === undefined ? null : parseInt(subcategory_id, 10);
 
     const values = [
       title || "",
       description || "",
       start_date || null,
       start_time || null,
-      categoryName,
       location || "",
-      category_id,
-      subcategory_id,
+      parsedCategoryId,
+      parsedSubcategoryId,
       photo_url,
       event_link
     ];
@@ -138,7 +131,6 @@ const createEvent = async (eventData) => {
   }
 };
 
-// Atualizar evento existente
 const updateEvent = async (id, eventData) => {
   const {
     title,
@@ -155,14 +147,9 @@ const updateEvent = async (id, eventData) => {
   } = eventData;
 
   try {
-    // Obter o nome da categoria para o campo category
-    let categoryName = "Sem categoria";
-    if (category_id) {
-      const catResult = await pool.query('SELECT name FROM categories WHERE id = $1', [category_id]);
-      if (catResult.rows.length > 0) {
-        categoryName = catResult.rows[0].name;
-      }
-    }
+    // Tratar valores vazios ou nulos para IDs
+    const parsedCategoryId = category_id === "" || category_id === undefined ? null : parseInt(category_id, 10);
+    const parsedSubcategoryId = subcategory_id === "" || subcategory_id === undefined ? null : parseInt(subcategory_id, 10);
 
     const query = `
       UPDATE events
@@ -170,13 +157,12 @@ const updateEvent = async (id, eventData) => {
           description = $2,
           event_date = $3,
           event_time = $4,
-          category = $5,
-          location = $6,
-          category_id = $7,
-          subcategory_id = $8,
-          photo_url = $9,
-          event_link = $10
-      WHERE id = $11
+          location = $5,
+          category_id = $6,
+          subcategory_id = $7,
+          photo_url = $8,
+          event_link = $9
+      WHERE id = $10
       RETURNING *
     `;
 
@@ -185,10 +171,9 @@ const updateEvent = async (id, eventData) => {
       description || "",
       start_date || null,
       start_time || null,
-      categoryName,
       location || "",
-      category_id,
-      subcategory_id,
+      parsedCategoryId,
+      parsedSubcategoryId,
       photo_url,
       event_link,
       id
@@ -201,7 +186,6 @@ const updateEvent = async (id, eventData) => {
     throw error;
   }
 };
-
 // Excluir evento
 const deleteEvent = async (id) => {
   try {

@@ -238,6 +238,11 @@ function updateSubcategories() {
 // Carrega evento para edição
 async function loadEventForEditing(eventId) {
   try {
+    // Primeiro, garantir que as categorias foram carregadas
+    if (!categorias || categorias.length === 0) {
+      await loadCategoriesAndSubcategories();
+    }
+
     const evento = await getEventById(eventId);
     if (!evento) {
       throw new Error('Evento não encontrado');
@@ -247,27 +252,17 @@ async function loadEventForEditing(eventId) {
     document.getElementById('titulo').value = evento.title || evento.event_name || '';
 
     // Formatar data para o formato do input date (YYYY-MM-DD)
-    if (evento.start_date) {
-      const date = new Date(evento.start_date);
+    if (evento.start_date || evento.event_date) {
+      const dateStr = evento.start_date || evento.event_date;
+      const date = new Date(dateStr);
       const formattedDate = date.toISOString().split('T')[0];
       document.getElementById('data').value = formattedDate;
     }
 
     // Preencher horário
-    document.getElementById('horario').value = evento.start_time || '';
+    document.getElementById('horario').value = evento.start_time || evento.event_time || '';
 
-    // Selecionar categoria
-    if (evento.category_id) {
-      document.getElementById('categoria').value = evento.category_id;
-      updateSubcategories(); // Atualizar subcategorias com base na categoria
-
-      // Selecionar subcategoria se existir
-      if (evento.subcategory_id) {
-        document.getElementById('subcategoria').value = evento.subcategory_id;
-      }
-    }
-
-    // Preencher outros campos
+    // Outros campos que não dependem de categorias
     document.getElementById('localizacao').value = evento.location || '';
     document.getElementById('link').value = evento.event_link || '';
     document.getElementById('descricao').value = evento.description || '';
@@ -278,13 +273,49 @@ async function loadEventForEditing(eventId) {
       imagemPrevia.src = evento.photo_url;
       imagemPrevia.style.display = 'block';
     }
+
+    // Selecionar categoria
+    const categoriaSelect = document.getElementById('categoria');
+    if (evento.category_id) {
+      console.log('Selecionando categoria ID:', evento.category_id);
+      categoriaSelect.value = evento.category_id;
+
+      // Atualizamos as subcategorias
+      updateSubcategories();
+
+      // Esperamos um momento para garantir que a UI atualizou
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Selecionar subcategoria se existir
+      if (evento.subcategory_id) {
+        console.log('Tentando selecionar subcategoria ID:', evento.subcategory_id);
+        const subcategoriaSelect = document.getElementById('subcategoria');
+
+        // Verificar se a subcategoria está disponível no select
+        const subcategoriaExists = Array.from(subcategoriaSelect.options).some(
+          option => option.value === evento.subcategory_id.toString()
+        );
+
+        if (subcategoriaExists) {
+          subcategoriaSelect.value = evento.subcategory_id;
+          console.log('Subcategoria selecionada com sucesso');
+        } else {
+          console.warn('Subcategoria não encontrada no select:', evento.subcategory_id);
+          // Verificar se a subcategoria pertence à categoria
+          const selectedCategory = categorias.find(c => c.id.toString() === evento.category_id.toString());
+          if (selectedCategory) {
+            console.log('Subcategorias disponíveis:', selectedCategory.subcategories);
+          }
+        }
+      }
+    }
+
   } catch (error) {
     console.error('Erro ao carregar evento para edição:', error);
     showMessage('Não foi possível carregar os dados do evento para edição');
     setTimeout(() => navigateTo('events'), 2000);
   }
 }
-
 // Manipula o envio do formulário
 async function handleSubmit(form, eventId) {
   try {

@@ -77,3 +77,6 @@ ON CONFLICT (name, category_id) DO NOTHING;
 -- Este comando preencherá o category_id com base na coluna category existente
 UPDATE events SET category_id = (SELECT id FROM categories WHERE categories.name = events.category)
 WHERE category_id IS NULL AND category IS NOT NULL;
+
+ALTER TABLE events
+DROP COLUMN category;
