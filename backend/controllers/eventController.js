@@ -1,5 +1,23 @@
 const Event = require('../models/Event');
 
+const sanitizeVideoUrls = (urls) => {
+  const allowedDomains = [
+    'youtube.com',
+    'youtu.be',
+    'tiktok.com',
+    'vm.tiktok.com'
+  ];
+
+  return urls.filter(url => {
+    try {
+      const urlObj = new URL(url);
+      return allowedDomains.some(domain => urlObj.hostname.endsWith(domain));
+    } catch {
+      return false;
+    }
+  }).slice(0, 3); // Limita a 3 URLs
+};
+
 const addEvent = async (req, res) => {
   console.log("Requisição recebida em /api/events", {
     body: req.body,
@@ -8,44 +26,57 @@ const addEvent = async (req, res) => {
   });
 
   const { nome, data, horario, categoria, localizacao, link, descricao } = req.body;
-  const imagem = req.file; // Informações do arquivo enviado
+  const imagem = req.file;
 
   try {
-    // Verificar se o usuário está autenticado
-    if (!req.user) {
-      console.log("Usuário não autenticado");
-      return res.status(401).json({ message: 'Usuário não autenticado' });
+    // Validação de usuário
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Acesso não autorizado' });
     }
 
-    // Verificar se o usuário é admin
-    if (req.user.role !== 'admin') {
-      console.log("Usuário não é admin:", req.user.role);
-      return res.status(403).json({ message: 'Apenas administradores podem criar eventos' });
+    // Processar URLs de vídeo
+    const rawUrls = Array.isArray(req.body.video_urls) 
+      ? req.body.video_urls 
+      : JSON.parse(req.body.video_urls || '[]');
+      
+    const sanitizedUrls = sanitizeVideoUrls(rawUrls);
+
+    if (rawUrls.length !== sanitizedUrls.length) {
+      return res.status(400).json({ message: 'Contém links inválidos ou não permitidos' });
     }
 
+    // Processar imagem
     let photoUrl = null;
     if (imagem) {
-      // Aqui você precisará implementar a lógica para salvar a imagem
-      // Por exemplo, você pode usar um serviço de armazenamento em nuvem
-      // ou salvar o arquivo localmente e armazenar o caminho/URL.
-      // Para este exemplo, vamos apenas simular uma URL.
       photoUrl = `/uploads/${imagem.originalname}`;
-      console.log('Arquivo de imagem recebido:', imagem); // Para depuração
+      console.log('Arquivo de imagem processado:', imagem.originalname);
     }
 
-    // Verificar se os campos necessários estão presentes
+    // Validar campos obrigatórios
     if (!nome || !data) {
-      console.log("Campos obrigatórios ausentes");
       return res.status(400).json({ message: 'Nome e data são obrigatórios' });
     }
 
-    console.log("Tentando criar evento com:", { nome, data, horario, categoria, localizacao, link, descricao, photoUrl });
-    const newEvent = await Event.createEvent(nome, data, horario, categoria, localizacao, link, descricao, photoUrl);
-    console.log("Evento criado com sucesso:", newEvent);
+    // Criar evento
+    const newEvent = await Event.createEvent(
+      nome, 
+      data, 
+      horario, 
+      categoria, 
+      localizacao, 
+      link, 
+      descricao, 
+      photoUrl,
+      sanitizedUrls
+    );
+
     res.status(201).json(newEvent);
   } catch (error) {
     console.error('Erro ao adicionar evento:', error);
-    res.status(500).json({ message: 'Erro ao adicionar evento', error: error.message });
+    res.status(500).json({ 
+      message: 'Erro ao adicionar evento',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
   }
 };
 
@@ -55,29 +86,31 @@ const updateEvent = async (req, res) => {
   const imagem = req.file;
 
   try {
-    // Verificar se o usuário está autenticado
-    if (!req.user) {
-      return res.status(401).json({ message: 'Usuário não autenticado' });
+    // Validação de usuário
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Acesso não autorizado' });
     }
 
-    // Verificar se o usuário é admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Apenas administradores podem editar eventos' });
-    }
-
-    // Verificar se o evento existe
+    // Verificar existência do evento
     const existingEvent = await Event.getEventById(id);
     if (!existingEvent) {
       return res.status(404).json({ message: 'Evento não encontrado' });
     }
 
+    // Processar URLs de vídeo
+    const rawUrls = Array.isArray(req.body.video_urls)
+      ? req.body.video_urls
+      : JSON.parse(req.body.video_urls || '[]');
+      
+    const sanitizedUrls = sanitizeVideoUrls(rawUrls);
+
+    // Processar imagem
     let photoUrl = existingEvent.photo_url;
     if (imagem) {
-      // Lógica para processar a nova imagem 
       photoUrl = `/uploads/${imagem.originalname}`;
     }
 
-    // Atualizar o evento
+    // Atualizar evento
     const updatedEvent = await Event.updateEventInDatabase(
       id,
       nome,
@@ -87,13 +120,17 @@ const updateEvent = async (req, res) => {
       localizacao,
       link,
       descricao,
-      photoUrl
+      photoUrl,
+      sanitizedUrls // Adicionado parâmetro de vídeos
     );
 
     res.status(200).json(updatedEvent);
   } catch (error) {
     console.error('Erro ao atualizar evento:', error);
-    res.status(500).json({ message: 'Erro ao atualizar evento', error: error.message });
+    res.status(500).json({ 
+      message: 'Erro ao atualizar evento',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
   }
 };
 
@@ -101,55 +138,53 @@ const deleteEvent = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Verificar se o usuário está autenticado
-    if (!req.user) {
-      return res.status(401).json({ message: 'Usuário não autenticado' });
+    // Validação de usuário
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Acesso não autorizado' });
     }
 
-    // Verificar se o usuário é admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Apenas administradores podem excluir eventos' });
-    }
-
-    // Verificar se o evento existe
+    // Verificar existência do evento
     const existingEvent = await Event.getEventById(id);
     if (!existingEvent) {
       return res.status(404).json({ message: 'Evento não encontrado' });
     }
 
-    // Excluir o evento
+    // Excluir evento
     await Event.deleteEventFromDatabase(id);
     res.status(200).json({ message: 'Evento removido com sucesso' });
   } catch (error) {
     console.error('Erro ao remover evento:', error);
-    res.status(500).json({ message: 'Erro ao remover evento', error: error.message });
+    res.status(500).json({ 
+      message: 'Erro ao remover evento',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
   }
 };
 
-// Função para listar todos os eventos
 const listAllEvents = async (req, res) => {
   try {
     const events = await Event.getAllEvents();
     res.status(200).json(events);
   } catch (error) {
-    console.error('Erro ao listar eventos:', error); // Log detalhado do erro
-    res.status(500).json({ message: 'Erro ao listar eventos', error: error.message });
+    console.error('Erro ao listar eventos:', error);
+    res.status(500).json({ 
+      message: 'Erro ao listar eventos',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
   }
 };
 
-// Função para obter um evento por ID
 const getEventById = async (req, res) => {
   const { id } = req.params;
   try {
     const event = await Event.getEventById(id);
-    if (event) {
-      res.status(200).json(event);
-    } else {
-      res.status(404).json({ message: 'Evento não encontrado' });
-    }
+    event ? res.status(200).json(event) : res.status(404).json({ message: 'Evento não encontrado' });
   } catch (error) {
-    console.error('Erro ao buscar evento por ID:', error);
-    res.status(500).json({ message: 'Erro ao buscar evento', error: error.message });
+    console.error('Erro ao buscar evento:', error);
+    res.status(500).json({ 
+      message: 'Erro ao buscar evento',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
   }
 };
 

@@ -234,3 +234,43 @@ body {
     animation: fadeOut 0.5s forwards;
     animation-delay: 3s;
 }
+
+/* Adicione estas regras */
+.video-input-section {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #1a1a1a;
+    border-radius: 8px;
+  }
+  
+  .video-input-section label {
+    display: block;
+    margin-bottom: 0.8rem;
+    color: #8000FF;
+    font-weight: 500;
+  }
+  
+  #video-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .video-url {
+    width: 100%;
+    padding: 0.8rem;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #fff;
+  }
+  
+  #add-video-btn {
+    margin-top: 1rem;
+    background: #333 !important;
+    padding: 0.5rem 1rem;
+  }
+  
+  #add-video-btn:hover {
+    background: #444 !important;
+  }
