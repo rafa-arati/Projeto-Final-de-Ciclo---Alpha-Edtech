@@ -1,3 +1,4 @@
+const Like = require('../models/Likes');
 const Event = require('../models/Event');
 const { uploadFileToS3, deleteFileFromS3 } = require('../utils/s3Uploader');
 
@@ -40,7 +41,24 @@ const getEventById = async (req, res) => {
       return res.status(404).json({ message: 'Evento não encontrado' });
     }
 
-    res.status(200).json(event);
+    const likeCount = await Like.getLikeCount(id);
+    let userHasLiked = null; 
+    // Verifica se há usuário autenticado NAQUELA REQUISIÇÃO ESPECÍFICA
+    console.log(`[getEventById] Verificando req.user para evento ${id}:`, req.user ? `ID ${req.user.id}` : 'Nenhum req.user'); 
+    if (req.user) { 
+        userHasLiked = await Like.checkUserLike(req.user.id, id);
+        console.log(`[getEventById] Status do like para usuário ${req.user.id}: ${userHasLiked}`);
+    }
+
+    const eventDetails = {
+        ...event, 
+        likeCount: likeCount,
+        userHasLiked: userHasLiked // null se não logado, true/false se logado
+    };
+
+    console.log(`[getEventById] Enviando detalhes:`, JSON.stringify(eventDetails, null, 2));
+    res.status(200).json(eventDetails);
+
   } catch (error) {
     console.error('Erro ao buscar evento por ID:', error);
     res.status(500).json({ message: 'Erro ao buscar evento', error: error.message });

@@ -1,6 +1,7 @@
-import { getEventById } from '../modules/events-api.js';
+import { getEventById, toggleLikeEvent } from '../modules/events-api.js';
 import { showMessage } from '../modules/utils.js';
 import { navigateTo } from '../modules/router.js';
+import { getLoggedInUser } from '../modules/store.js';
 
 export default function renderEventDetails(queryParams) {
   const appContainer = document.getElementById('app');
@@ -39,6 +40,19 @@ export default function renderEventDetails(queryParams) {
                 <p id="event-description"></p>
               </section>
 
+              <section class="event-interaction">
+                <div class="detail-item like-section">
+                  <button id="like-button" class="icon-button like-button" aria-label="Curtir evento">
+                      <svg class="icon heart-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                  </button>
+                  <span id="like-count" class="like-count">0</span>
+                  </div>
+                  <h3 class="section-title">Curtidas</h3> 
+                </div>
+              </section>
+
               <div class="event-details">
                 <div class="detail-item">
                   <h3 class="section-title">Localização</h3>
@@ -69,6 +83,7 @@ export default function renderEventDetails(queryParams) {
 async function loadEventDetails(eventId) {
   try {
     const event = await getEventById(eventId);
+    console.log("Dados do evento recebidos em loadEventDetails:", JSON.stringify(event, null, 2));
     
     if (!event) {
       throw new Error('Evento não encontrado');
@@ -90,6 +105,39 @@ async function loadEventDetails(eventId) {
       year: 'numeric'
     }) + ' • ' + (event.event_time || '');
 
+    const likeCountSpan = document.getElementById('like-count');
+        const likeButton = document.getElementById('like-button');
+
+        if (likeCountSpan) {
+            likeCountSpan.textContent = event.likeCount !== undefined ? event.likeCount : 0;
+        }
+
+        if (likeButton) {
+            const user = getLoggedInUser(); 
+            if (user) {
+                // ----> ESTA PARTE É RESPONSÁVEL PELO ESTADO INICIAL <----
+                if (event.userHasLiked === true) { // Verifica o status vindo da API
+                    likeButton.classList.add('active'); // Adiciona a classe se já curtiu
+                    likeButton.setAttribute('aria-pressed', 'true');
+                } else {
+                    likeButton.classList.remove('active'); // Remove a classe se não curtiu
+                    likeButton.setAttribute('aria-pressed', 'false');
+                }
+
+                // Remove listener antigo antes de adicionar um novo (previne múltiplos listeners)
+                likeButton.replaceWith(likeButton.cloneNode(true));
+                document.getElementById('like-button').addEventListener('click', () => handleLikeClick(eventId));
+
+
+            } else {
+                // Usuário não logado: desabilita ou muda comportamento
+                likeButton.disabled = true; 
+                likeButton.style.opacity = 0.5; // Indica visualmente que está desabilitado
+                likeButton.title = "Faça login para curtir"; 
+                // Ou: likeButton.addEventListener('click', () => navigateTo('login'));
+            }
+        }
+
     // Carregar imagem
     const img = document.getElementById('event-image');
     if (event.photo_url) {
@@ -103,6 +151,42 @@ async function loadEventDetails(eventId) {
     console.error('Erro:', error);
     showMessage(error.message || 'Erro ao carregar detalhes do evento');
     navigateTo('events');
+  }
+}
+
+async function handleLikeClick(eventId) {
+  const likeButton = document.getElementById('like-button');
+  const likeCountSpan = document.getElementById('like-count');
+
+  if (!likeButton || !likeCountSpan) return;
+
+  // Opcional: Desabilitar botão durante a requisição
+  likeButton.disabled = true; 
+  likeButton.style.opacity = 0.7;
+
+  try {
+      const result = await toggleLikeEvent(eventId); // Chama a API
+
+      // Atualiza a UI com a resposta da API
+      likeCountSpan.textContent = result.likeCount;
+      if (result.userHasLiked) {
+          likeButton.classList.add('active');
+          likeButton.setAttribute('aria-pressed', 'true');
+      } else {
+          likeButton.classList.remove('active');
+          likeButton.setAttribute('aria-pressed', 'false');
+      }
+
+  } catch (error) {
+      console.error("Erro no handleLikeClick:", error);
+      showMessage(error.message || 'Erro ao processar o like. Tente novamente.');
+      // Opcional: reverter a aparência do botão se a API falhar
+  } finally {
+      // Reabilitar botão após a requisição (mesmo se falhar)
+       if (getLoggedInUser()) { // Só reabilita se ainda estiver logado
+           likeButton.disabled = false;
+           likeButton.style.opacity = 1;
+       }
   }
 }
 
