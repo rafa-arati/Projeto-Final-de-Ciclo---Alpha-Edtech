@@ -1,5 +1,20 @@
 const pool = require('../config/db');
 
+// Expressão regular para validar URLs de vídeo
+const VIDEO_REGEX = {
+  youtube: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|shorts\/)?([a-zA-Z0-9_-]{11})/,
+  tiktok: /^(https?:\/\/)?(www\.|vm\.)?tiktok\.com\/(@[\w.-]+\/video\/\d+|embed\/v2\/\d+)/
+};
+
+// Função para validar URLs de vídeo
+const validateVideoUrls = (urls) => {
+  if (!urls) return true;
+  return urls.every(url =>
+    VIDEO_REGEX.youtube.test(url) ||
+    VIDEO_REGEX.tiktok.test(url)
+  );
+};
+
 // Obter todos os eventos com filtros opcionais
 const getAllEvents = async (filters = {}) => {
   try {
@@ -104,7 +119,8 @@ const createEvent = async (eventData) => {
     subcategory_id,
     photo_url,
     event_link,
-    creator_id
+    creator_id,
+    video_urls = [] // Adicionado suporte para URLs de vídeo
   } = eventData;
 
   try {
@@ -112,15 +128,20 @@ const createEvent = async (eventData) => {
     const query = `
       INSERT INTO events (
         event_name, description, event_date, event_time, 
-        location, category_id, subcategory_id, photo_url, event_link, creator_id
+        location, category_id, subcategory_id, photo_url, event_link, creator_id, video_urls
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
     `;
 
     // Tratar valores vazios ou nulos para IDs
     const parsedCategoryId = category_id === "" || category_id === undefined ? null : parseInt(category_id, 10);
     const parsedSubcategoryId = subcategory_id === "" || subcategory_id === undefined ? null : parseInt(subcategory_id, 10);
+
+    // Validar URLs de vídeo
+    if (video_urls.length > 0 && !validateVideoUrls(video_urls)) {
+      throw new Error('URLs de vídeo inválidas. São aceitos apenas links do YouTube e TikTok.');
+    }
 
     const values = [
       title || "",
@@ -132,7 +153,8 @@ const createEvent = async (eventData) => {
       parsedSubcategoryId,
       photo_url,
       event_link,
-      creator_id // Adicionar o ID do criador
+      creator_id,
+      video_urls
     ];
 
     const result = await pool.query(query, values);
@@ -143,6 +165,7 @@ const createEvent = async (eventData) => {
   }
 };
 
+// Atualizar evento
 const updateEvent = async (id, eventData) => {
   const {
     title,
@@ -155,13 +178,19 @@ const updateEvent = async (id, eventData) => {
     category_id,
     subcategory_id,
     photo_url,
-    event_link
+    event_link,
+    video_urls = [] // Adicionado suporte para URLs de vídeo
   } = eventData;
 
   try {
     // Tratar valores vazios ou nulos para IDs
     const parsedCategoryId = category_id === "" || category_id === undefined ? null : parseInt(category_id, 10);
     const parsedSubcategoryId = subcategory_id === "" || subcategory_id === undefined ? null : parseInt(subcategory_id, 10);
+
+    // Validar URLs de vídeo
+    if (video_urls.length > 0 && !validateVideoUrls(video_urls)) {
+      throw new Error('URLs de vídeo inválidas. São aceitos apenas links do YouTube e TikTok.');
+    }
 
     const query = `
       UPDATE events
@@ -174,8 +203,9 @@ const updateEvent = async (id, eventData) => {
           subcategory_id = $7,
           photo_url = $8,
           event_link = $9,
+          video_urls = $10,
           updated_at = NOW()
-      WHERE id = $10
+      WHERE id = $11
       RETURNING *
     `;
 
@@ -189,6 +219,7 @@ const updateEvent = async (id, eventData) => {
       parsedSubcategoryId,
       photo_url,
       event_link,
+      video_urls,
       id
     ];
 
@@ -221,5 +252,6 @@ module.exports = {
   getEventById,
   createEvent,
   updateEvent,
-  deleteEvent
+  deleteEvent,
+  validateVideoUrls
 };

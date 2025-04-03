@@ -1,0 +1,225 @@
+openapi: 3.0.0
+info:
+  title: Rota Cultural API
+  version: 1.0.0
+  description: API para gerenciamento de eventos culturais
+servers:
+  - url: http://localhost:3000/api
+    description: Servidor Local
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        event_name:
+          type: string
+        event_date:
+          type: string
+          format: date
+        category:
+          type: string
+        location:
+          type: string
+        video_urls:
+          type: array
+          items:
+            type: string
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+  
+  securitySchemes:
+    JWT:
+      type: apiKey
+      in: cookie
+      name: token
+    GoogleOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: /api/auth/google
+          tokenUrl: /api/auth/google/callback
+          scopes:
+            profile: acesso ao perfil
+            email: acesso ao email
+
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Registrar novo usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+              example:
+                name: João Silva
+                email: joao@example.com
+                password: Senha@123
+      responses:
+        201:
+          description: Usuário registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login de usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              example:
+                email: joao@example.com
+                password: Senha@123
+      responses:
+        200:
+          description: Login bem-sucedido
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: token=abcde12345; Path=/; HttpOnly
+        401:
+          description: Credenciais inválidas
+
+  /events:
+    get:
+      tags: [Events]
+      summary: Listar todos os eventos
+      responses:
+        200:
+          description: Lista de eventos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+    post:
+      tags: [Events]
+      summary: Criar novo evento (Admin)
+      security:
+        - JWT: []
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                data:
+                  type: string
+                  format: date
+                imagem:
+                  type: string
+                  format: binary
+              example:
+                nome: Festival de Jazz
+                data: 2024-07-20
+      responses:
+        201:
+          description: Evento criado
+        403:
+          description: Acesso negado
+
+  /events/{id}:
+    get:
+      tags: [Events]
+      summary: Obter detalhes de um evento
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Detalhes do evento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    delete:
+      tags: [Events]
+      summary: Excluir evento (Admin)
+      security:
+        - JWT: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Evento excluído
+        404:
+          description: Evento não encontrado
+
+  /auth/google:
+    get:
+      tags: [Authentication]
+      summary: Autenticação com Google
+      description: Redireciona para o fluxo OAuth do Google
+      responses:
+        302:
+          description: Redirecionamento para Google
+
+  /auth/google/callback:
+    get:
+      tags: [Authentication]
+      summary: Callback do Google OAuth
+      responses:
+        302:
+          description: Redirecionamento para o frontend
