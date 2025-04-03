@@ -1,14 +1,15 @@
-// backend/models/Event.js
 const pool = require('../config/db');
 
 // Obter todos os eventos com filtros opcionais
 const getAllEvents = async (filters = {}) => {
   try {
     let query = `
-      SELECT e.*, c.name as category_name, s.name as subcategory_name
+      SELECT e.*, c.name as category_name, s.name as subcategory_name, 
+             u.name as creator_name, u.username as creator_username
       FROM events e
       LEFT JOIN categories c ON e.category_id = c.id
       LEFT JOIN subcategories s ON e.subcategory_id = s.id
+      LEFT JOIN users u ON e.creator_id = u.id
       WHERE 1=1
     `;
 
@@ -32,27 +33,34 @@ const getAllEvents = async (filters = {}) => {
     // Aplicar filtro de data inicial
     if (filters.start_date) {
       paramCount++;
-      query += ` AND e.event_date >= $${paramCount}`; // Usando event_date em vez de start_date
+      query += ` AND e.event_date >= $${paramCount}`;
       values.push(filters.start_date);
     }
 
     // Aplicar filtro de data final
     if (filters.end_date) {
       paramCount++;
-      query += ` AND e.event_date <= $${paramCount}`; // Usando event_date em vez de start_date
+      query += ` AND e.event_date <= $${paramCount}`;
       values.push(filters.end_date);
     }
 
     // Busca por título ou descrição
     if (filters.search) {
       paramCount++;
-      query += ` AND (e.event_name ILIKE $${paramCount} OR e.description ILIKE $${paramCount})`; // Usando event_name em vez de title
+      query += ` AND (e.event_name ILIKE $${paramCount} OR e.description ILIKE $${paramCount})`;
       const searchTerm = `%${filters.search}%`;
       values.push(searchTerm);
     }
 
+    // Filtrar por criador (para eventos de usuário premium)
+    if (filters.creator_id) {
+      paramCount++;
+      query += ` AND e.creator_id = $${paramCount}`;
+      values.push(filters.creator_id);
+    }
+
     // Ordenar por data
-    query += ` ORDER BY e.event_date ASC`; // Usando event_date em vez de start_date
+    query += ` ORDER BY e.event_date ASC`;
 
     const result = await pool.query(query, values);
     return result.rows;
@@ -66,10 +74,12 @@ const getAllEvents = async (filters = {}) => {
 const getEventById = async (id) => {
   try {
     const query = `
-      SELECT e.*, c.name as category_name, s.name as subcategory_name
+      SELECT e.*, c.name as category_name, s.name as subcategory_name,
+             u.name as creator_name, u.username as creator_username, u.role as creator_role
       FROM events e
       LEFT JOIN categories c ON e.category_id = c.id
       LEFT JOIN subcategories s ON e.subcategory_id = s.id
+      LEFT JOIN users u ON e.creator_id = u.id
       WHERE e.id = $1
     `;
     const result = await pool.query(query, [id]);
@@ -93,7 +103,8 @@ const createEvent = async (eventData) => {
     category_id,
     subcategory_id,
     photo_url,
-    event_link
+    event_link,
+    creator_id
   } = eventData;
 
   try {
@@ -101,9 +112,9 @@ const createEvent = async (eventData) => {
     const query = `
       INSERT INTO events (
         event_name, description, event_date, event_time, 
-        location, category_id, subcategory_id, photo_url, event_link
+        location, category_id, subcategory_id, photo_url, event_link, creator_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
 
@@ -120,7 +131,8 @@ const createEvent = async (eventData) => {
       parsedCategoryId,
       parsedSubcategoryId,
       photo_url,
-      event_link
+      event_link,
+      creator_id // Adicionar o ID do criador
     ];
 
     const result = await pool.query(query, values);
@@ -161,7 +173,8 @@ const updateEvent = async (id, eventData) => {
           category_id = $6,
           subcategory_id = $7,
           photo_url = $8,
-          event_link = $9
+          event_link = $9,
+          updated_at = NOW()
       WHERE id = $10
       RETURNING *
     `;
@@ -186,9 +199,14 @@ const updateEvent = async (id, eventData) => {
     throw error;
   }
 };
+
 // Excluir evento
 const deleteEvent = async (id) => {
   try {
+    // Primeiro excluir os QR codes relacionados ao evento
+    await pool.query('DELETE FROM event_qr_codes WHERE event_id = $1', [id]);
+
+    // Depois excluir o evento
     const query = 'DELETE FROM events WHERE id = $1 RETURNING *';
     const result = await pool.query(query, [id]);
     return result.rows[0];

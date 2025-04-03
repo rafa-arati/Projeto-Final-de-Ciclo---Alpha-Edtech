@@ -9,7 +9,8 @@ const listEvents = async (req, res) => {
       subcategory_id,
       start_date,
       end_date,
-      search
+      search,
+      creator_id
     } = req.query;
 
     // Construir objeto de filtros
@@ -19,6 +20,7 @@ const listEvents = async (req, res) => {
     if (start_date) filters.start_date = start_date;
     if (end_date) filters.end_date = end_date;
     if (search) filters.search = search;
+    if (creator_id) filters.creator_id = creator_id;
 
     console.log('Filtros aplicados:', filters);
 
@@ -26,6 +28,27 @@ const listEvents = async (req, res) => {
     res.status(200).json(events);
   } catch (error) {
     console.error('Erro ao listar eventos:', error);
+    res.status(500).json({ message: 'Erro ao listar eventos', error: error.message });
+  }
+};
+
+// Listar eventos criados pelo usuário atual
+const listMyEvents = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Usuário não autenticado' });
+    }
+
+    // O usuário admin pode ver todos os eventos, usuários premium apenas os seus
+    const filters = {};
+    if (req.user.role === 'premium') {
+      filters.creator_id = req.user.id;
+    }
+
+    const events = await Event.getAllEvents(filters);
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('Erro ao listar eventos do usuário:', error);
     res.status(500).json({ message: 'Erro ao listar eventos', error: error.message });
   }
 };
@@ -55,9 +78,11 @@ const createEvent = async (req, res) => {
       return res.status(401).json({ message: 'Usuário não autenticado' });
     }
 
-    // Verificar se o usuário é admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Apenas administradores podem criar eventos' });
+    // Verificar se o usuário tem permissão (admin ou premium)
+    if (req.user.role !== 'admin' && req.user.role !== 'premium') {
+      return res.status(403).json({
+        message: 'Apenas administradores e usuários premium podem criar eventos'
+      });
     }
 
     const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id } = req.body;
@@ -85,7 +110,8 @@ const createEvent = async (req, res) => {
       event_link: req.body.event_link || link,
       category_id: category_id,
       subcategory_id: subcategory_id,
-      photo_url: photoUrl
+      photo_url: photoUrl,
+      creator_id: req.user.id // Registramos o criador do evento
     };
 
     // Validar campos obrigatórios
@@ -112,15 +138,20 @@ const updateEvent = async (req, res) => {
       return res.status(401).json({ message: 'Usuário não autenticado' });
     }
 
-    // Verificar se o usuário é admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Apenas administradores podem editar eventos' });
-    }
-
     // Verificar se o evento existe
     const existingEvent = await Event.getEventById(id);
     if (!existingEvent) {
       return res.status(404).json({ message: 'Evento não encontrado' });
+    }
+
+    // Verificar permissões:
+    // - Admin pode editar qualquer evento
+    // - Premium pode editar apenas seus próprios eventos
+    if (req.user.role !== 'admin' &&
+      (req.user.role !== 'premium' || String(existingEvent.creator_id) !== String(req.user.id))) {
+      return res.status(403).json({
+        message: 'Você não tem permissão para modificar este evento'
+      });
     }
 
     const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id } = req.body;
@@ -161,6 +192,13 @@ const updateEvent = async (req, res) => {
     console.error('Erro ao atualizar evento:', error);
     res.status(500).json({ message: 'Erro ao atualizar evento', error: error.message });
   }
+
+  console.log('Dados de verificação:', {
+    userRole: req.user.role,
+    userId: req.user.id,
+    eventCreatorId: existingEvent.creator_id,
+    isAdmin: req.user.role === 'admin'
+  });
 };
 
 // Excluir evento
@@ -172,15 +210,20 @@ const deleteEvent = async (req, res) => {
       return res.status(401).json({ message: 'Usuário não autenticado' });
     }
 
-    // Verificar se o usuário é admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Apenas administradores podem excluir eventos' });
-    }
-
     // Verificar se o evento existe
     const existingEvent = await Event.getEventById(id);
     if (!existingEvent) {
       return res.status(404).json({ message: 'Evento não encontrado' });
+    }
+
+    // Verificar permissões:
+    // - Admin pode excluir qualquer evento
+    // - Premium pode excluir apenas seus próprios eventos
+    if (req.user.role !== 'admin' &&
+      (req.user.role !== 'premium' || String(existingEvent.creator_id) !== String(req.user.id))) {
+      return res.status(403).json({
+        message: 'Você não tem permissão para excluir este evento'
+      });
     }
 
     // Excluir a imagem do S3 se existir
@@ -194,10 +237,27 @@ const deleteEvent = async (req, res) => {
     console.error('Erro ao remover evento:', error);
     res.status(500).json({ message: 'Erro ao remover evento', error: error.message });
   }
+
+  console.log('Dados de verificação:', {
+    userRole: req.user.role,
+    userId: req.user.id,
+    eventCreatorId: existingEvent.creator_id,
+    isAdmin: req.user.role === 'admin'
+  });
 };
+
+// console.log('Verificando permissões:', {
+//   userRole: req.user.role,
+//   userId: req.user.id,
+//   creatorId: existingEvent.creator_id,
+//   isAdmin: req.user.role === 'admin',
+//   isPremium: req.user.role === 'premium',
+//   isCreator: existingEvent.creator_id.toString() === req.user.id.toString()
+// });
 
 module.exports = {
   listEvents,
+  listMyEvents,
   getEventById,
   createEvent,
   updateEvent,

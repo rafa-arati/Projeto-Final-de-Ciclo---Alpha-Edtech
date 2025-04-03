@@ -144,7 +144,7 @@ body {
     left: 0;
     width: 100%;
     padding: 20px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.9));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
     color: white;
     z-index: 2;
 }
@@ -171,10 +171,11 @@ body {
 
 /* ===== TABS ===== */
 
-.tab-content{
+.tab-content {
     margin: 10px;
     padding: 10px;
 }
+
 .event-tabs {
     display: flex;
     border-bottom: 1px solid #333;
@@ -255,16 +256,16 @@ body {
     .event-image-container {
         height: 400px;
     }
-    
+
     .event-image-container::before {
         height: 150px;
     }
-    
+
     .event-badge {
         width: 60px;
         height: 60px;
     }
-    
+
     .buy-button {
         width: auto;
     }
@@ -274,27 +275,135 @@ body {
     .event-image-container {
         height: 500px;
     }
-    
+
     .event-image-container::before {
         height: 200px;
     }
-    
+
     .event-details {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 30px;
     }
-    
+
     .detail-item {
         margin-bottom: 0;
     }
-    
+
     .map-container {
         grid-column: span 2;
     }
-    
+
     .buy-button {
         width: 100%;
         max-width: 300px;
     }
+}
+
+/* Estilo para o formulário de QR Code */
+#qrcode-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#qrcode-form .form-group {
+    margin-bottom: 15px;
+}
+
+#qrcode-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #8000FF;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#qrcode-form input[type="text"],
+#qrcode-form input[type="number"],
+#qrcode-form input[type="datetime-local"],
+#qrcode-form select,
+#qrcode-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+#qrcode-form input:focus,
+#qrcode-form select:focus,
+#qrcode-form textarea:focus {
+    border-color: #8000FF;
+    outline: none;
+}
+
+#qrcode-form select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238000FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    padding-right: 36px;
+}
+
+#qrcode-form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+#qrcode-form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+/* Botão de envio do formulário */
+#qrcode-form .modal-buttons {
+    margin-top: 20px;
+}
+
+#qrcode-form .btn {
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+#qrcode-form .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(67, 157, 254, 0.3);
+}
+
+/* Correção para todos os modais */
+.modal-content {
+    max-width: 90%;
+    width: 450px;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.modal-content h3 {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+    color: white;
 }

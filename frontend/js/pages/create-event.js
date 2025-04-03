@@ -1,6 +1,6 @@
 import { navigateTo } from '../modules/router.js';
 import { showMessage, transitionToPage } from '../modules/utils.js';
-import { getLoggedInUser, isAdmin } from '../modules/store.js';
+import { getLoggedInUser, isAdmin, isPremiumOrAdmin } from '../modules/store.js';
 import { setupImagePreview, setupCancelModal } from '../modules/form-utils.js';
 import { getEventById, saveEvent, fetchCategoriesWithSubcategories } from '../modules/events-api.js';
 
@@ -8,10 +8,10 @@ import { getEventById, saveEvent, fetchCategoriesWithSubcategories } from '../mo
 let categorias = [];
 
 export default async function renderCreateEvent(queryParams) {
-  // Verificar se o usuário é administrador
-  if (!isAdmin()) {
+  // Verificar se o usuário é administrador ou usuário premium
+  if (!isPremiumOrAdmin()) {
     navigateTo('events');
-    showMessage('Acesso negado. Você precisa ser administrador para criar eventos.');
+    showMessage('Acesso negado. Você precisa ser administrador ou usuário premium para criar eventos.');
     return;
   }
 
@@ -238,12 +238,22 @@ function updateSubcategories() {
 // Carrega evento para edição
 async function loadEventForEditing(eventId) {
   try {
+    const user = getLoggedInUser();
+    const evento = await getEventById(eventId);
+
+    // Verificar permissões para edição
+    if (user.role !== 'admin' &&
+      (user.role !== 'premium' || String(evento.creator_id) !== String(user.id))) {
+      showMessage('Você não tem permissão para editar este evento');
+      navigateTo('events');
+      return null;
+    }
+
     // Primeiro, garantir que as categorias foram carregadas
     if (!categorias || categorias.length === 0) {
       await loadCategoriesAndSubcategories();
     }
 
-    const evento = await getEventById(eventId);
     if (!evento) {
       throw new Error('Evento não encontrado');
     }
@@ -310,12 +320,15 @@ async function loadEventForEditing(eventId) {
       }
     }
 
+    return evento;
   } catch (error) {
     console.error('Erro ao carregar evento para edição:', error);
     showMessage('Não foi possível carregar os dados do evento para edição');
-    setTimeout(() => navigateTo('events'), 2000);
+    navigateTo('events');
+    return null;
   }
 }
+
 // Manipula o envio do formulário
 async function handleSubmit(form, eventId) {
   try {

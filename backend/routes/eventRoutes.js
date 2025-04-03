@@ -7,13 +7,16 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Public routes
+// Rotas Publicas
 router.get('/events', eventController.listEvents);
 router.get('/events/:id', eventController.getEventById);
 
-// Admin-only routes
-router.post('/events', authenticate, isAdmin, upload.single('imagem'), eventController.createEvent);
-router.put('/events/:id', authenticate, isAdmin, upload.single('imagem'), eventController.updateEvent);
-router.delete('/events/:id', authenticate, isAdmin, eventController.deleteEvent);
+// Rotas autenticadas
+router.get('/my-events', authenticate, eventController.listMyEvents);
+
+// Rotas do admin e premium
+router.post('/events', authenticate, upload.single('imagem'), eventController.createEvent);
+router.put('/events/:id', authenticate, upload.single('imagem'), eventController.updateEvent);
+router.delete('/events/:id', authenticate, eventController.deleteEvent);
 
 module.exports = router;

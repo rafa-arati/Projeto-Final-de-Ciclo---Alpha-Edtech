@@ -4,12 +4,19 @@ import { fetchEvents, fetchCategoriesWithSubcategories } from '../../modules/eve
 import { eventos, categorias, activeFilters } from './index.js';
 import { renderCarousels } from './renderers.js';
 import { updateActiveFiltersDisplay } from './filters.js';
+import { getLoggedInUser } from '../../modules/store.js';
 
 /**
  * Carrega dados iniciais necessários para a página
  */
 export async function loadInitialData() {
     try {
+        console.log("Iniciando carregamento de dados iniciais");
+
+        // Verificar se há um usuário logado
+        const user = getLoggedInUser();
+        console.log("Usuário atual:", user);
+
         // Carregar categorias primeiro, para poder exibir nomes corretos depois
         await loadCategoriesAndSubcategories();
 
@@ -53,7 +60,7 @@ export async function loadEvents(filters = {}) {
         eventos.length = 0;
         eventos.push(...eventosData);
 
-        console.log("Eventos carregados:", eventos);
+        console.log("Eventos carregados:", eventos.length);
 
         // Renderizar carrosséis com os novos dados
         renderCarousels();

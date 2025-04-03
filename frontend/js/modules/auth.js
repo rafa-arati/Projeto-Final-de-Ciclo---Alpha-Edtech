@@ -6,6 +6,8 @@ const PASSWORD_API_URL = '/api/password';
 
 export async function loginUser(identifier, password, userType) {
   try {
+    console.log('Tentando fazer login com:', { identifier, userType });
+
     const response = await fetch(`${API_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -19,11 +21,18 @@ export async function loginUser(identifier, password, userType) {
     }
 
     const data = await response.json();
+    console.log('Login bem-sucedido:', data);
+
+    // Verificar se os dados do usuário estão completos
+    if (!data.user || !data.user.id) {
+      throw new Error('Dados do usuário incompletos');
+    }
 
     // Salva o usuário usando a função do store.js
     saveUser({
       id: data.user.id,
       email: data.user.email,
+      name: data.user.name || '',
       username: data.user.username,
       role: data.user.role || userType
     });
@@ -62,18 +71,20 @@ export async function logoutUser() {
       credentials: 'include'
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao fazer logout');
-    }
-
-    // Limpa o usuário usando a função do store.js
+    // Limpa o usuário mesmo se a requisição falhar
     clearUser();
 
-    return await response.json();
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.warn('Aviso no logout:', errorData.message);
+      // Não lançar erro para não impedir o logout do lado do cliente
+    }
+
+    return { success: true, message: 'Logout realizado com sucesso' };
   } catch (error) {
     console.error('Erro no logout:', error);
-    throw error;
+    clearUser(); // Garantir que os dados sejam limpos mesmo com erro
+    return { success: true, message: 'Logout local realizado' };
   }
 }
 
@@ -88,7 +99,6 @@ export async function sendPasswordResetEmail(email) {
     const responseData = await response.json();
 
     if (!response.ok) {
-      // Lança o erro com a mensagem do servidor, se disponível
       throw new Error(responseData.message || 'Falha ao enviar email de recuperação');
     }
 
@@ -124,32 +134,40 @@ export async function resetPassword(token, newPassword) {
 }
 
 export function getToken() {
-  // Tenta pegar do localStorage primeiro (se você armazena lá)
-  const storedToken = localStorage.getItem('auth_token');
-
-  // Ou pode pegar dos cookies (se você usa httpOnly cookies)
+  // Obter do cookie (se estiver usando httpOnly cookies)
   const cookieToken = document.cookie
     .split('; ')
     .find(row => row.startsWith('token='))
     ?.split('=')[1];
 
-  return storedToken || cookieToken || null;
+  return cookieToken || null;
 }
-
 
 export async function fetchCompleteUserData() {
   try {
+    console.log('Buscando dados completos do usuário');
+
     const response = await fetch('/api/auth/me', {
+      credentials: 'include', // Importante para enviar cookies
       headers: {
-        'Authorization': `Bearer ${getToken()}`, // Implemente getToken() se necessário
         'Content-Type': 'application/json'
       }
     });
 
-    if (!response.ok) throw new Error('Erro ao buscar dados');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao buscar dados');
+    }
 
     const userData = await response.json();
-    saveUser(userData); // Atualiza o localStorage com dados completos
+    console.log('Dados completos do usuário recebidos:', userData);
+
+    if (!userData || !userData.id) {
+      throw new Error('Dados do usuário incompletos');
+    }
+
+    // Atualiza o localStorage com dados completos
+    saveUser(userData);
     return userData;
   } catch (error) {
     console.error('Erro ao buscar dados completos:', error);
