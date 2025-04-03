@@ -79,6 +79,8 @@ export async function fetchCategoriesWithSubcategories() {
  */
 export async function deleteEvent(eventId) {
   try {
+    console.log(`Tentando excluir evento com ID: ${eventId}`);
+
     const response = await fetch(`${API_URL}/events/${eventId}`, {
       method: 'DELETE',
       headers: {
@@ -87,12 +89,24 @@ export async function deleteEvent(eventId) {
       credentials: 'include'
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao excluir evento');
+    // Obtenha o texto completo da resposta para diagnóstico
+    const responseText = await response.text();
+    console.log(`Resposta completa: ${responseText}`);
+
+    // Tente converter para JSON se possível
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (e) {
+      // Se não for JSON, use o texto como está
+      responseData = { message: responseText || 'Sem detalhes do erro' };
     }
 
-    return await response.json();
+    if (!response.ok) {
+      throw new Error(responseData.message || `Erro ${response.status}: ${response.statusText}`);
+    }
+
+    return responseData;
   } catch (error) {
     console.error('Erro ao excluir evento:', error);
     throw error;
@@ -157,6 +171,12 @@ export async function saveEvent(formData, eventId = null) {
     const url = eventId ? `${API_URL}/events/${eventId}` : `${API_URL}/events`;
     const method = eventId ? 'PUT' : 'POST';
 
+    // Depuração para verificar os dados enviados
+    console.log("Enviando dados para", url, "com método", method);
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+
     const response = await fetch(url, {
       method,
       body: formData,
@@ -164,7 +184,13 @@ export async function saveEvent(formData, eventId = null) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      // Tente obter mais detalhes sobre o erro
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        errorData = { message: `Erro ${response.status}: ${response.statusText}` };
+      }
       throw new Error(errorData.message || 'Erro ao salvar evento');
     }
 

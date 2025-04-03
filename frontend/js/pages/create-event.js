@@ -378,37 +378,39 @@ async function handleSubmit(e) {
     // Criar FormData
     const formData = new FormData(form);
 
+    // Verificar e garantir campos obrigatórios
+    const requiredFields = ['title', 'start_date', 'category_id', 'location'];
+    for (const field of requiredFields) {
+      if (!formData.get(field)) {
+        if (field === 'title' && formData.get('nome')) {
+          formData.set('title', formData.get('nome'));
+        } else if (field === 'start_date' && formData.get('data')) {
+          formData.set('start_date', formData.get('data'));
+        } else if (field === 'location' && formData.get('localizacao')) {
+          formData.set('location', formData.get('localizacao'));
+        }
+      }
+    }
+
     // Coletar URLs de vídeo
     const videoUrls = Array.from(form.querySelectorAll('.video-url'))
       .map(input => input.value.trim())
       .filter(url => url !== '');
 
     // Adicionar vídeos ao FormData
-    formData.append('video_urls', JSON.stringify(videoUrls));
+    formData.set('video_urls', JSON.stringify(videoUrls));
 
-    // Adicionar campo para API
-    if (formData.get('title')) {
-      formData.append('nome', formData.get('title')); // Para compatibilidade
-    }
+    // Manter compatibilidade de campos
+    if (formData.get('title')) formData.append('nome', formData.get('title'));
+    if (formData.get('start_date')) formData.append('data', formData.get('start_date'));
+    if (formData.get('start_time')) formData.append('horario', formData.get('start_time'));
+    if (formData.get('description')) formData.append('descricao', formData.get('description'));
+    if (formData.get('location')) formData.append('localizacao', formData.get('location'));
+    if (formData.get('event_link')) formData.append('link', formData.get('event_link'));
 
-    if (formData.get('start_date')) {
-      formData.append('data', formData.get('start_date')); // Para compatibilidade
-    }
-
-    if (formData.get('start_time')) {
-      formData.append('horario', formData.get('start_time')); // Para compatibilidade
-    }
-
-    if (formData.get('description')) {
-      formData.append('descricao', formData.get('description')); // Para compatibilidade
-    }
-
-    if (formData.get('location')) {
-      formData.append('localizacao', formData.get('location')); // Para compatibilidade
-    }
-
-    if (formData.get('event_link')) {
-      formData.append('link', formData.get('event_link')); // Para compatibilidade
+    console.log(`Enviando requisição ${eventId ? 'PUT' : 'POST'} para salvar evento`);
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
     }
 
     // Enviar para API

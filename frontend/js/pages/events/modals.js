@@ -169,32 +169,33 @@ function setupDeleteModal() {
 
     try {
       // Executar exclusão
-      await deleteEvent(window.currentEventId);
+      const result = await deleteEvent(window.currentEventId);
 
-      // Atualizar lista local
-      const index = eventos.findIndex(e => e.id === window.currentEventId);
+      // Não precisamos verificar o evento pois já foi excluído
+      // Simplesmente atualizamos o array local
+
+      const index = eventos.findIndex(e => e.id === parseInt(window.currentEventId));
       if (index !== -1) {
         eventos.splice(index, 1);
+        // Atualizar interface
+        renderCarousels();
+        // Feedback
+        showMessage("Evento excluído com sucesso!");
+      } else {
+        console.warn(`Evento com ID ${window.currentEventId} não encontrado na lista local`);
+        // Atualizar interface mesmo assim
+        renderCarousels();
+        // Feedback
+        showMessage("Evento excluído com sucesso!");
       }
-
-      // Atualizar interface
-      renderCarousels();
-
-      // Feedback
-      showMessage("Evento excluído com sucesso!");
     } catch (error) {
       console.error("Falha na exclusão:", error);
       showMessage(error.message || "Falha ao excluir evento");
     } finally {
-      // Fechar modal
+      // Fechar modal independentemente do resultado
       deleteModal.classList.remove("active");
-    }
-  });
-
-  // Fechar ao clicar fora do modal
-  window.addEventListener("click", (event) => {
-    if (event.target === deleteModal) {
-      deleteModal.classList.remove("active");
+      // Limpar o ID atual
+      window.currentEventId = null;
     }
   });
 }

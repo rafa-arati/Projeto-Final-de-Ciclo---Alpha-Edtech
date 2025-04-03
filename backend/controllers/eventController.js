@@ -277,46 +277,57 @@ const updateEvent = async (req, res) => {
       });
     }
 
-    const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id } = req.body;
-    const imagem = req.file;
+    // Log para depuração
+    console.log("Dados recebidos para atualização:", req.body);
+    console.log("Arquivo recebido:", req.file);
 
-    // Processar URLs de vídeo (integrado da outra versão)
-    const rawUrls = Array.isArray(req.body.video_urls)
-      ? req.body.video_urls
-      : JSON.parse(req.body.video_urls || '[]');
+    // Construir dados do evento para atualização
+    const eventData = {
+      title: req.body.title || req.body.nome || existingEvent.event_name,
+      description: req.body.description || req.body.descricao || existingEvent.description,
+      start_date: req.body.start_date || req.body.data || existingEvent.event_date,
+      start_time: req.body.start_time || req.body.horario || existingEvent.event_time,
+      location: req.body.location || req.body.localizacao || existingEvent.location,
+      category_id: req.body.category_id || existingEvent.category_id,
+      subcategory_id: req.body.subcategory_id || existingEvent.subcategory_id,
+      event_link: req.body.event_link || req.body.link || existingEvent.event_link,
+      photo_url: existingEvent.photo_url // Valor padrão
+    };
 
-    const sanitizedUrls = sanitizeVideoUrls(rawUrls);
+    // Processar URLs de vídeo se presentes
+    if (req.body.video_urls) {
+      const rawUrls = Array.isArray(req.body.video_urls)
+        ? req.body.video_urls
+        : JSON.parse(req.body.video_urls || '[]');
 
-    let photoUrl = existingEvent.photo_url;
-    if (imagem) {
-      // Upload da nova imagem para o S3
-      photoUrl = await uploadFileToS3(
-        imagem.buffer,
-        imagem.originalname,
-        imagem.mimetype
-      );
+      eventData.video_urls = rawUrls;
+    }
 
-      // Excluir a imagem antiga do S3 se existir
-      if (existingEvent.photo_url) {
-        await deleteFileFromS3(existingEvent.photo_url);
+    // Processa imagem se enviada
+    if (req.file) {
+      // Se usar o S3
+      if (typeof uploadFileToS3 === 'function') {
+        eventData.photo_url = await uploadFileToS3(
+          req.file.buffer,
+          req.file.originalname,
+          req.file.mimetype
+        );
+      } else {
+        // Método alternativo
+        eventData.photo_url = `/uploads/${req.file.originalname}`;
+      }
+
+      // Excluir imagem antiga se existir
+      if (existingEvent.photo_url && typeof deleteFileFromS3 === 'function') {
+        try {
+          await deleteFileFromS3(existingEvent.photo_url);
+        } catch (err) {
+          console.warn("Erro ao excluir imagem antiga:", err);
+        }
       }
     }
 
-    const eventData = {
-      title: req.body.title || nome,
-      description: req.body.description || descricao,
-      start_date: req.body.start_date || data,
-      start_time: req.body.start_time || horario,
-      end_date: req.body.end_date,
-      end_time: req.body.end_time,
-      location: req.body.location || localizacao,
-      event_link: req.body.event_link || link,
-      category_id: category_id,
-      subcategory_id: subcategory_id,
-      photo_url: photoUrl,
-      video_urls: sanitizedUrls // Adicionado suporte para vídeos
-    };
-
+    // Atualizar o evento no banco de dados
     const updatedEvent = await Event.updateEvent(id, eventData);
     res.status(200).json(updatedEvent);
   } catch (error) {
@@ -406,11 +417,18 @@ const deleteEvent = async (req, res) => {
     }
 
     // Excluir a imagem do S3 se existir
-    if (existingEvent.photo_url) {
-      await deleteFileFromS3(existingEvent.photo_url);
+    if (existingEvent.photo_url && typeof deleteFileFromS3 === 'function') {
+      try {
+        await deleteFileFromS3(existingEvent.photo_url);
+      } catch (err) {
+        console.warn("Erro ao excluir imagem:", err);
+      }
     }
 
+    // Excluir o evento
     await Event.deleteEvent(id);
+
+    // Responder com sucesso
     res.status(200).json({ message: 'Evento removido com sucesso' });
   } catch (error) {
     console.error('Erro ao remover evento:', error);
