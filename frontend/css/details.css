@@ -251,6 +251,81 @@ body {
     box-shadow: 0 4px 12px rgba(67, 157, 254, 0.3);
 }
 
+/* ... outros estilos ... */
+
+.event-interaction {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+}
+
+.like-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+    /* Reduz espaço antes do título "Curtidas" */
+}
+
+.like-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 45px;
+    height: 45px;
+    padding: 0;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+    /* Garante que o cursor é pointer */
+    display: inline-flex;
+    /* Ajuda a alinhar o SVG interno */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Estilo PADRÃO do ícone (coração NÃO curtido) */
+.like-button .heart-icon path {
+    fill: rgba(255, 255, 255, 0.7);
+    /* Cor branca/cinza padrão */
+    transition: fill 0.2s ease;
+    /* Transição suave da cor */
+}
+
+/* Estilo do botão QUANDO ATIVO (curtido) */
+.like-button.active {
+    background-color: rgba(255, 64, 129, 0.15);
+    /* Fundo levemente rosa/vermelho */
+    border-color: rgba(255, 64, 129, 0.4);
+}
+
+/* Estilo do ÍCONE quando o botão está ATIVO (coração curtido) */
+.like-section button#like-button.active svg.heart-icon path {
+    fill: #ff4081
+        /* Use !important SÓ para testar */
+}
+
+/* Efeito HOVER (opcional, mas melhora a interação) */
+.like-button:hover:not(:disabled) {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.like-button.active:hover:not(:disabled) {
+    background-color: rgba(255, 64, 129, 0.3);
+}
+
+/* Estilo para botão desabilitado (quando não logado) */
+.like-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.like-count {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ccc;
+}
+
+
 /* ===== RESPONSIVE ===== */
 @media (min-width: 500px) {
     .event-image-container {
@@ -407,3 +482,4 @@ body {
 .close-modal:hover {
     color: white;
 }
+

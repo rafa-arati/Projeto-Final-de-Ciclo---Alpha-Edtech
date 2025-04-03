@@ -106,15 +106,42 @@ export async function deleteEvent(eventId) {
  */
 export async function getEventById(eventId) {
   try {
+    // Linha CORRETA:
     const response = await fetch(`${API_URL}/events/${eventId}`, {
-      credentials: 'include'
+      credentials: 'include' // <-- Inclui as opções com credentials
     });
+    // Assegure-se que a linha acima esteja EXATAMENTE assim, 
+    // com a crase final e o objeto de opções.
 
-    if (!response.ok) throw new Error('Erro ao buscar evento');
+    // --- Tratamento de erro (MELHORADO) ---
+    if (!response.ok) {
+      let errorMessage = `Erro ${response.status}: ${response.statusText}`;
+      try {
+        // Tenta obter mais detalhes SE a resposta for JSON
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } else {
+          // Se não for JSON, pega o texto (útil para HTML de erro)
+          const errorText = await response.text();
+          console.error("Resposta não-JSON recebida do backend:", errorText); // Log do HTML/Texto
+          // Não joga o HTML inteiro no erro principal, apenas loga
+        }
+      } catch (e) {
+        console.warn("Não foi possível parsear corpo da resposta de erro", e);
+      }
+      // Lança o erro para ser pego pelo bloco catch externo
+      throw new Error(errorMessage);
+    }
+    // --- Fim do tratamento de erro ---
 
+    // Se a resposta for OK, parseia o JSON
     return await response.json();
+
   } catch (error) {
+    // Loga o erro final que será mostrado ao usuário ou tratado posteriormente
     console.error('Erro ao buscar evento:', error);
+    // Re-lança o erro para que a função chamadora (loadEventDetails) possa tratá-lo
     throw error;
   }
 }
@@ -145,6 +172,58 @@ export async function saveEvent(formData, eventId = null) {
   } catch (error) {
     console.error('Erro ao salvar evento:', error);
     throw error;
+  }
+}
+
+/**
+ * Curte ou descurte um evento
+ * @param {number} eventId - ID do evento
+ * @returns {Promise} Promise com o resultado { success, message, likeCount, userHasLiked }
+ */
+export async function toggleLikeEvent(eventId) {
+  try {
+    const response = await fetch(`${API_URL}/events/${eventId}/like`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Erro ${response.status}: ${response.statusText}`;
+      // Tenta ler o corpo como texto para dar mais detalhes, se possível
+      try {
+        const errorBody = await response.text();
+        // Verifica se o corpo parece ser JSON antes de tentar parse específico
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const errorData = JSON.parse(errorBody); // Parse manual se for JSON
+          errorMessage = errorData.message || errorMessage;
+        } else if (errorBody.length < 200) { // Mostra corpo se for curto e não JSON
+          errorMessage += ` - ${errorBody}`;
+        }
+        // Se for HTML longo, não inclui no erro principal.
+      } catch (parseError) {
+        // Ignora erro ao tentar ler/parsear o corpo do erro
+        console.warn("Não foi possível ler o corpo da resposta de erro.", parseError);
+      }
+
+      // Lança erro específico para 401
+      if (response.status === 401) {
+        throw new Error('Faça login para curtir eventos.');
+      }
+
+      throw new Error(errorMessage); // Lança o erro com a mensagem construída
+    }
+    // --- FIM DO BLOCO MODIFICADO ---
+
+    // Se a resposta for OK (2xx), aí sim esperamos JSON
+    return await response.json();
+
+  } catch (error) {
+    console.error('Erro ao curtir/descurtir evento:', error);
+    throw error; // Re-lança o erro para ser tratado por quem chamou
   }
 }
 

@@ -1,4 +1,4 @@
-import { getEventById } from '../modules/events-api.js';
+import { getEventById, toggleLikeEvent } from '../modules/events-api.js';
 import { showMessage } from '../modules/utils.js';
 import { navigateTo } from '../modules/router.js';
 import { getLoggedInUser, isAdmin } from '../modules/store.js';
@@ -84,6 +84,19 @@ export default async function renderEventDetails(queryParams) {
                 <section class="event-description">
                   <h2 class="section-title">Descrição</h2>
                   <p id="event-description">${event.description || 'Sem descrição disponível'}</p>
+                </section>
+
+                <section class="event-interaction">
+                  <div class="detail-item like-section">
+                    <button id="like-button" class="icon-button like-button" aria-label="Curtir evento">
+                        <svg class="icon heart-icon" viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    </button>
+                    <span id="like-count" class="like-count">${event.likeCount !== undefined ? event.likeCount : 0}</span>
+                    </div>
+                    <h3 class="section-title">Curtidas</h3> 
+                  </div>
                 </section>
 
                 <div class="event-details">
@@ -189,6 +202,10 @@ export default async function renderEventDetails(queryParams) {
 
     // Configurar eventos
     setupEventHandlers(eventId, qrCodes);
+    
+    // Configurar o botão de curtir
+    setupLikeButton(eventId, event);
+    
   } catch (error) {
     console.error('Erro:', error);
     showMessage(error.message || 'Erro ao carregar detalhes do evento');
@@ -263,6 +280,69 @@ function renderQRCodesList(qrCodes) {
   }).join('')}
     </div>
   `;
+}
+
+// Configuração do botão de curtir
+function setupLikeButton(eventId, event) {
+  const likeButton = document.getElementById('like-button');
+  const likeCountSpan = document.getElementById('like-count');
+  const user = getLoggedInUser();
+
+  if (!likeButton || !likeCountSpan) return;
+
+  if (user) {
+    // Configurar o estado inicial do botão de curtir
+    if (event.userHasLiked === true) {
+      likeButton.classList.add('active');
+      likeButton.setAttribute('aria-pressed', 'true');
+    } else {
+      likeButton.classList.remove('active');
+      likeButton.setAttribute('aria-pressed', 'false');
+    }
+
+    // Adicionar o evento de clique
+    likeButton.addEventListener('click', () => handleLikeClick(eventId));
+  } else {
+    // Usuário não logado: desabilitar botão
+    likeButton.disabled = true;
+    likeButton.style.opacity = 0.5;
+    likeButton.title = "Faça login para curtir";
+  }
+}
+
+// Manipulador de clique no botão de curtir
+async function handleLikeClick(eventId) {
+  const likeButton = document.getElementById('like-button');
+  const likeCountSpan = document.getElementById('like-count');
+
+  if (!likeButton || !likeCountSpan) return;
+
+  // Desabilitar botão durante a requisição
+  likeButton.disabled = true; 
+  likeButton.style.opacity = 0.7;
+
+  try {
+    const result = await toggleLikeEvent(eventId);
+
+    // Atualizar a UI com a resposta da API
+    likeCountSpan.textContent = result.likeCount;
+    if (result.userHasLiked) {
+      likeButton.classList.add('active');
+      likeButton.setAttribute('aria-pressed', 'true');
+    } else {
+      likeButton.classList.remove('active');
+      likeButton.setAttribute('aria-pressed', 'false');
+    }
+  } catch (error) {
+    console.error("Erro no handleLikeClick:", error);
+    showMessage(error.message || 'Erro ao processar o like. Tente novamente.');
+  } finally {
+    // Reabilitar botão após a requisição
+    if (getLoggedInUser()) {
+      likeButton.disabled = false;
+      likeButton.style.opacity = 1;
+    }
+  }
 }
 
 // Configurar manipuladores de eventos
