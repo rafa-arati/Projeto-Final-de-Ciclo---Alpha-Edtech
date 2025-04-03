@@ -8,8 +8,8 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Rotas Publicas
-router.get('/events', eventController.listEvents);
+// Rotas Públicas
+router.get('/events', eventController.listEvents); // Mantido como listEvents da versão HEAD
 router.get('/events/:id', eventController.getEventById);
 
 // Rotas autenticadas
@@ -22,4 +22,5 @@ router.delete('/events/:id', authenticate, eventController.deleteEvent);
 
 // Rota para curtir/descurtir um evento (requer autenticação)
 router.post('/events/:eventId/like', authenticate, likeController.toggleLike);
+
 module.exports = router;

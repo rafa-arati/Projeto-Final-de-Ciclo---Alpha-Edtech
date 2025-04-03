@@ -124,6 +124,12 @@ export default async function renderEventDetails(queryParams) {
                   </div>
                   ` : ''}
                 </div>
+
+                <!-- Seção de Vídeos -->
+                <div class="video-section">
+                  <h2 class="section-title">Vídeos</h2>
+                  <div id="video-container" class="video-grid"></div>
+                </div>
               </div>
             </section>
           </article>
@@ -202,15 +208,111 @@ export default async function renderEventDetails(queryParams) {
 
     // Configurar eventos
     setupEventHandlers(eventId, qrCodes);
-    
+
     // Configurar o botão de curtir
     setupLikeButton(eventId, event);
-    
+
+    // Processar vídeos
+    processVideos(event);
+
   } catch (error) {
-    console.error('Erro:', error);
+    console.error('Erro ao carregar detalhes:', error);
     showMessage(error.message || 'Erro ao carregar detalhes do evento');
     navigateTo('events');
   }
+}
+
+// Processar vídeos do evento
+function processVideos(event) {
+  const videoContainer = document.getElementById('video-container');
+  if (!videoContainer) return;
+
+  videoContainer.innerHTML = ''; // Limpar container
+
+  let videoUrls = event.video_urls || [];
+
+  // Converter string para array se necessário
+  if (typeof videoUrls === 'string') {
+    videoUrls = videoUrls.replace(/[{}"]/g, '').split(',').filter(url => url.trim() !== '');
+  }
+
+  if (videoUrls.length > 0) {
+    videoUrls.forEach(url => {
+      const videoWrapper = document.createElement('div');
+      videoWrapper.className = 'video-wrapper';
+      videoWrapper.innerHTML = createVideoEmbed(url);
+      videoContainer.appendChild(videoWrapper);
+    });
+
+    // Carregar script do TikTok se necessário
+    if (videoUrls.some(url => url.includes('tiktok')) && !window.tiktokScriptLoaded) {
+      const script = document.createElement('script');
+      script.src = 'https://www.tiktok.com/embed.js';
+      script.async = true;
+      script.onload = () => {
+        window.tiktokScriptLoaded = true;
+        console.log('TikTok script carregado');
+      };
+      document.body.appendChild(script);
+    }
+  } else {
+    videoContainer.innerHTML = '<p class="no-videos">Nenhum vídeo disponível para este evento</p>';
+  }
+}
+
+// Criar embed de vídeo
+function createVideoEmbed(url) {
+  try {
+    const urlObj = new URL(url);
+    const cleanedUrl = urlObj.href.replace(/\/$/, ''); // Remover barra final
+
+    // YouTube
+    if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
+      const videoId = getYouTubeId(cleanedUrl);
+      if (!videoId) return '<p>ID do vídeo do YouTube não encontrado</p>';
+
+      return `
+        <iframe 
+          src="https://www.youtube.com/embed/${videoId}" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen>
+        </iframe>
+      `;
+    }
+
+    // TikTok
+    if (url.includes('tiktok.com')) {
+      return `
+        <blockquote class="tiktok-embed"
+          cite="${url}"
+          data-video-id="${getTikTokId(url)}"
+          style="max-width: 605px;min-width: 325px;">
+          <section>
+            <a target="_blank" href="${url}">Link original do TikTok</a>
+          </section>
+        </blockquote>
+      `;
+    }
+    return '<p>Plataforma de vídeo não suportada</p>';
+
+  } catch (error) {
+    console.error('Erro ao criar embed:', error);
+    return `<p>Link inválido: ${url}</p>`;
+  }
+}
+
+// Funções auxiliares para extrair IDs
+function getYouTubeId(url) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function getTikTokId(url) {
+  const regExp = /\/video\/(\d+)/;
+  const match = url.match(regExp);
+  return match ? match[1] : null;
 }
 
 // Formatação de data do evento
@@ -318,7 +420,7 @@ async function handleLikeClick(eventId) {
   if (!likeButton || !likeCountSpan) return;
 
   // Desabilitar botão durante a requisição
-  likeButton.disabled = true; 
+  likeButton.disabled = true;
   likeButton.style.opacity = 0.7;
 
   try {

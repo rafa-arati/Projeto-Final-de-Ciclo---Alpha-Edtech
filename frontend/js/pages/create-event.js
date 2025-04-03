@@ -21,8 +21,6 @@ export default async function renderCreateEvent(queryParams) {
   // Modo de edição
   const eventId = queryParams.get('edit');
   const isEditing = !!eventId;
-
-  // Título dinâmico
   const titulo = isEditing ? 'Editar Evento' : 'Criar Novo Evento';
   const btnText = isEditing ? 'Salvar Alterações' : 'Adicionar Evento';
 
@@ -83,6 +81,19 @@ export default async function renderCreateEvent(queryParams) {
           <label for="descricao">Descrição</label>
           <textarea id="descricao" name="description" rows="5"></textarea>
         </div>
+
+        <!-- Seção de Vídeos -->
+        <div class="form-group video-input-section">
+          <label>Links de Vídeo (YouTube/TikTok - Máx. 3)</label>
+          <div id="video-input-container">
+            ${Array.from({ length: isEditing ? 0 : 1 }, () => `
+              <input type="url" class="video-url" placeholder="https://youtube.com/... ou https://tiktok.com/...">
+            `).join('')}
+          </div>
+          <button type="button" id="add-video-btn" class="btn small">
+            + Adicionar Vídeo
+          </button>
+        </div>
       </div>
       
       <div class="right-column">
@@ -132,6 +143,19 @@ export default async function renderCreateEvent(queryParams) {
   await setupForm(isEditing, eventId);
 }
 
+function setupVideoInputs() {
+  document.getElementById('add-video-btn')?.addEventListener('click', () => {
+    const container = document.getElementById('video-input-container');
+    if (container.querySelectorAll('.video-url').length < 3) {
+      const newInput = document.createElement('input');
+      newInput.type = 'url';
+      newInput.className = 'video-url';
+      newInput.placeholder = 'Cole o link do vídeo aqui...';
+      container.appendChild(newInput);
+    }
+  });
+}
+
 // Inicialização do formulário
 async function setupForm(isEditing, eventId) {
   const form = document.getElementById('criarEventoForm');
@@ -156,6 +180,9 @@ async function setupForm(isEditing, eventId) {
   });
 
   try {
+    // Configurar inputs de vídeo
+    setupVideoInputs();
+
     // Carregar categorias e subcategorias
     await loadCategoriesAndSubcategories();
 
@@ -170,7 +197,7 @@ async function setupForm(isEditing, eventId) {
     // Configurar envio do formulário
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      await handleSubmit(form, eventId);
+      await handleSubmit(e);
     });
   } catch (error) {
     console.error('Erro ao configurar formulário:', error);
@@ -320,6 +347,14 @@ async function loadEventForEditing(eventId) {
       }
     }
 
+    // Preencher vídeos
+    const videoContainer = document.getElementById('video-input-container');
+    if (evento.video_urls && Array.isArray(evento.video_urls) && evento.video_urls.length > 0) {
+      videoContainer.innerHTML = evento.video_urls.map(url => `
+        <input type="url" class="video-url" value="${url}" placeholder="https://youtube.com/... ou https://tiktok.com/...">
+      `).join('');
+    }
+
     return evento;
   } catch (error) {
     console.error('Erro ao carregar evento para edição:', error);
@@ -330,8 +365,11 @@ async function loadEventForEditing(eventId) {
 }
 
 // Manipula o envio do formulário
-async function handleSubmit(form, eventId) {
+async function handleSubmit(e) {
   try {
+    const form = e.target;
+    const eventId = form.querySelector('#eventoId').value;
+
     // Validar formulário
     if (!validateForm(form)) {
       return;
@@ -339,6 +377,14 @@ async function handleSubmit(form, eventId) {
 
     // Criar FormData
     const formData = new FormData(form);
+
+    // Coletar URLs de vídeo
+    const videoUrls = Array.from(form.querySelectorAll('.video-url'))
+      .map(input => input.value.trim())
+      .filter(url => url !== '');
+
+    // Adicionar vídeos ao FormData
+    formData.append('video_urls', JSON.stringify(videoUrls));
 
     // Adicionar campo para API
     if (formData.get('title')) {

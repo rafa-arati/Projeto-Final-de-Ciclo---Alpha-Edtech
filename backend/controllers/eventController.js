@@ -2,6 +2,24 @@ const Like = require('../models/Likes');
 const Event = require('../models/Event');
 const { uploadFileToS3, deleteFileFromS3 } = require('../utils/s3Uploader');
 
+const sanitizeVideoUrls = (urls) => {
+  const allowedDomains = [
+    'youtube.com',
+    'youtu.be',
+    'tiktok.com',
+    'vm.tiktok.com'
+  ];
+
+  return urls.filter(url => {
+    try {
+      const urlObj = new URL(url);
+      return allowedDomains.some(domain => urlObj.hostname.endsWith(domain));
+    } catch {
+      return false;
+    }
+  }).slice(0, 3); // Limita a 3 URLs
+};
+
 // Listar todos os eventos com filtros
 const listEvents = async (req, res) => {
   try {
@@ -54,6 +72,20 @@ const listMyEvents = async (req, res) => {
   }
 };
 
+// Listar todos os eventos sem filtros (para compatibilidade)
+const listAllEvents = async (req, res) => {
+  try {
+    const events = await Event.getAllEvents();
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('Erro ao listar eventos:', error);
+    res.status(500).json({
+      message: 'Erro ao listar eventos',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
+};
+
 // Obter evento por ID
 const getEventById = async (req, res) => {
   const { id } = req.params;
@@ -65,30 +97,95 @@ const getEventById = async (req, res) => {
     }
 
     const likeCount = await Like.getLikeCount(id);
-    let userHasLiked = null; 
+    let userHasLiked = null;
     // Verifica se há usuário autenticado NAQUELA REQUISIÇÃO ESPECÍFICA
-    console.log(`[getEventById] Verificando req.user para evento ${id}:`, req.user ? `ID ${req.user.id}` : 'Nenhum req.user'); 
-    if (req.user) { 
-        userHasLiked = await Like.checkUserLike(req.user.id, id);
-        console.log(`[getEventById] Status do like para usuário ${req.user.id}: ${userHasLiked}`);
+    console.log(`[getEventById] Verificando req.user para evento ${id}:`, req.user ? `ID ${req.user.id}` : 'Nenhum req.user');
+    if (req.user) {
+      userHasLiked = await Like.checkUserLike(req.user.id, id);
+      console.log(`[getEventById] Status do like para usuário ${req.user.id}: ${userHasLiked}`);
     }
 
     const eventDetails = {
-        ...event, 
-        likeCount: likeCount,
-        userHasLiked: userHasLiked // null se não logado, true/false se logado
+      ...event,
+      likeCount: likeCount,
+      userHasLiked: userHasLiked // null se não logado, true/false se logado
     };
 
     console.log(`[getEventById] Enviando detalhes:`, JSON.stringify(eventDetails, null, 2));
     res.status(200).json(eventDetails);
-
   } catch (error) {
-    console.error('Erro ao buscar evento por ID:', error);
-    res.status(500).json({ message: 'Erro ao buscar evento', error: error.message });
+    console.error('Erro ao buscar evento:', error);
+    res.status(500).json({
+      message: 'Erro ao buscar evento',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
   }
 };
 
-// Criar novo evento
+// Adicionar evento (versão compatível com a implementação anterior)
+const addEvent = async (req, res) => {
+  console.log("Requisição recebida em /api/events", {
+    body: req.body,
+    file: req.file ? "Arquivo recebido" : "Nenhum arquivo",
+    user: req.user
+  });
+
+  const { nome, data, horario, categoria, localizacao, link, descricao } = req.body;
+  const imagem = req.file;
+
+  try {
+    // Validação de usuário
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Acesso não autorizado' });
+    }
+
+    // Processar URLs de vídeo
+    const rawUrls = Array.isArray(req.body.video_urls)
+      ? req.body.video_urls
+      : JSON.parse(req.body.video_urls || '[]');
+
+    const sanitizedUrls = sanitizeVideoUrls(rawUrls);
+
+    if (rawUrls.length !== sanitizedUrls.length) {
+      return res.status(400).json({ message: 'Contém links inválidos ou não permitidos' });
+    }
+
+    // Processar imagem
+    let photoUrl = null;
+    if (imagem) {
+      photoUrl = `/uploads/${imagem.originalname}`;
+      console.log('Arquivo de imagem processado:', imagem.originalname);
+    }
+
+    // Validar campos obrigatórios
+    if (!nome || !data) {
+      return res.status(400).json({ message: 'Nome e data são obrigatórios' });
+    }
+
+    // Criar evento
+    const newEvent = await Event.createEvent(
+      nome,
+      data,
+      horario,
+      categoria,
+      localizacao,
+      link,
+      descricao,
+      photoUrl,
+      sanitizedUrls
+    );
+
+    res.status(201).json(newEvent);
+  } catch (error) {
+    console.error('Erro ao adicionar evento:', error);
+    res.status(500).json({
+      message: 'Erro ao adicionar evento',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
+};
+
+// Criar novo evento (versão nova com S3)
 const createEvent = async (req, res) => {
   try {
     // Verificar se o usuário está autenticado
@@ -105,6 +202,13 @@ const createEvent = async (req, res) => {
 
     const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id } = req.body;
     const imagem = req.file;
+
+    // Processar URLs de vídeo (integrado da outra versão)
+    const rawUrls = Array.isArray(req.body.video_urls)
+      ? req.body.video_urls
+      : JSON.parse(req.body.video_urls || '[]');
+
+    const sanitizedUrls = sanitizeVideoUrls(rawUrls);
 
     let photoUrl = null;
     if (imagem) {
@@ -129,7 +233,8 @@ const createEvent = async (req, res) => {
       category_id: category_id,
       subcategory_id: subcategory_id,
       photo_url: photoUrl,
-      creator_id: req.user.id // Registramos o criador do evento
+      creator_id: req.user.id, // Registramos o criador do evento
+      video_urls: sanitizedUrls // Adicionado suporte para vídeos
     };
 
     // Validar campos obrigatórios
@@ -147,7 +252,7 @@ const createEvent = async (req, res) => {
   }
 };
 
-// Atualizar evento
+// Atualizar evento (versão avançada com S3)
 const updateEvent = async (req, res) => {
   const { id } = req.params;
   try {
@@ -175,6 +280,13 @@ const updateEvent = async (req, res) => {
     const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id } = req.body;
     const imagem = req.file;
 
+    // Processar URLs de vídeo (integrado da outra versão)
+    const rawUrls = Array.isArray(req.body.video_urls)
+      ? req.body.video_urls
+      : JSON.parse(req.body.video_urls || '[]');
+
+    const sanitizedUrls = sanitizeVideoUrls(rawUrls);
+
     let photoUrl = existingEvent.photo_url;
     if (imagem) {
       // Upload da nova imagem para o S3
@@ -201,7 +313,8 @@ const updateEvent = async (req, res) => {
       event_link: req.body.event_link || link,
       category_id: category_id,
       subcategory_id: subcategory_id,
-      photo_url: photoUrl
+      photo_url: photoUrl,
+      video_urls: sanitizedUrls // Adicionado suporte para vídeos
     };
 
     const updatedEvent = await Event.updateEvent(id, eventData);
@@ -210,13 +323,61 @@ const updateEvent = async (req, res) => {
     console.error('Erro ao atualizar evento:', error);
     res.status(500).json({ message: 'Erro ao atualizar evento', error: error.message });
   }
+};
 
-  console.log('Dados de verificação:', {
-    userRole: req.user.role,
-    userId: req.user.id,
-    eventCreatorId: existingEvent.creator_id,
-    isAdmin: req.user.role === 'admin'
-  });
+// Atualizar evento (versão anterior para compatibilidade)
+const updateEventLegacy = async (req, res) => {
+  const { id } = req.params;
+  const { nome, data, horario, categoria, localizacao, link, descricao } = req.body;
+  const imagem = req.file;
+
+  try {
+    // Validação de usuário
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Acesso não autorizado' });
+    }
+
+    // Verificar existência do evento
+    const existingEvent = await Event.getEventById(id);
+    if (!existingEvent) {
+      return res.status(404).json({ message: 'Evento não encontrado' });
+    }
+
+    // Processar URLs de vídeo
+    const rawUrls = Array.isArray(req.body.video_urls)
+      ? req.body.video_urls
+      : JSON.parse(req.body.video_urls || '[]');
+
+    const sanitizedUrls = sanitizeVideoUrls(rawUrls);
+
+    // Processar imagem
+    let photoUrl = existingEvent.photo_url;
+    if (imagem) {
+      photoUrl = `/uploads/${imagem.originalname}`;
+    }
+
+    // Atualizar evento
+    const updatedEvent = await Event.updateEventInDatabase(
+      id,
+      nome,
+      data,
+      horario,
+      categoria,
+      localizacao,
+      link,
+      descricao,
+      photoUrl,
+      sanitizedUrls // Adicionado parâmetro de vídeos
+    );
+
+    res.status(200).json(updatedEvent);
+  } catch (error) {
+    console.error('Erro ao atualizar evento:', error);
+    res.status(500).json({
+      message: 'Erro ao atualizar evento',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
 };
 
 // Excluir evento
@@ -255,29 +416,45 @@ const deleteEvent = async (req, res) => {
     console.error('Erro ao remover evento:', error);
     res.status(500).json({ message: 'Erro ao remover evento', error: error.message });
   }
-
-  console.log('Dados de verificação:', {
-    userRole: req.user.role,
-    userId: req.user.id,
-    eventCreatorId: existingEvent.creator_id,
-    isAdmin: req.user.role === 'admin'
-  });
 };
 
-// console.log('Verificando permissões:', {
-//   userRole: req.user.role,
-//   userId: req.user.id,
-//   creatorId: existingEvent.creator_id,
-//   isAdmin: req.user.role === 'admin',
-//   isPremium: req.user.role === 'premium',
-//   isCreator: existingEvent.creator_id.toString() === req.user.id.toString()
-// });
+// Excluir evento (versão antiga para compatibilidade)
+const deleteEventLegacy = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Validação de usuário
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Acesso não autorizado' });
+    }
+
+    // Verificar existência do evento
+    const existingEvent = await Event.getEventById(id);
+    if (!existingEvent) {
+      return res.status(404).json({ message: 'Evento não encontrado' });
+    }
+
+    // Excluir evento
+    await Event.deleteEventFromDatabase(id);
+    res.status(200).json({ message: 'Evento removido com sucesso' });
+  } catch (error) {
+    console.error('Erro ao remover evento:', error);
+    res.status(500).json({
+      message: 'Erro ao remover evento',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
+};
 
 module.exports = {
   listEvents,
   listMyEvents,
+  listAllEvents,
   getEventById,
   createEvent,
+  addEvent,           // Versão antiga para compatibilidade
   updateEvent,
-  deleteEvent
+  updateEventLegacy,  // Versão antiga para compatibilidade
+  deleteEvent,
+  deleteEventLegacy   // Versão antiga para compatibilidade
 };
