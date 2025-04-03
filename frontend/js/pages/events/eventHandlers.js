@@ -96,8 +96,12 @@ function setupBottomNavigation() {
                     navigateTo('events');
                 }
             });
+        } else if (index === 2) { // Agenda (terceiro item)
+            item.addEventListener('click', () => {
+                navigateTo('agenda');
+            });
         } else {
-            // Para os outros itens (Busca, Agenda, Favoritos), mostrar mensagem de desenvolvimento
+            // Para os outros itens (Busca, Favoritos), mostrar mensagem de desenvolvimento
             item.addEventListener('click', () => {
                 showDevelopmentMessage();
             });
