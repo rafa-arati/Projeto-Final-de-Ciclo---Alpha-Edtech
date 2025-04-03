@@ -13,6 +13,8 @@ const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const passwordRoutes = require('./routes/passwordRoutes');
+const premiumRoutes = require('./routes/premiumRoutes');
+const qrCodeRoutes = require('./routes/qrCodeRoutes');
 
 dotenv.config();
 
@@ -51,6 +53,8 @@ app.use('/api/auth', googleAuthRoutes);
 app.use('/api', eventRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api/password', passwordRoutes);
+app.use('/api/premium', premiumRoutes);
+app.use('/api/qrcode', qrCodeRoutes);
 
 // Test route
 app.get('/api/test', (req, res) => {

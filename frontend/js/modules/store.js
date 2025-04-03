@@ -7,6 +7,7 @@ const PREFERENCES_STORAGE_KEY = 'rota_cultural_prefs';
  */
 export function saveUser(userData) {
   if (!userData?.id) {
+    console.error('Dados do usuário inválidos:', userData);
     throw new Error('Dados do usuário inválidos');
   }
 
@@ -23,6 +24,7 @@ export function saveUser(userData) {
     lastUpdated: Date.now()
   };
 
+  console.log('Salvando usuário no localStorage:', dataToStore);
   localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(dataToStore));
 }
 
@@ -30,6 +32,7 @@ export function saveUser(userData) {
  * Remove os dados do usuário do localStorage
  */
 export function clearUser() {
+  console.log('Removendo usuário do localStorage');
   localStorage.removeItem(USER_STORAGE_KEY);
   localStorage.removeItem(PREFERENCES_STORAGE_KEY);
 }
@@ -41,10 +44,20 @@ export function clearUser() {
 export function getLoggedInUser() {
   try {
     const userData = localStorage.getItem(USER_STORAGE_KEY);
-    if (!userData) return null;
+    if (!userData) {
+      console.log('Nenhum dado de usuário encontrado no localStorage');
+      return null;
+    }
 
     const parsedData = JSON.parse(userData);
-    return parsedData?.isLoggedIn ? parsedData : null;
+    const isValid = parsedData && parsedData.isLoggedIn && parsedData.id;
+
+    if (!isValid) {
+      console.warn('Dados de usuário inválidos ou não está logado:', parsedData);
+      return null;
+    }
+
+    return parsedData;
   } catch (error) {
     console.error('Erro ao recuperar dados do usuário:', error);
     return null;
@@ -58,6 +71,24 @@ export function getLoggedInUser() {
 export function isAdmin() {
   const user = getLoggedInUser();
   return user?.role === 'admin';
+}
+
+/**
+ * Verifica se o usuário atual é premium
+ * @returns {boolean} True se for premium
+ */
+export function isPremium() {
+  const user = getLoggedInUser();
+  return user?.role === 'premium';
+}
+
+/**
+ * Verifica se o usuário atual é premium ou admin
+ * @returns {boolean} True se for premium ou admin
+ */
+export function isPremiumOrAdmin() {
+  const user = getLoggedInUser();
+  return user?.role === 'admin' || user?.role === 'premium';
 }
 
 /**
@@ -104,15 +135,11 @@ export function getUserPreferences() {
   }
 }
 
-
+/**
+ * Verifica se o usuário está logado
+ * @returns {boolean} True se estiver logado
+ */
 export function isUserLoggedIn() {
-  const user = localStorage.getItem('user');
-  if (!user) return false;
-
-  try {
-    const userData = JSON.parse(user);
-    return userData.isLoggedIn === true;
-  } catch (e) {
-    return false;
-  }
+  const user = getLoggedInUser();
+  return !!user;
 }

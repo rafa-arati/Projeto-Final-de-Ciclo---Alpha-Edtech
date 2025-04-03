@@ -1,0 +1,86 @@
+.premium-banner {
+    background: linear-gradient(45deg, rgba(67, 157, 254, 0.1), rgba(128, 0, 255, 0.1));
+    border: 1px solid rgba(128, 0, 255, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.premium-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.premium-banner-icon {
+    background: linear-gradient(45deg, #439DFE, #8000FF);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.premium-banner-text {
+    text-align: left;
+    flex: 1;
+}
+
+.premium-banner-text h3 {
+    margin: 0 0 5px 0;
+    color: white;
+    font-size: 16px;
+}
+
+.premium-banner-text p {
+    margin: 0;
+    font-size: 12px;
+    color: #aaa;
+}
+
+.premium-upgrade-btn {
+    background: linear-gradient(45deg, #439DFE, #8000FF);
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    width: 50%;
+    align-self: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.premium-upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(128, 0, 255, 0.3);
+}
+
+/* Ajustes para a página de premium */
+.premium-container .premium-button {
+    width: 60%;
+    max-width: 250px;
+    margin: 0 auto 25px;
+    padding: 12px;
+    font-size: 16px;
+    display: block;
+}
+
+@media (max-width: 480px) {
+    .premium-upgrade-btn {
+        width: 80%;
+    }
+
+    .premium-container .premium-button {
+        width: 80%;
+    }
+}

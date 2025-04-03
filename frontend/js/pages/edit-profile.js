@@ -2,6 +2,7 @@ import { navigateTo } from '../modules/router.js';
 import { showMessage } from '../modules/utils.js';
 import { fetchCompleteUserData } from '../modules/auth.js';
 import { getLoggedInUser, isAdmin } from '../modules/store.js';
+import { checkPremiumStatus } from '../modules/events-api.js';
 
 export default async function renderEditProfile(queryParams) {
   try {
@@ -19,6 +20,15 @@ export default async function renderEditProfile(queryParams) {
 
     // Verificar se o usuário é admin
     const isAdminUser = isAdmin();
+
+    // Verificar status premium
+    let premiumStatus = { status: 'none' };
+    try {
+      const premiumResponse = await checkPremiumStatus();
+      premiumStatus = premiumResponse.subscription;
+    } catch (error) {
+      console.error('Erro ao verificar status premium:', error);
+    }
 
     // Formatar telefone apenas se existir
     const formattedPhone = user?.phone ? formatPhoneNumber(user.phone) : '';
@@ -55,6 +65,13 @@ export default async function renderEditProfile(queryParams) {
               </button>
             </div>
             
+            <!-- Badge de premium/admin se for o caso -->
+            ${user.role === 'admin'
+        ? `<div class="user-badge admin-badge">Administrador</div>`
+        : user.role === 'premium'
+          ? `<div class="user-badge premium-badge">Usuário Premium</div>`
+          : ''}
+            
             ${isAdminUser ? `
             <!-- Botões administrativos (apenas para admins) -->
             <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
@@ -77,7 +94,47 @@ export default async function renderEditProfile(queryParams) {
                 Métricas
               </button>
             </div>
-            ` : ''}
+            ` : (user.role === 'premium' ? `
+            <!-- Botões para usuários premium -->
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+              <button id="meus-eventos-btn" style="background-color: #333; border: none; border-radius: 8px; padding: 8px 16px; color: white; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Meus eventos
+              </button>
+              
+              <button id="criar-evento-btn" style="background: linear-gradient(45deg, #439DFE, #8000FF); border: none; border-radius: 8px; padding: 8px 16px; color: white; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+                Criar evento
+              </button>
+            </div>
+            ` : `
+            <!-- Banner para usuários comuns fazerem upgrade -->
+            <div class="premium-banner">
+              <div class="premium-banner-content">
+                <div class="premium-banner-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                  </svg>
+                </div>
+                <div class="premium-banner-text">
+                  <h3>Torne-se Premium</h3>
+                  <p>Crie seus próprios eventos e gere QR Codes promocionais</p>
+                </div>
+              </div>
+              <button id="upgrade-btn" class="premium-upgrade-btn">Fazer Upgrade</button>
+            </div>
+            `)}
             
             <!-- Formulário de edição -->
             <form id="profileForm" style="max-width: 400px; margin: 0 auto; text-align: left;">
@@ -168,8 +225,11 @@ export default async function renderEditProfile(queryParams) {
       </div>
     `;
 
+    // Adicionar estilos para premium
+    addPremiumStyles();
+
     // Configurar eventos
-    setupProfileEvents();
+    setupProfileEvents(user);
     setupDevelopmentModal();
     setupFormEvents(user);
   } catch (error) {
@@ -222,9 +282,32 @@ function setupDevelopmentModal() {
 }
 
 // Configurar eventos da página de perfil
-function setupProfileEvents() {
+function setupProfileEvents(user) {
   // Botão para alterar foto (modal de desenvolvimento)
-  document.getElementById('alterar-foto-btn').addEventListener('click', showDevelopmentModal);
+  document.getElementById('alterar-foto-btn')?.addEventListener('click', showDevelopmentModal);
+
+  // Botão para upgrade para premium
+  const upgradeBtn = document.getElementById('upgrade-btn');
+  if (upgradeBtn) {
+    upgradeBtn.addEventListener('click', () => {
+      navigateTo('premium');
+    });
+  }
+
+  // Botões para usuários premium
+  const criarEventoBtn = document.getElementById('criar-evento-btn');
+  if (criarEventoBtn) {
+    criarEventoBtn.addEventListener('click', () => {
+      navigateTo('create-event');
+    });
+  }
+
+  const meusEventosBtn = document.getElementById('meus-eventos-btn');
+  if (meusEventosBtn) {
+    meusEventosBtn.addEventListener('click', () => {
+      navigateTo('events', { showMyEvents: true });
+    });
+  }
 
   // Botões administrativos (apenas para admins)
   const gerenciarEventosBtn = document.getElementById('gerenciar-eventos-btn');
@@ -413,5 +496,92 @@ async function handleLogout() {
   } catch (error) {
     console.error('Erro ao fazer logout:', error);
     showMessage('Erro ao fazer logout');
+  }
+}
+
+// Adicionar estilos específicos para o perfil com opções premium
+function addPremiumStyles() {
+  if (!document.getElementById('premium-profile-styles')) {
+    const styles = document.createElement('style');
+    styles.id = 'premium-profile-styles';
+    styles.textContent = `
+      .user-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+      
+      .admin-badge {
+        background-color: rgba(255, 69, 58, 0.2);
+        color: #ff453a;
+      }
+      
+      .premium-badge {
+        background: linear-gradient(45deg, rgba(67, 157, 254, 0.2), rgba(128, 0, 255, 0.2));
+        color: #8000FF;
+      }
+      
+      .premium-banner {
+        background: linear-gradient(45deg, rgba(67, 157, 254, 0.1), rgba(128, 0, 255, 0.1));
+        border: 1px solid rgba(128, 0, 255, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .premium-banner-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      
+      .premium-banner-icon {
+        background: linear-gradient(45deg, #439DFE, #8000FF);
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      
+      .premium-banner-icon svg {
+        color: white;
+      }
+      
+      .premium-banner-text {
+        text-align: left;
+      }
+      
+      .premium-banner-text h3 {
+        margin: 0 0 5px 0;
+        color: white;
+      }
+      
+      .premium-banner-text p {
+        margin: 0;
+        font-size: 14px;
+        color: #aaa;
+      }
+      
+      .premium-upgrade-btn {
+        background: linear-gradient(45deg, #439DFE, #8000FF);
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        width: 100%;
+      }
+    `;
+    document.head.appendChild(styles);
   }
 }

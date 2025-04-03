@@ -7,6 +7,7 @@ import { setupModals } from './modals.js';
 import { navigateTo } from '../../modules/router.js';
 import { showMessage } from '../../modules/utils.js';
 import { getLoggedInUser, isAdmin } from '../../modules/store.js';
+import { fetchCompleteUserData } from '../../modules/auth.js';
 
 // Variáveis globais compartilhadas entre os módulos
 export let eventos = [];
@@ -15,26 +16,39 @@ export let currentEventId = null;
 export let activeFilters = {};
 
 export default async function renderEvents(queryParams) {
-    const appContainer = document.getElementById("app");
-    if (!appContainer) return;
+  const appContainer = document.getElementById("app");
+  if (!appContainer) return;
 
-    // Obter dados do usuário logado
-    const user = getLoggedInUser();
-    const isAdminUser = isAdmin();
+  try {
+    // Tentar atualizar os dados do usuário primeiro
+    await fetchCompleteUserData().catch(err => {
+      console.warn('Não foi possível atualizar dados do usuário:', err.message);
+      // Prosseguir mesmo se esta chamada falhar
+    });
+  } catch (error) {
+    console.warn('Erro ao buscar dados do usuário:', error);
+    // Ignorar o erro e continuar
+  }
 
-    // Renderizar a estrutura base da página
-    appContainer.innerHTML = `
+  // Obter dados do usuário logado
+  const user = getLoggedInUser();
+  console.log('Dados do usuário atual:', user);
+
+  const isAdminUser = isAdmin();
+
+  // Renderizar a estrutura base da página
+  appContainer.innerHTML = `
     <div class="app-wrapper">
       <div class="app-container">
         <header class="app-header">
           <div class="header-top">
             <div class="header-date">${new Date().toLocaleDateString(
-        "pt-BR",
-        { day: "numeric", month: "long" }
-    )}, ${new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    })}</div>
+    "pt-BR",
+    { day: "numeric", month: "long" }
+  )}, ${new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}</div>
             <div class="header-profile" id="profile-btn">
               ${user?.photo_url ? `<img src="${user.photo_url}" alt="Perfil" style="width: 32px; height: 32px; border-radius: 50%;">` : ''}
             </div>
@@ -131,18 +145,18 @@ export default async function renderEvents(queryParams) {
     </div>
   `;
 
-    // Incluir também os modais necessários
-    setupModals();
+  // Incluir também os modais necessários
+  setupModals();
 
-    // Inicializar as funcionalidades da página
-    try {
-        // Carregar dados necessários
-        await loadInitialData();
+  // Inicializar as funcionalidades da página
+  try {
+    // Carregar dados necessários
+    await loadInitialData();
 
-        // Configurar os eventos de UI
-        setupUIEvents();
-    } catch (error) {
-        console.error("Erro na inicialização:", error);
-        showMessage("Não foi possível carregar os dados. Tente novamente mais tarde.");
-    }
+    // Configurar os eventos de UI
+    setupUIEvents();
+  } catch (error) {
+    console.error("Erro na inicialização:", error);
+    showMessage("Não foi possível carregar os dados. Tente novamente mais tarde.");
+  }
 }

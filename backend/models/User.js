@@ -51,7 +51,7 @@ class User {
     const query = `
       INSERT INTO users (${fields.join(', ')})
       VALUES (${placeholders.join(', ')})
-      RETURNING id, name, email, username, gender, birth_date, photo_url, onboarding_completed, created_at;
+      RETURNING id, name, email, username, gender, birth_date, photo_url, onboarding_completed, created_at, role;
     `;
 
     console.log("Inserindo usuário no banco de dados");
@@ -104,7 +104,7 @@ class User {
       UPDATE users
       SET ${updateFields.join(', ')}
       WHERE id = $${++paramCount}
-      RETURNING id, name, email, username, gender, birth_date, photo_url, onboarding_completed;
+      RETURNING id, name, email, username, gender, birth_date, photo_url, onboarding_completed, role, subscription_expiry;
     `;
 
     try {
@@ -113,6 +113,58 @@ class User {
       return rows[0];
     } catch (error) {
       console.error("Erro ao atualizar usuário:", error.message);
+      throw error;
+    }
+  }
+
+  // Atualiza usuário para premium
+  static async upgradeUserToPremium(userId, expiryDate) {
+    console.log("Atualizando usuário para premium, ID:", userId);
+
+    const query = `
+      UPDATE users
+      SET role = 'premium', 
+          subscription_expiry = $1,
+          updated_at = NOW()
+      WHERE id = $2
+      RETURNING id, name, email, role, subscription_expiry;
+    `;
+
+    try {
+      const { rows } = await pool.query(query, [expiryDate, userId]);
+      if (rows.length === 0) {
+        return null; // Usuário não encontrado
+      }
+      console.log("Usuário atualizado para premium:", rows[0].id);
+      return rows[0];
+    } catch (error) {
+      console.error("Erro ao atualizar para premium:", error.message);
+      throw error;
+    }
+  }
+
+  // Rebaixa usuário de premium para comum
+  static async downgradeFromPremium(userId) {
+    console.log("Rebaixando usuário de premium, ID:", userId);
+
+    const query = `
+      UPDATE users
+      SET role = 'user', 
+          subscription_expiry = NULL,
+          updated_at = NOW()
+      WHERE id = $1
+      RETURNING id, name, email, role;
+    `;
+
+    try {
+      const { rows } = await pool.query(query, [userId]);
+      if (rows.length === 0) {
+        return null; // Usuário não encontrado
+      }
+      console.log("Usuário rebaixado de premium:", rows[0].id);
+      return rows[0];
+    } catch (error) {
+      console.error("Erro ao rebaixar de premium:", error.message);
       throw error;
     }
   }
@@ -181,7 +233,7 @@ class User {
       UPDATE users 
       SET name = $1, phone = $2, updated_at = NOW()
       WHERE id = $3
-      RETURNING id, name, email, phone, created_at, updated_at
+      RETURNING id, name, email, phone, created_at, updated_at, role, subscription_expiry
     `;
 
     try {
