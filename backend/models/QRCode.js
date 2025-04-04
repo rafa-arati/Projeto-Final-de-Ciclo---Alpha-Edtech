@@ -234,8 +234,8 @@ class QRCode {
     try {
       // Primeiro, verificar se o usuário já gerou um QR Code para esta promoção
       const existingCheck = `
-            SELECT * FROM event_qr_codes 
-            WHERE promotion_id = $1 AND generator_user_id = $2
+          SELECT * FROM event_qr_codes 
+          WHERE promotion_id::uuid = $1::uuid AND generator_user_id = $2
         `;
       const { rows: existing } = await pool.query(existingCheck, [promotionId, userId]);
 
@@ -245,8 +245,8 @@ class QRCode {
 
       // Verificar se a promoção existe e está disponível
       const promotionQuery = `
-            SELECT * FROM event_qr_codes 
-            WHERE promotion_id = $1 AND qr_code_value = $1
+          SELECT * FROM event_qr_codes 
+          WHERE promotion_id::uuid = $1::uuid AND qr_code_value::uuid = $1::uuid
         `;
       const { rows: promotions } = await pool.query(promotionQuery, [promotionId]);
 
@@ -315,17 +315,17 @@ class QRCode {
   static async getAvailablePromotions(eventId) {
     try {
       const query = `
-            SELECT DISTINCT ON (promotion_id) 
-                id, event_id, creator_id, description, discount_percentage,
-                benefit_type, benefit_description, promotion_id,
-                generation_deadline, usage_deadline, max_codes, remaining_codes,
-                (SELECT COUNT(*) FROM event_qr_codes WHERE promotion_id = e.promotion_id AND status != 'disponivel') as generated_codes
-            FROM event_qr_codes e
-            WHERE event_id = $1 
-            AND qr_code_value = promotion_id
-            AND (generation_deadline IS NULL OR generation_deadline > NOW())
-            ORDER BY promotion_id
-        `;
+      SELECT DISTINCT ON (promotion_id) 
+          id, event_id, creator_id, description, discount_percentage,
+          benefit_type, benefit_description, promotion_id,
+          generation_deadline, usage_deadline, max_codes, remaining_codes,
+          (SELECT COUNT(*) FROM event_qr_codes WHERE promotion_id = e.promotion_id AND status != 'disponivel') as generated_codes
+      FROM event_qr_codes e
+      WHERE event_id = $1 
+      AND qr_code_value::uuid = promotion_id::uuid
+      AND (generation_deadline IS NULL OR generation_deadline > NOW())
+      ORDER BY promotion_id
+    `;
 
       const { rows } = await pool.query(query, [eventId]);
       return rows;

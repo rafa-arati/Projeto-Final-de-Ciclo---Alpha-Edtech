@@ -286,9 +286,11 @@ const deleteQRCode = async (req, res) => {
 };
 
 module.exports = {
-  createQRCode,
-  getEventQRCodes,
-  validateQRCode,
   createPromotion,
+  getEventPromotions,
+  generateUserQRCode,
+  getUserQRCodes,
+  validateQRCode,
+  useQRCode,
   deleteQRCode
-};
+};  

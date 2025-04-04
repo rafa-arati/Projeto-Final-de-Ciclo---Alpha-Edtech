@@ -1,7 +1,22 @@
-import { getEventById, toggleLikeEvent } from '../modules/events-api.js';
+import {
+  getEventById,
+  toggleLikeEvent,
+  createPromotion,
+  getEventPromotions,
+  generateUserQRCode,
+  getUserQRCodes,
+  validateQRCode,
+  useQRCode
+} from '../modules/events-api.js';
 import { showMessage } from '../modules/utils.js';
 import { navigateTo } from '../modules/router.js';
 import { getLoggedInUser, isAdmin } from '../modules/store.js';
+import {
+  renderQRCode,
+  formatExpirationDate,
+  isPromotionAvailable,
+  getRemainingTime
+} from '../modules/qrCodeHelpers.js';
 
 export default async function renderEventDetails(queryParams) {
   const appContainer = document.getElementById('app');
@@ -27,22 +42,49 @@ export default async function renderEventDetails(queryParams) {
     const canManageQrCodes = (user?.role === 'admin' ||
       (user?.role === 'premium' && user?.id === event.creator_id));
 
+    // Carregar promoções se usuário estiver logado
+    let promotions = [];
+    if (user) {
+      try {
+        promotions = await getEventPromotions(eventId);
+      } catch (error) {
+        console.error('Erro ao carregar promoções:', error);
+      }
+    }
     // Carregar QR Codes se o usuário tiver permissão
     let qrCodes = [];
+    let userQRCodes = [];
     if (canManageQrCodes) {
       try {
-        const qrResponse = await fetch(`/api/qrcode/event/${eventId}`, {
+        const qrUrl = `/api/qrcode/event/${eventId}`;
+        console.log("Tentando carregar QR Codes de:", qrUrl);
+
+        const qrResponse = await fetch(qrUrl, {
           credentials: 'include'
         });
 
+        console.log("Status da resposta:", qrResponse.status);
+
         if (qrResponse.ok) {
-          qrCodes = await qrResponse.json();
+          const contentType = qrResponse.headers.get("content-type");
+          console.log("Tipo de conteúdo:", contentType);
+
+          if (contentType && contentType.includes("application/json")) {
+            qrCodes = await qrResponse.json();
+            console.log("QR Codes carregados:", qrCodes.length);
+          } else {
+            console.error("Resposta não é JSON:", await qrResponse.text());
+            qrCodes = [];
+          }
+        } else {
+          console.error("Resposta não ok:", qrResponse.status, await qrResponse.text());
+          qrCodes = [];
         }
       } catch (error) {
         console.error('Erro ao carregar QR Codes:', error);
+        qrCodes = [];
       }
     }
-
     // Preparar HTML da página
     appContainer.innerHTML = `
       <div class="page-container">
@@ -215,6 +257,66 @@ export default async function renderEventDetails(queryParams) {
     // Processar vídeos
     processVideos(event);
 
+    // Adicionar seção para mostrar QR Codes gerados pelo usuário
+    if (user && userQRCodes.length > 0) {
+      // Criar seção "Seus QR Codes"
+      const userQRCodesSection = document.createElement('section');
+      userQRCodesSection.className = 'user-qrcodes-section';
+      userQRCodesSection.innerHTML = `
+    <h2 class="section-title">Seus QR Codes</h2>
+    <div class="qr-codes-grid">
+      ${renderUserQRCodes(userQRCodes)}
+    </div>
+  `;
+
+      // Encontrar onde inserir esta seção
+      const contentContainer = document.querySelector('.content-container');
+      if (contentContainer) {
+        contentContainer.appendChild(userQRCodesSection);
+      }
+    }
+
+    if (user && !canManageQrCodes) {
+      let promotionsHTML = '';
+
+      if (promotions.length > 0) {
+        promotionsHTML = `
+          <section class="event-promotions">
+            <h2 class="section-title">Promoções Disponíveis</h2>
+            <div class="promotions-list">
+              ${renderPromotionsList(promotions, userQRCodes)}
+            </div>
+          </section>
+        `;
+      }
+
+      // Adicionar seção de QR Codes do usuário
+      if (userQRCodes.length > 0) {
+        promotionsHTML += `
+          <section class="user-qrcodes">
+            <h2 class="section-title">Seus QR Codes</h2>
+            <div class="qr-codes-grid">
+              ${renderUserQRCodes(userQRCodes)}
+            </div>
+          </section>
+        `;
+      }
+
+      // Inserir no DOM após a descrição do evento
+      const eventDescriptionSection = document.querySelector('.event-description');
+      if (eventDescriptionSection) {
+        const promotionsSection = document.createElement('div');
+        promotionsSection.innerHTML = promotionsHTML;
+        eventDescriptionSection.after(promotionsSection);
+      }
+    }
+
+    // Renomear o botão "Criar QR Code" para "Criar Promoção" para admins/premium
+    const createQRCodeBtn = document.getElementById('create-qrcode-btn');
+    if (createQRCodeBtn) {
+      createQRCodeBtn.title = "Criar Promoção";
+    }
+
   } catch (error) {
     console.error('Erro ao carregar detalhes:', error);
     showMessage(error.message || 'Erro ao carregar detalhes do evento');
@@ -384,6 +486,159 @@ function renderQRCodesList(qrCodes) {
   `;
 }
 
+// Renderiza a lista de promoções para administradores
+function renderPromotionsListAdmin(promotions, eventId) {
+  if (!promotions || promotions.length === 0) {
+    return '<p>Nenhuma promoção encontrada.</p>';
+  }
+
+  return `
+    <div class="qr-codes-grid">
+      ${promotions.map(promotion => {
+    // Determinar status da promoção
+    let status = 'Ativa';
+    let statusClass = 'status-active';
+
+    if (promotion.generation_deadline && new Date(promotion.generation_deadline) < new Date()) {
+      status = 'Encerrada';
+      statusClass = 'status-expired';
+    }
+
+    // Formatar informações de limite
+    const limitInfo = promotion.max_codes
+      ? `Limite: ${promotion.max_codes} códigos (${promotion.remaining_codes} restantes)`
+      : 'Sem limite de códigos';
+
+    return `
+          <div class="qr-code-card">
+            <div class="qr-code-header">
+              <span class="qr-code-status ${statusClass}">${status}</span>
+              <button class="delete-qr-btn" data-id="${promotion.id}">×</button>
+            </div>
+            
+            <div class="qr-code-info">
+              <p class="qr-code-description">${promotion.description || 'Promoção'}</p>
+              <p class="qr-code-benefit">${getBenefitDescription(promotion)}</p>
+              <p class="qr-code-limit">${limitInfo}</p>
+              ${promotion.generation_deadline ?
+        `<p class="qr-code-expiry">Geração até: ${formatExpirationDate(promotion.generation_deadline)}</p>` : ''}
+              ${promotion.usage_deadline ?
+        `<p class="qr-code-expiry">Uso até: ${formatExpirationDate(promotion.usage_deadline)}</p>` : ''}
+              <p class="qr-code-stats">Códigos gerados: ${promotion.generated_codes || 0}</p>
+            </div>
+          </div>
+        `;
+  }).join('')}
+    </div>
+  `;
+}
+
+// Função para renderizar lista de promoções para usuários comuns
+function renderPromotionsList(promotions, userQRCodes) {
+  if (!promotions || promotions.length === 0) {
+    return '<p>Nenhuma promoção disponível para este evento.</p>';
+  }
+
+  return `
+    <div class="promotions-container">
+      ${promotions.map(promotion => {
+    // Verificar se o usuário já gerou um QR Code para esta promoção
+    const alreadyGenerated = userQRCodes.some(qr => qr.promotion_id === promotion.promotion_id);
+
+    // Verificar se a promoção ainda está disponível
+    const isAvailable = isPromotionAvailable(promotion);
+
+    // Formatar informações de limite
+    let limitInfo = '';
+    if (promotion.max_codes !== null) {
+      const remaining = promotion.max_codes - promotion.generated_codes;
+      limitInfo = `<span class="promotion-limit">${remaining} de ${promotion.max_codes} disponíveis</span>`;
+    }
+
+    // Formatar informações de prazo
+    let timeInfo = '';
+    if (promotion.generation_deadline) {
+      const remainingTime = getRemainingTime(promotion.generation_deadline);
+      timeInfo = `<span class="promotion-time">Validade para gerar: ${remainingTime}</span>`;
+    }
+
+    // Formatar o botão baseado no estado
+    let actionButton = '';
+    if (alreadyGenerated) {
+      actionButton = `<button class="btn disabled" disabled>QR Code já gerado</button>`;
+    } else if (!isAvailable) {
+      actionButton = `<button class="btn disabled" disabled>Promoção indisponível</button>`;
+    } else {
+      actionButton = `<button class="btn generate-qrcode-btn" data-promotion-id="${promotion.promotion_id}">Gerar meu QR Code</button>`;
+    }
+
+    return `
+          <div class="promotion-card">
+            <div class="promotion-header">
+              <h3>${promotion.description || 'Promoção Especial'}</h3>
+              ${timeInfo}
+            </div>
+            
+            <div class="promotion-details">
+              <p>${getBenefitDescription(promotion)}</p>
+              ${limitInfo}
+              <p class="promotion-expiry">Promoção válida até: ${formatExpirationDate(promotion.usage_deadline)}</p>
+            </div>
+            
+            <div class="promotion-action">
+              ${actionButton}
+            </div>
+          </div>
+        `;
+  }).join('')}
+    </div>
+  `;
+}
+
+// Função para renderizar QR Codes do usuário
+function renderUserQRCodes(userQRCodes) {
+  return userQRCodes.map(qr => {
+    // Determinar status do QR Code
+    let status = 'Ativo';
+    let statusClass = 'status-active';
+
+    if (qr.status === 'usado' || qr.is_used) {
+      status = 'Utilizado';
+      statusClass = 'status-used';
+    } else if (qr.usage_deadline && new Date(qr.usage_deadline) < new Date()) {
+      status = 'Expirado';
+      statusClass = 'status-expired';
+    }
+
+    return `
+      <div class="qr-code-card">
+        <div class="qr-code-header">
+          <span class="qr-code-status ${statusClass}">${status}</span>
+        </div>
+        
+        <div class="qr-code-img">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qr.qr_code_value}" alt="QR Code">
+        </div>
+        
+        <div class="qr-code-info">
+          <p class="qr-code-description">${qr.description || 'Promoção'}</p>
+          <p class="qr-code-benefit">${getBenefitDescription(qr)}</p>
+          ${qr.usage_deadline ? `<p class="qr-code-expiry">Válido até: ${formatExpirationDate(qr.usage_deadline)}</p>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Função auxiliar para obter descrição do benefício
+function getBenefitDescription(promotion) {
+  if (promotion.benefit_type === 'discount' && promotion.discount_percentage) {
+    return `${promotion.discount_percentage}% de desconto`;
+  }
+  return promotion.benefit_description || 'Benefício especial';
+}
+
+
 // Configuração do botão de curtir
 function setupLikeButton(eventId, event) {
   const likeButton = document.getElementById('like-button');
@@ -447,7 +702,6 @@ async function handleLikeClick(eventId) {
   }
 }
 
-// Configurar manipuladores de eventos
 function setupEventHandlers(eventId, qrCodes) {
   // Variável para armazenar o ID do QR Code a ser excluído
   let qrCodeToDelete = null;
@@ -470,9 +724,49 @@ function setupEventHandlers(eventId, qrCodes) {
   // Botão de visualizar QR Codes
   const viewQRCodesBtn = document.getElementById('view-qrcodes-btn');
   if (viewQRCodesBtn) {
-    viewQRCodesBtn.addEventListener('click', () => {
-      const modal = document.getElementById('view-qrcodes-modal');
-      if (modal) modal.classList.add('active');
+    viewQRCodesBtn.addEventListener('click', async () => {
+      try {
+        console.log("Tentando buscar promoções para evento:", eventId);
+
+        // Buscar promoções do evento para o admin
+        const promotions = await getEventPromotions(eventId);
+        console.log("Promoções carregadas:", promotions);
+
+        // Obter o nome do evento a partir da página
+        const eventName = document.getElementById('event-title')?.textContent || 'Evento';
+        console.log("Nome do evento:", eventName);
+
+        // Atualizar o conteúdo do modal
+        const modal = document.getElementById('view-qrcodes-modal');
+        const modalTitle = modal.querySelector('h3');
+        const qrCodesList = document.getElementById('qrcodes-list');
+
+        modalTitle.textContent = `Promoções para ${eventName}`;
+
+        if (promotions && promotions.length > 0) {
+          console.log("Renderizando promoções:", promotions.length);
+          qrCodesList.innerHTML = renderPromotionsListAdmin(promotions, eventId);
+        } else {
+          console.log("Nenhuma promoção encontrada");
+          qrCodesList.innerHTML = '<p>Nenhuma promoção criada para este evento.</p>';
+        }
+
+        // Configurar botões de exclusão
+        setupDeleteButtons();
+        console.log("Botões de exclusão configurados");
+
+        // Mostrar o modal
+        if (modal) {
+          modal.classList.add('active');
+          console.log("Modal ativado");
+        } else {
+          console.error("Modal não encontrado");
+        }
+      } catch (error) {
+        console.error('Erro ao carregar promoções:', error);
+        console.error('Detalhes do erro:', error.stack);
+        showMessage(`Erro ao carregar promoções: ${error.message}`);
+      }
     });
   }
 
@@ -570,6 +864,122 @@ function setupEventHandlers(eventId, qrCodes) {
     });
   }
 
+  // AQUI COMEÇA A SUBSTITUIÇÃO - Formulário de criação de promoção (antes era QR Code)
+  const qrcodeForm = document.getElementById('qrcode-form');
+  if (qrcodeForm) {
+    // Adicionar campos para os novos parâmetros
+    qrcodeForm.innerHTML = `
+      <div class="form-group">
+        <label for="qrcode-description">Descrição da Promoção</label>
+        <input type="text" id="qrcode-description" placeholder="Descreva esta promoção" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="qrcode-benefit-type">Tipo de Benefício</label>
+        <select id="qrcode-benefit-type" required>
+          <option value="">Selecione o tipo</option>
+          <option value="discount">Desconto</option>
+          <option value="gift">Brinde</option>
+          <option value="vip">Acesso VIP</option>
+        </select>
+      </div>
+      
+      <div class="form-group" id="discount-group" style="display:none;">
+        <label for="qrcode-discount">Percentual de Desconto</label>
+        <input type="number" id="qrcode-discount" min="1" max="100" placeholder="Ex: 15">
+      </div>
+      
+      <div class="form-group">
+        <label for="qrcode-benefit-description">Descrição do Benefício</label>
+        <textarea id="qrcode-benefit-description" placeholder="Detalhes sobre o benefício oferecido" required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="qrcode-max-codes">Limite de QR Codes (opcional)</label>
+        <input type="number" id="qrcode-max-codes" min="1" placeholder="Deixe em branco para ilimitado">
+      </div>
+      
+      <div class="form-group">
+        <label for="qrcode-generation-deadline">Data Limite para Geração</label>
+        <input type="datetime-local" id="qrcode-generation-deadline">
+      </div>
+      
+      <div class="form-group">
+        <label for="qrcode-usage-deadline">Data Limite para Uso</label>
+        <input type="datetime-local" id="qrcode-usage-deadline">
+      </div>
+      
+      <div class="modal-buttons">
+        <button type="submit" class="btn" style="background: linear-gradient(45deg, #439DFE, #8000FF);">Criar Promoção</button>
+      </div>
+    `;
+
+    // Atualizar evento de submit do formulário
+    qrcodeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const description = document.getElementById('qrcode-description').value;
+      const benefitType = document.getElementById('qrcode-benefit-type').value;
+      const benefitDescription = document.getElementById('qrcode-benefit-description').value;
+      const maxCodes = document.getElementById('qrcode-max-codes').value;
+      const generationDeadline = document.getElementById('qrcode-generation-deadline').value;
+      const usageDeadline = document.getElementById('qrcode-usage-deadline').value;
+
+      let discountPercentage = null;
+      if (benefitType === 'discount') {
+        discountPercentage = document.getElementById('qrcode-discount').value;
+      }
+
+      try {
+        const response = await createPromotion({
+          eventId,
+          description,
+          benefitType,
+          benefitDescription,
+          discountPercentage,
+          maxCodes: maxCodes || null,
+          generationDeadline: generationDeadline || null,
+          usageDeadline: usageDeadline || null
+        });
+
+        // Fechar modal
+        document.getElementById('qrcode-modal').classList.remove('active');
+
+        // Mostrar mensagem de sucesso
+        showMessage('Promoção criada com sucesso!');
+
+        // Limpar o formulário para nova entrada
+        qrcodeForm.reset();
+
+        // Atualizar a lista de promoções
+        await refreshQRCodesList(eventId);
+
+      } catch (error) {
+        console.error('Erro ao criar promoção:', error);
+        showMessage(error.message || 'Erro ao criar promoção');
+      }
+    });
+  }
+
+  // Adicionar evento para botões de geração de QR Code para usuários
+  document.addEventListener('click', async function (e) {
+    if (e.target.matches('.generate-qrcode-btn')) {
+      const promotionId = e.target.getAttribute('data-promotion-id');
+
+      try {
+        await generateUserQRCode(promotionId);
+
+        // Recarregar a página para mostrar o novo QR Code
+        showMessage('QR Code gerado com sucesso!');
+        setTimeout(() => window.location.reload(), 1500);
+
+      } catch (error) {
+        console.error('Erro ao gerar QR Code:', error);
+        showMessage(error.message || 'Erro ao gerar QR Code');
+      }
+    }
+  });
+
   async function refreshQRCodesList(eventId) {
     try {
       const response = await fetch(`/api/qrcode/event/${eventId}`, {
@@ -616,65 +1026,6 @@ function setupEventHandlers(eventId, qrCodes) {
           deleteModal.classList.add('active');
         }
       });
-    });
-  }
-
-  // Formulário de criação de QR Code
-  const qrcodeForm = document.getElementById('qrcode-form');
-  if (qrcodeForm) {
-    qrcodeForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const description = document.getElementById('qrcode-description').value;
-      const benefitType = document.getElementById('qrcode-benefit-type').value;
-      const benefitDescription = document.getElementById('qrcode-benefit-description').value;
-      const validUntil = document.getElementById('qrcode-valid-until').value;
-
-      let discountPercentage = null;
-      if (benefitType === 'discount') {
-        discountPercentage = document.getElementById('qrcode-discount').value;
-      }
-
-      try {
-        const response = await fetch('/api/qrcode', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            eventId,
-            description,
-            benefitType,
-            benefitDescription,
-            discountPercentage,
-            validUntil: validUntil || null
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Erro ao criar QR Code');
-        }
-
-        const result = await response.json();
-
-        // Fechar modal
-        document.getElementById('qrcode-modal').classList.remove('active');
-
-        // Mostrar mensagem de sucesso
-        showMessage('QR Code criado com sucesso!');
-
-        // Atualizar a lista de QR Codes imediatamente
-        await refreshQRCodesList(eventId);
-
-        // Limpar o formulário para nova entrada
-        qrcodeForm.reset();
-
-      } catch (error) {
-        console.error('Erro ao criar QR Code:', error);
-        showMessage(error.message || 'Erro ao criar QR Code');
-      }
     });
   }
 
@@ -844,5 +1195,107 @@ function addQRCodeStyles() {
   }
 }
 
+
+function addPromotionStyles() {
+  // Verificar se já existe um estilo para Promoções
+  if (!document.getElementById('promotion-styles')) {
+    const styles = document.createElement('style');
+    styles.id = 'promotion-styles';
+    styles.textContent = `
+      .promotions-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      
+      .promotion-card {
+        background-color: #222;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #333;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .promotion-header {
+        padding: 15px;
+        background: linear-gradient(45deg, #3a3a3a, #2a2a2a);
+        border-bottom: 1px solid #333;
+      }
+      
+      .promotion-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #fff;
+      }
+      
+      .promotion-time {
+        display: block;
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 5px;
+      }
+      
+      .promotion-details {
+        padding: 15px;
+        flex-grow: 1;
+      }
+      
+      .promotion-limit {
+        display: inline-block;
+        background-color: rgba(0, 255, 0, 0.1);
+        color: #4caf50;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin: 8px 0;
+      }
+      
+      .promotion-expiry {
+        font-size: 12px;
+        color: #999;
+        margin-top: 10px;
+      }
+      
+      .promotion-action {
+        padding: 15px;
+        border-top: 1px solid #333;
+        text-align: center;
+      }
+      
+      .btn.disabled {
+        background-color: #444 !important;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+      
+      .generate-qrcode-btn {
+        background: linear-gradient(45deg, #439DFE, #8000FF);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      
+      .generate-qrcode-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+      
+      .user-qrcodes {
+        margin-top: 30px;
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+}
+
+
 // Inicializar estilos
-document.addEventListener('DOMContentLoaded', addQRCodeStyles);
+document.addEventListener('DOMContentLoaded', () => {
+  addQRCodeStyles();
+  addPromotionStyles();
+});
