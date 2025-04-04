@@ -275,10 +275,18 @@ const deleteQRCode = async (req, res) => {
       return res.status(403).json({ message: 'Você não tem permissão para excluir este QR Code' });
     }
 
-    // Excluir o QR Code
-    await QRCode.deleteQRCode(qrCodeId);
+    // Excluir o QR Code (incluindo relacionados, se for uma promoção)
+    const result = await QRCode.deleteQRCode(qrCodeId);
 
-    res.status(200).json({ message: 'QR Code excluído com sucesso' });
+    // Verificar se a exclusão foi de uma promoção com QR Codes associados
+    if (result && result.deletedRelated && result.deletedRelated > 0) {
+      console.log(`Excluída promoção ${qrCodeId} e ${result.deletedRelated} QR Code(s) relacionado(s)`);
+      res.status(200).json({
+        message: `Promoção e ${result.deletedRelated} QR Code(s) relacionado(s) excluídos com sucesso`
+      });
+    } else {
+      res.status(200).json({ message: 'QR Code excluído com sucesso' });
+    }
   } catch (error) {
     console.error('Erro ao excluir QR Code:', error);
     res.status(500).json({ message: 'Erro ao excluir QR Code', error: error.message });

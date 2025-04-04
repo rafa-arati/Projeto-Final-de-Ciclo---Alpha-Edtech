@@ -124,14 +124,59 @@ class QRCode {
   // Excluir QR Code
   static async deleteQRCode(qrCodeId) {
     try {
-      const query = `
+      // Primeiro, obter o QR Code para pegar o promotion_id
+      const getQRCodeQuery = `
+      SELECT id, promotion_id, qr_code_value
+      FROM event_qr_codes
+      WHERE id = $1
+    `;
+
+      const { rows: qrCodeRows } = await pool.query(getQRCodeQuery, [qrCodeId]);
+
+      if (qrCodeRows.length === 0) {
+        return null; // QR Code não encontrado
+      }
+
+      const qrCode = qrCodeRows[0];
+      const isPromotion = qrCode.qr_code_value === qrCode.promotion_id;
+
+      if (isPromotion) {
+        // Este é um registro de promoção principal, vamos excluir todos os QR Codes vinculados
+        const countQuery = `
+        SELECT COUNT(*) AS count FROM event_qr_codes
+        WHERE promotion_id = $1 AND id != $2
+      `;
+
+        const { rows: countRows } = await pool.query(countQuery, [qrCode.promotion_id, qrCodeId]);
+        const relatedCount = parseInt(countRows[0].count);
+
+        const deleteRelatedQuery = `
+        DELETE FROM event_qr_codes
+        WHERE promotion_id = $1
+      `;
+
+        await pool.query(deleteRelatedQuery, [qrCode.promotion_id]);
+
+        return {
+          id: qrCodeId,
+          deletedRelated: relatedCount,
+          isPromotion: true
+        };
+      } else {
+        // Este é um QR Code individual, exclui apenas ele
+        const query = `
         DELETE FROM event_qr_codes
         WHERE id = $1
         RETURNING id
       `;
 
-      const { rows } = await pool.query(query, [qrCodeId]);
-      return rows[0];
+        const { rows } = await pool.query(query, [qrCodeId]);
+        return {
+          ...rows[0],
+          deletedRelated: 0,
+          isPromotion: false
+        };
+      }
     } catch (error) {
       console.error("Erro ao excluir QR Code:", error);
       throw error;

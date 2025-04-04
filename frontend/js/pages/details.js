@@ -54,6 +54,8 @@ export default async function renderEventDetails(queryParams) {
     // Carregar QR Codes se o usuário tiver permissão
     let qrCodes = [];
     let userQRCodes = [];
+
+    // Carregar QR Codes para admins/premium
     if (canManageQrCodes) {
       try {
         const qrUrl = `/api/qrcode/event/${eventId}`;
@@ -85,6 +87,58 @@ export default async function renderEventDetails(queryParams) {
         qrCodes = [];
       }
     }
+
+    // Carregar QR Codes gerados pelo usuário
+    if (user) {
+      try {
+        console.log("Tentando carregar QR Codes para o usuário:", user.id);
+
+        const userQRResponse = await getUserQRCodes();
+        console.log("Resposta bruta da API:", userQRResponse);
+
+        if (userQRResponse && Array.isArray(userQRResponse)) {
+          userQRCodes = userQRResponse;
+          console.log("QR Codes do usuário antes da filtragem:", userQRCodes.length);
+
+          // Debugar valores para comparação
+          console.log("EventId:", eventId, typeof eventId);
+          if (userQRCodes.length > 0) {
+            console.log("Exemplo de QR Code event_id:", userQRCodes[0].event_id, typeof userQRCodes[0].event_id);
+          }
+
+          // Filtrar apenas os deste evento - com verificação extra
+          const parsedEventId = parseInt(eventId);
+          console.log("EventId parseado:", parsedEventId);
+
+          userQRCodes = userQRCodes.filter(qr => {
+            console.log(`Comparando: QR event_id=${qr.event_id} (${typeof qr.event_id}) com eventId=${parsedEventId} (${typeof parsedEventId})`);
+            return qr.event_id === parsedEventId;
+          });
+
+          console.log("QR Codes do usuário após filtragem:", userQRCodes.length);
+        } else {
+          console.error("Resposta não é um array ou está vazia:", userQRResponse);
+          userQRCodes = [];
+        }
+      } catch (error) {
+        console.error('Erro ao carregar QR Codes do usuário:', error);
+        userQRCodes = [];
+      }
+    }
+
+    // Log detalhado do estado final
+    console.log("Status dos QR Codes do usuário:");
+    console.log("- usuário logado:", !!user);
+    console.log("- quantidade de QR Codes:", userQRCodes.length);
+    if (userQRCodes.length > 0) {
+      console.log("- QR Codes encontrados:", userQRCodes);
+      console.log("- Conteúdo HTML gerado:", renderUserQRCodes(userQRCodes));
+    }
+
+
+
+
+
     // Preparar HTML da página
     appContainer.innerHTML = `
       <div class="page-container">
@@ -166,6 +220,16 @@ export default async function renderEventDetails(queryParams) {
                   </div>
                   ` : ''}
                 </div>
+
+                  <!-- Adicionar a seção de QR Codes do usuário aqui -->
+                ${user && userQRCodes.length > 0 ? `
+                  <section class="user-qrcodes-section">
+                    <h2 class="section-title">Seus QR Codes</h2>
+                    <div class="qr-codes-grid">
+                      ${renderUserQRCodes(userQRCodes)}
+                    </div>
+                  </section>
+                ` : ''}
 
                 <!-- Seção de Vídeos -->
                 <div class="video-section">
@@ -256,25 +320,6 @@ export default async function renderEventDetails(queryParams) {
 
     // Processar vídeos
     processVideos(event);
-
-    // Adicionar seção para mostrar QR Codes gerados pelo usuário
-    if (user && userQRCodes.length > 0) {
-      // Criar seção "Seus QR Codes"
-      const userQRCodesSection = document.createElement('section');
-      userQRCodesSection.className = 'user-qrcodes-section';
-      userQRCodesSection.innerHTML = `
-    <h2 class="section-title">Seus QR Codes</h2>
-    <div class="qr-codes-grid">
-      ${renderUserQRCodes(userQRCodes)}
-    </div>
-  `;
-
-      // Encontrar onde inserir esta seção
-      const contentContainer = document.querySelector('.content-container');
-      if (contentContainer) {
-        contentContainer.appendChild(userQRCodesSection);
-      }
-    }
 
     if (user && !canManageQrCodes) {
       let promotionsHTML = '';
