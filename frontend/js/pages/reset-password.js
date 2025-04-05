@@ -1,54 +1,129 @@
 import { showMessage } from '../modules/utils.js';
 import { navigateTo } from '../modules/router.js';
-import { resetPassword } from '../modules/auth.js';
+import { resetPassword } from '../modules/auth.js'; //
 
-export default function render(queryParams) {
+export default function renderResetPassword(queryParams) {
   // Obtém o token dos parâmetros da URL
   const token = queryParams.get('token');
 
   // Se não tiver token, redireciona para login
   if (!token) {
-    showMessage('Token inválido');
-    navigateTo('login');
-    return;
+    // Garante que a mensagem seja mostrada antes do redirecionamento
+    showMessage('Token inválido ou ausente. Solicite a recuperação novamente.');
+    // Adiciona um pequeno delay antes de redirecionar, caso showMessage seja assíncrono
+    setTimeout(() => navigateTo('login'), 50); 
+    return; // Impede a renderização do restante da página
   }
 
-  // Renderiza o formulário de redefinição de senha
-  document.getElementById('app').innerHTML = `
-    <div class="reset-password-container">
-      <h2>Crie sua Nova Senha</h2>
-      <form id="resetForm">
-        <input type="password" id="newPassword" placeholder="Nova senha" required>
-        <input type="password" id="confirmPassword" placeholder="Confirme a senha" required>
-        <button type="submit">Salvar</button>
-      </form>
+  const appContainer = document.getElementById('app');
+  if (!appContainer) return;
+
+  // Renderiza a nova estrutura HTML que você forneceu
+  appContainer.innerHTML = `
+    <div class="page-container reset-password-page">
+        
+        <div class="header">
+            <a href="#" class="back-button" id="backToLoginBtn">←</a>
+        </div>
+        
+        <div class="password-container">
+            <h1 class="password-title">Criar Nova Senha</h1>
+            
+            <p class="password-description">
+                Crie uma senha forte para proteger sua conta.
+            </p>
+            
+            <form id="resetForm">
+              <input 
+                  type="password" 
+                  placeholder="Digite sua nova senha" 
+                  class="password-input"
+                  id="newPassword" 
+                  required
+              >
+              
+              <input 
+                  type="password" 
+                  placeholder="Confirme sua nova senha" 
+                  class="password-input"
+                  id="confirmPassword"
+                  required
+              >
+              
+              <div class="password-requirements">
+                  • Mínimo de 8 caracteres<br>
+                  • Pelo menos uma letra<br>
+                  • Pelo menos um número<br>
+                  • Pelo menos um caractere especial
+              </div>
+              
+              <button type="submit" class="send-button">
+                  Redefinir Senha
+              </button>
+            </form>
+        </div>
     </div>
   `;
 
-  // Adiciona evento de submissão do formulário
-  document.getElementById('resetForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  // --- Configura os Event Listeners ---
 
-    const newPass = document.getElementById('newPassword').value;
-    const confirmPass = document.getElementById('confirmPassword').value;
+  // Event listener para o formulário de reset
+  const resetForm = document.getElementById('resetForm');
+  if (resetForm) {
+    resetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    // Valida se as senhas coincidem
-    if (newPass !== confirmPass) {
-      showMessage('As senhas não coincidem!');
-      return;
-    }
+      const newPassInput = document.getElementById('newPassword');
+      const confirmPassInput = document.getElementById('confirmPassword');
+      const newPass = newPassInput ? newPassInput.value : null;
+      const confirmPass = confirmPassInput ? confirmPassInput.value : null;
 
-    try {
-      // Chama a função de redefinição de senha
-      await resetPassword(token, newPass);
+      // Validações básicas
+      if (!newPass || !confirmPass) {
+          showMessage('Por favor, preencha ambos os campos de senha.');
+          return;
+      }
+      if (newPass !== confirmPass) {
+        showMessage('As senhas não coincidem!');
+        return;
+      }
+      // Adicionar validação de força da senha se desejar (ex: min 8 chars)
+      if (newPass.length < 8) {
+         showMessage('A senha deve ter pelo menos 8 caracteres.');
+         return;
+      }
+      // Validações mais complexas (letras, números, especiais) podem ser adicionadas aqui
+      // Exemplo: if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(newPass)) { ... }
 
-      showMessage('Senha alterada com sucesso!');
 
-      // Redireciona para login após 2 segundos
-      setTimeout(() => navigateTo('login'), 2000);
-    } catch (error) {
-      // Mostra mensagem de erro
-      showMessage(error.message || 'Erro ao redefinir senha');
-    }
-  });
+      // Desabilitar botão
+      const submitButton = resetForm.querySelector('.send-button');
+      if (submitButton) submitButton.disabled = true;
+
+      try {
+        // Chama a função de redefinição de senha da API
+        await resetPassword(token, newPass); //
+
+        showMessage('Senha alterada com sucesso! Redirecionando para login...');
+
+        // Redireciona para login após um tempo
+        setTimeout(() => navigateTo('login'), 2000);
+      } catch (error) {
+        // Mostra mensagem de erro
+        showMessage(error.message || 'Erro ao redefinir senha. O link pode ter expirado.');
+        // Habilitar botão novamente
+        if (submitButton) submitButton.disabled = false;
+      }
+    });
+  }
+
+  // Event listener para o botão Voltar
+  const backButton = document.getElementById('backToLoginBtn');
+  if (backButton) {
+      backButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          // Navega de volta para a tela de login
+          navigateTo('login'); 
+      });
+  }
 }
