@@ -42,16 +42,7 @@ export default async function renderEvents(queryParams) {
       <div class="app-container">
         <header class="app-header">
           <div class="header-top">
-            <div class="header-date">${new Date().toLocaleDateString(
-    "pt-BR",
-    { day: "numeric", month: "long" }
-  )}, ${new Date().toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  })}</div>
-            <div class="header-profile" id="profile-btn">
-              ${user?.photo_url ? `<img src="${user.photo_url}" alt="Perfil" style="width: 32px; height: 32px; border-radius: 50%;">` : ''}
-            </div>
+            
           </div>
           <h1 class="header-title">Explore eventos</h1>
         </header>
@@ -130,13 +121,11 @@ export default async function renderEvents(queryParams) {
             </svg>
             <span>Favoritos</span>
           </div>
-          
+
           <div class="nav-item" id="nav-perfil">
             <svg class="icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" />
-              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Perfil</span>
           </div>

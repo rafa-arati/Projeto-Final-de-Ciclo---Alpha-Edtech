@@ -298,3 +298,61 @@
         margin-top: 0.5rem;
         opacity: 0.8;
     }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        padding: 15px 15px; /* Ajuste o padding conforme necessário */
+        border-bottom: 1px solid #222; /* Linha sutil opcional */
+        margin-bottom: 20px; /* Espaço abaixo do header */
+        position: relative; /* Para posicionamento absoluto do título se necessário */
+        width: 100%; /* Garante que ocupe a largura */
+        box-sizing: border-box;
+      }
+      
+      .page-header .back-button {
+        background: none;
+        border: none;
+        color: #ccc;
+        padding: 5px;
+        cursor: pointer;
+        display: inline-flex; /* Para alinhar o SVG corretamente */
+        align-items: center;
+        justify-content: center;
+        /* Define uma largura fixa para alinhar o título ao centro corretamente */
+        width: 34px; /* Ajuste conforme o tamanho do ícone + padding */
+        flex-shrink: 0; /* Impede que o botão encolha */
+      }
+      
+      .page-header .back-button:hover {
+        color: white;
+      }
+      
+      .page-header .back-button svg {
+        width: 24px;
+        height: 24px;
+      }
+      
+      .page-header h1 {
+        flex-grow: 1; /* Faz o título ocupar o espaço restante */
+        text-align: center; /* Centraliza o texto */
+        margin: 0; /* Remove margens padrão do h1 */
+        font-size: 18px; /* Ajuste o tamanho */
+        font-weight: 600;
+        color: #eee;
+        /* Compensar a largura do botão voltar para centralização real */
+        padding-right: 34px; /* Mesmo valor da largura do botão voltar */
+      }
+      
+      /* Estilos específicos para garantir que funcionem */
+      .account-hub-page .profile-header,
+      #criarEventoForm .header { /* Seletores mais específicos se necessário */
+         border-bottom: none; /* Remover borda se já existir nesses elementos */
+         margin-bottom: 0; /* Remover margem se já existir */
+         padding: 15px; /* Garantir padding padrão */
+      }
+      
+      /* Esconder a classe .header antiga de create-event se ainda existir */
+      #criarEventoForm > .header {
+          display: none; /* Esconde o header antigo se o novo for adicionado fora do form */
+      }
