@@ -299,50 +299,136 @@ export async function upgradeToPremium() {
 }
 
 /**
- * Cria um novo QR Code para um evento
- * @param {Object} qrCodeData - Dados do QR Code
- * @returns {Promise} Promise com o QR Code criado
+ * Cria uma nova promoção para um evento
+ * @param {Object} promotionData - Dados da promoção
+ * @returns {Promise} Promise com a promoção criada
  */
-export async function createQRCode(qrCodeData) {
+export async function createPromotion(promotionData) {
   try {
-    const response = await fetch(`${API_URL}/qrcode`, {
+    const response = await fetch(`${API_URL}/qrcode/promotion`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       credentials: 'include',
-      body: JSON.stringify(qrCodeData)
+      body: JSON.stringify(promotionData)
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao criar QR Code');
+      throw new Error(errorData.message || 'Erro ao criar promoção');
     }
 
     return await response.json();
   } catch (error) {
-    console.error('Erro ao criar QR Code:', error);
+    console.error('Erro ao criar promoção:', error);
     throw error;
   }
 }
 
 /**
- * Obtém QR Codes de um evento
+ * Obtém promoções disponíveis para um evento
  * @param {number} eventId - ID do evento
- * @returns {Promise} Promise com os QR Codes do evento
+ * @returns {Promise} Promise com as promoções disponíveis
  */
-export async function getEventQRCodes(eventId) {
+export async function getEventPromotions(eventId) {
   try {
-    const response = await fetch(`${API_URL}/qrcode/event/${eventId}`, {
-      credentials: 'include'
-    });
+    const response = await fetch(`${API_URL}/qrcode/promotions/${eventId}`);
 
-    if (!response.ok) throw new Error('Erro ao buscar QR Codes');
+    if (!response.ok) throw new Error('Erro ao buscar promoções');
 
     return await response.json();
   } catch (error) {
-    console.error('Erro ao buscar QR Codes:', error);
+    console.error('Erro ao buscar promoções:', error);
     return [];
+  }
+}
+
+/**
+ * Gera um QR Code personalizado para o usuário atual
+ * @param {string} promotionId - ID da promoção
+ * @returns {Promise} Promise com o QR Code gerado
+ */
+export async function generateUserQRCode(promotionId) {
+  try {
+    const response = await fetch(`${API_URL}/qrcode/generate/${promotionId}`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao gerar QR Code');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao gerar QR Code:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtém QR Codes gerados pelo usuário atual
+ * @returns {Promise} Promise com os QR Codes do usuário
+ */
+export async function getUserQRCodes() {
+  try {
+    const response = await fetch(`${API_URL}/qrcode/my-qrcodes`, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Erro ao buscar seus QR Codes');
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao buscar seus QR Codes:', error);
+    return [];
+  }
+}
+
+/**
+ * Valida um QR Code (sem marcar como usado)
+ * @param {string} qrCodeValue - Valor do QR Code
+ * @returns {Promise} Promise com o resultado da validação
+ */
+export async function validateQRCode(qrCodeValue) {
+  try {
+    const response = await fetch(`${API_URL}/qrcode/validate/${qrCodeValue}`);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'QR Code inválido');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao validar QR Code:', error);
+    throw error;
+  }
+}
+
+/**
+ * Marca um QR Code como utilizado
+ * @param {string} qrCodeValue - Valor do QR Code
+ * @returns {Promise} Promise com o resultado
+ */
+export async function useQRCode(qrCodeValue) {
+  try {
+    const response = await fetch(`${API_URL}/qrcode/use/${qrCodeValue}`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao utilizar QR Code');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao utilizar QR Code:', error);
+    throw error;
   }
 }
 

@@ -1,3 +1,35 @@
+-- Script para remover o banco de dados antigo e criar o novo esquema
+-- ATENÇÃO: Este script irá remover todas as tabelas e dados existentes!
+
+-- Primeiro, desative o modo de verificação de chaves estrangeiras para permitir remoção sem conflitos
+SET session_replication_role = 'replica';
+
+-- Lista todas as tabelas existentes e as remove
+DO $$ 
+DECLARE
+    tabela_nome text;
+BEGIN
+    FOR tabela_nome IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public')
+    LOOP
+        EXECUTE 'DROP TABLE IF EXISTS ' || tabela_nome || ' CASCADE';
+    END LOOP;
+END $$;
+
+-- Lista e remove todos os tipos enumerados existentes
+DO $$
+DECLARE
+    tipo_nome text;
+BEGIN
+    FOR tipo_nome IN (SELECT typname FROM pg_type WHERE typtype = 'e')
+    LOOP
+        EXECUTE 'DROP TYPE IF EXISTS ' || tipo_nome || ' CASCADE';
+    END LOOP;
+END $$;
+
+-- Volte ao modo normal
+SET session_replication_role = 'origin';
+
+-- Agora podemos criar o novo esquema
 -- Criar tipos enumerados
 CREATE TYPE gender_type AS ENUM ('Masculino', 'Feminino', 'Outro');
 CREATE TYPE user_role AS ENUM ('user', 'admin', 'premium');
@@ -113,14 +145,30 @@ CREATE TABLE event_favorites (
     UNIQUE (user_id, event_id)
 );
 
--- Tabela simplificada para QR codes
+-- Tabela para QR codes (versão aprimorada)
 CREATE TABLE event_qr_codes (
     id SERIAL PRIMARY KEY,
     event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
     creator_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     description TEXT,
+    discount_percentage INTEGER,
+    benefit_type VARCHAR(50),
+    benefit_description TEXT,
+    qr_code_value VARCHAR(255) UNIQUE NOT NULL,
     valid_until TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    is_used BOOLEAN DEFAULT FALSE,
+    used_at TIMESTAMP,
+    used_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Novos campos para o sistema de QR Code personalizado
+    promotion_id UUID DEFAULT gen_random_uuid(),
+    status VARCHAR(20) DEFAULT 'disponivel' CHECK (status IN ('disponivel', 'gerado', 'usado')),
+    max_codes INTEGER NULL,
+    generation_deadline TIMESTAMP,
+    usage_deadline TIMESTAMP,
+    generator_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    generation_time TIMESTAMP,
+    remaining_codes INTEGER
 );
 
 -- Tabela simples para métricas de eventos
@@ -131,6 +179,17 @@ CREATE TABLE event_metrics (
     shares INTEGER DEFAULT 0,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Adicionar a coluna video_urls como um array de texto
+ALTER TABLE events ADD COLUMN video_urls TEXT[];
+
+-- Adicionar uma restrição mais simples para o limite de 3 URLs
+ALTER TABLE events DROP CONSTRAINT IF EXISTS events_video_urls_check;
+ALTER TABLE events ADD CONSTRAINT events_video_urls_max_check 
+CHECK (video_urls IS NULL OR array_length(video_urls, 1) <= 3);
+
+-- Adicionar comentário
+COMMENT ON COLUMN events.video_urls IS 'Array de links de vídeo (YouTube/TikTok, máximo 3)';
 
 -- Inserir categorias principais
 INSERT INTO categories (name) VALUES 
@@ -197,3 +256,37 @@ CREATE INDEX idx_event_likes_event ON event_likes(event_id);
 CREATE INDEX idx_event_favorites_event ON event_favorites(event_id);
 CREATE INDEX idx_event_likes_user ON event_likes(user_id);
 CREATE INDEX idx_event_favorites_user ON event_favorites(user_id);
+
+-- Criar índices para o QR Code personalizado
+CREATE INDEX idx_event_qr_codes_promotion_id ON event_qr_codes(promotion_id);
+CREATE INDEX idx_event_qr_codes_generator_user ON event_qr_codes(generator_user_id);
+CREATE INDEX idx_event_qr_codes_status ON event_qr_codes(status);
+
+-- Adicionar restrição única para garantir um código por usuário por promoção
+ALTER TABLE event_qr_codes 
+  ADD CONSTRAINT unique_user_promotion UNIQUE (promotion_id, generator_user_id);
+
+-- Função para atualizar automaticamente o contador de códigos restantes
+CREATE OR REPLACE FUNCTION update_remaining_codes()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Se o status está mudando para 'gerado' e existe um limite máximo
+  IF NEW.status = 'gerado' AND NEW.max_codes IS NOT NULL THEN
+    -- Atualizar o contador em todos os registros com o mesmo promotion_id
+    UPDATE event_qr_codes 
+    SET remaining_codes = COALESCE(max_codes, 0) - (
+      SELECT COUNT(*) 
+      FROM event_qr_codes 
+      WHERE promotion_id = NEW.promotion_id AND status != 'disponivel'
+    )
+    WHERE promotion_id = NEW.promotion_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para atualizar automaticamente
+CREATE TRIGGER trigger_update_remaining_codes
+AFTER UPDATE OF status ON event_qr_codes
+FOR EACH ROW
+EXECUTE FUNCTION update_remaining_codes();
