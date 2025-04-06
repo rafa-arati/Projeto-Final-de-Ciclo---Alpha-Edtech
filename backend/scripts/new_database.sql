@@ -146,30 +146,30 @@ CREATE TABLE event_favorites (
 );
 
 -- Tabela para QR codes (versão aprimorada)
-CREATE TABLE event_qr_codes (
-    id SERIAL PRIMARY KEY,
-    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
-    creator_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    description TEXT,
-    discount_percentage INTEGER,
-    benefit_type VARCHAR(50),
-    benefit_description TEXT,
-    qr_code_value VARCHAR(255) UNIQUE NOT NULL,
-    valid_until TIMESTAMP,
-    is_used BOOLEAN DEFAULT FALSE,
-    used_at TIMESTAMP,
-    used_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- Novos campos para o sistema de QR Code personalizado
-    promotion_id UUID DEFAULT gen_random_uuid(),
-    status VARCHAR(20) DEFAULT 'disponivel' CHECK (status IN ('disponivel', 'gerado', 'usado')),
-    max_codes INTEGER NULL,
-    generation_deadline TIMESTAMP,
-    usage_deadline TIMESTAMP,
-    generator_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    generation_time TIMESTAMP,
-    remaining_codes INTEGER
-);
+    CREATE TABLE event_qr_codes (
+        id SERIAL PRIMARY KEY,
+        event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
+        creator_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        description TEXT,
+        discount_percentage INTEGER,
+        benefit_type VARCHAR(50),
+        benefit_description TEXT,
+        qr_code_value VARCHAR(255) UNIQUE NOT NULL,
+        valid_until TIMESTAMP,
+        is_used BOOLEAN DEFAULT FALSE,
+        used_at TIMESTAMP,
+        used_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        -- Novos campos para o sistema de QR Code personalizado
+        promotion_id UUID DEFAULT gen_random_uuid(),
+        status VARCHAR(20) DEFAULT 'disponivel' CHECK (status IN ('disponivel', 'gerado', 'usado')),
+        max_codes INTEGER NULL,
+        generation_deadline TIMESTAMP,
+        usage_deadline TIMESTAMP,
+        generator_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        generation_time TIMESTAMP,
+        remaining_codes INTEGER
+    );
 
 -- Tabela simples para métricas de eventos
 CREATE TABLE event_metrics (
