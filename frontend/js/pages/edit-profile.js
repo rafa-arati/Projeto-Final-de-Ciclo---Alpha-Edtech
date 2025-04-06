@@ -1,5 +1,5 @@
 import { navigateTo } from '../modules/router.js';
-import { showMessage } from '../modules/utils.js';
+import { showMessage, transitionToPage } from '../modules/utils.js'; // Assumindo que transitionToPage está em utils.js
 import { fetchCompleteUserData, logoutUser } from '../modules/auth.js';
 import { getLoggedInUser, saveUser, clearUser, isAdmin, isPremium } from '../modules/store.js';
 
@@ -13,6 +13,14 @@ const barChartIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height=
 const adminIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`;
 const premiumIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
 const logoutIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>`;
+
+// Ícones da Barra de Navegação Inferior
+const homeIconNav = `<svg class="icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+const searchIconNav = `<svg class="icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" /><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+const agendaIconNav = `<svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/><path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4z"/></svg>`;
+const favoritesIconNav = `<svg class="icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+const profileIconNav = `<svg class="icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
 
 /**
  * Renderiza a página de perfil/conta do usuário.
@@ -117,12 +125,43 @@ export default async function renderEditProfile(queryParams) {
                     </form>
                 </div>
 
-              </div> </div> </div> <div class="modal" id="development-modal"> <div class="modal-content"> <span class="close-modal" id="close-development-modal">&times;</span> <h3>Em Desenvolvimento</h3> <p>Esta funcionalidade estará disponível em breve!</p> <div class="modal-buttons"> <button id="ok-development" class="btn">Entendi</button> </div> </div> </div>
+              </div> </div> <footer class="bottom-nav">
+              <div class="nav-item" id="nav-home">
+                ${homeIconNav}
+                <span>Home</span>
+              </div>
+              <div class="nav-item" id="nav-search">
+                ${searchIconNav}
+                <span>Procurar</span>
+              </div>
+              <div class="nav-item" id="nav-agenda">
+                ${agendaIconNav}
+                <span>Agenda</span>
+              </div>
+              <div class="nav-item" id="nav-favorites">
+                ${favoritesIconNav}
+                <span>Favoritos</span>
+              </div>
+              <div class="nav-item active" id="nav-profile">
+                ${profileIconNav}
+                <span>Perfil</span>
+              </div>
+            </footer>
+            </div> <div class="modal" id="development-modal">
+            <div class="modal-content">
+              <span class="close-modal" id="close-development-modal">&times;</span>
+              <h3>Em Desenvolvimento</h3>
+              <p>Esta funcionalidade estará disponível em breve!</p>
+              <div class="modal-buttons">
+                <button id="ok-development" class="btn">Entendi</button>
+              </div>
+            </div>
+          </div>
         `;
 
-        addAccountHubStyles();
-        setupAccountHubEvents(user);
-        setupDevelopmentModal();
+        addAccountHubStyles(); // Garante que os estilos CSS sejam carregados/existam
+        setupAccountHubEvents(user); // Configura TODOS os eventos da página, incluindo a nova barra
+        setupDevelopmentModal(); // Configura o modal de "em desenvolvimento"
 
       } catch (error) {
         console.error('Erro fatal ao carregar Conta/Perfil:', error);
@@ -133,58 +172,74 @@ export default async function renderEditProfile(queryParams) {
 
 // --- Funções Auxiliares ---
 
-function formatPhoneNumber(phoneFromDB) { /* ... (código como antes) ... */
+// Formata número de telefone para exibição (Ex: (XX) XXXXX-XXXX)
+function formatPhoneNumber(phoneFromDB) {
     if (!phoneFromDB) return '';
     const numbers = phoneFromDB.toString().replace(/\D/g, '');
     if (numbers.length === 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
     if (numbers.length === 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    return numbers;
+    return numbers; // Retorna apenas números se não bater com 10 ou 11 dígitos
 }
 
-function enforcePhoneFormat(value) { /* ... (código como antes) ... */
+// Aplica máscara enquanto o usuário digita no campo telefone
+function enforcePhoneFormat(value) {
     const numbers = value.replace(/\D/g, '');
     const len = numbers.length;
     if (len === 0) return '';
     if (len <= 2) return `(${numbers}`;
     if (len <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    // Adapta para 8 ou 9 dígitos no número principal
     if (len <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+    // Assume 9 dígitos como padrão se passar de 10
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
 }
 
-function setupDevelopmentModal() { /* ... (código como antes, com limpeza de listeners) ... */
+// Configura o modal genérico de "Em desenvolvimento"
+function setupDevelopmentModal() {
     const modal = document.getElementById("development-modal");
     const closeModalBtn = document.getElementById("close-development-modal");
     const okBtn = document.getElementById("ok-development");
     if (!modal || !closeModalBtn || !okBtn) return;
+
     const closeModalFunc = () => modal.classList.remove('active');
+
+    // Limpeza de listeners antigos antes de adicionar novos
     closeModalBtn.replaceWith(closeModalBtn.cloneNode(true));
     document.getElementById("close-development-modal").addEventListener("click", closeModalFunc);
+
     okBtn.replaceWith(okBtn.cloneNode(true));
     document.getElementById("ok-development").addEventListener("click", closeModalFunc);
+
+    // Fechar ao clicar fora (handler global, limpar antes de adicionar)
     const closeDevModalOnClickOutside = (event) => { if (modal && event.target === modal) { modal.classList.remove("active"); } };
-    window.removeEventListener("click", closeDevModalOnClickOutside);
-    window.addEventListener("click", closeDevModalOnClickOutside);
+    window.removeEventListener("click", closeDevModalOnClickOutside); // Remove anterior
+    window.addEventListener("click", closeDevModalOnClickOutside); // Adiciona novo
 }
 
-function showDevelopmentModal() { /* ... (código como antes) ... */
+// Mostra o modal de "Em desenvolvimento"
+function showDevelopmentModal() {
     const modal = document.getElementById('development-modal');
     if (modal) modal.classList.add('active');
 }
 
-function showEditForm() { /* ... (código como antes) ... */
+// Mostra o formulário de edição e esconde a lista de ações
+function showEditForm() {
     document.getElementById('actionList')?.classList.add('is-hidden');
+    document.getElementById('userInfoDisplay')?.classList.add('is-hidden'); // Esconde também a imagem/nome
     document.getElementById('editFormContainer')?.classList.remove('is-hidden');
-    document.getElementById('account-hub-title').textContent = 'Editar Informações';
+    document.getElementById('account-hub-title').textContent = 'Editar Informações'; // Muda o título do header
 }
 
-function showActionList() { /* ... (código como antes) ... */
+// Mostra a lista de ações e esconde o formulário de edição
+function showActionList() {
     document.getElementById('actionList')?.classList.remove('is-hidden');
+    document.getElementById('userInfoDisplay')?.classList.remove('is-hidden'); // Mostra imagem/nome de volta
     document.getElementById('editFormContainer')?.classList.add('is-hidden');
-    document.getElementById('account-hub-title').textContent = 'Minha Conta';
+    document.getElementById('account-hub-title').textContent = 'Minha Conta'; // Restaura título
 }
 
 /**
- * Configura todos os event listeners da página de conta/hub.
+ * Configura todos os event listeners da página de conta/hub, incluindo a barra de navegação.
  * @param {object} user - Os dados do usuário atual.
  */
 function setupAccountHubEvents(user) {
@@ -194,61 +249,54 @@ function setupAccountHubEvents(user) {
     const cleanAndAddListener = (id, event, handler) => {
         const element = document.getElementById(id);
         if (element) {
-            const newElement = element.cloneNode(true);
-            element.parentNode.replaceChild(newElement, element);
-            newElement.addEventListener(event, handler);
+            const newElement = element.cloneNode(true); // Cria um clone
+            element.parentNode.replaceChild(newElement, element); // Substitui o original pelo clone (remove listeners antigos)
+            newElement.addEventListener(event, handler); // Adiciona listener ao clone
         } else {
             console.warn(`Elemento com ID #${id} não encontrado para adicionar listener.`);
         }
     };
 
-    // *** NOVO LISTENER PARA O BOTÃO VOLTAR DO HEADER ***
+    // Botão Voltar do Header Principal
     cleanAndAddListener('profile-back-button', 'click', (e) => {
         e.preventDefault();
         const editFormContainer = document.getElementById('editFormContainer');
-        // Verifica se o formulário está VISÍVEL
         if (editFormContainer && !editFormContainer.classList.contains('is-hidden')) {
-            // Se o formulário está visível, volta para a lista de ações
-            console.log("Back button: Form is visible, switching to action list.");
-            showActionList();
+            showActionList(); // Se editando, volta para lista de ações
         } else {
-            // Se a lista de ações está visível, navega para a página de eventos
-            console.log("Back button: Action list is visible, navigating to events.");
-            navigateTo('events'); // Navega para a lista principal de eventos
+            navigateTo('events'); // Se na lista de ações, volta para eventos
         }
     });
 
-    // Botão: Alterar Foto (Display)
+    // Botão Alterar Foto (Display)
     cleanAndAddListener('alterar-foto-btn-display', 'click', showDevelopmentModal);
 
-    // Botão: Editar Informações Pessoais (mostra o formulário)
+    // Botão Editar Informações Pessoais (mostra o formulário)
     cleanAndAddListener('edit-info-btn', 'click', showEditForm);
 
-    // Botão: Cancelar Edição (esconde o formulário)
+    // Botão Cancelar Edição (esconde o formulário)
     cleanAndAddListener('cancel-edit-btn', 'click', (e) => {
-        e.preventDefault(); // Previne comportamento padrão caso seja um link no futuro
-        console.log("Cancel edit button clicked.");
+        e.preventDefault();
         showActionList();
     });
 
-    // Botão: Meus Eventos
+    // Botão Meus Eventos
     cleanAndAddListener('meus-eventos-btn', 'click', () => navigateTo('events', { showMyEvents: 'true' }));
 
-    // Botão: Criar Evento
+    // Botão Criar Evento
     cleanAndAddListener('criar-evento-btn', 'click', () => navigateTo('create-event'));
 
-    // Botão: Gerenciar Todos Eventos (Admin)
-    cleanAndAddListener('gerenciar-eventos-btn', 'click', () => navigateTo('events')); // Admin vê todos
+    // Botão Gerenciar Todos Eventos (Admin)
+    cleanAndAddListener('gerenciar-eventos-btn', 'click', () => navigateTo('manage-events')); // Vai para a tela de gerenciamento
 
-    // Botão: Métricas (Admin)
+    // Botão Métricas (Admin)
     cleanAndAddListener('metricas-btn', 'click', showDevelopmentModal);
 
-    // Botão: Upgrade Premium
+    // Botão Upgrade Premium
     cleanAndAddListener('upgrade-btn', 'click', () => navigateTo('premium'));
 
-    // Botão: Logout
+    // Botão Logout
     cleanAndAddListener('logout-btn', 'click', async (e) => {
-        // ... (lógica de logout como na versão anterior, com loading state) ...
         console.log("Logout button clicked");
         const button = e.currentTarget;
         const originalContent = button.innerHTML;
@@ -256,13 +304,13 @@ function setupAccountHubEvents(user) {
         button.innerHTML = `${logoutIcon} Saindo...`;
         try {
             await logoutUser();
-            clearUser();
-            navigateTo('welcome-screen');
+            clearUser(); // Limpa dados do localStorage
+            navigateTo('welcome-screen'); // Vai para a tela de boas-vindas/login
         } catch (error) {
             console.error('Erro ao fazer logout:', error);
             showMessage('Erro ao sair. Tente novamente.');
-             clearUser();
-             navigateTo('welcome-screen');
+            clearUser(); // Limpa dados mesmo em caso de erro
+            navigateTo('welcome-screen');
             button.disabled = false;
             button.innerHTML = originalContent;
         }
@@ -278,20 +326,20 @@ function setupAccountHubEvents(user) {
          });
      }
 
-    // Formulário de Submit (edição)
+    // Formulário de Submit (edição de perfil)
      const profileForm = document.getElementById('profileForm');
      if (profileForm) {
          const newProfileForm = profileForm.cloneNode(true);
          profileForm.parentNode.replaceChild(newProfileForm, profileForm);
          newProfileForm.addEventListener('submit', async (e) => {
-             // ... (lógica de submit do formulário como na versão anterior, com loading state) ...
               e.preventDefault();
              const nameInput = document.getElementById('name');
              const phoneInputSubmit = document.getElementById('phone');
              const name = nameInput ? nameInput.value.trim() : '';
-             const rawPhone = phoneInputSubmit ? phoneInputSubmit.value.replace(/\D/g, '') : '';
+             const rawPhone = phoneInputSubmit ? phoneInputSubmit.value.replace(/\D/g, '') : ''; // Pega só os números
 
              if (!name) { showMessage('Nome é obrigatório'); return; }
+             // Validação do telefone (opcional, mas recomendada)
              if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) {
                  showMessage('Telefone inválido. Use DDD + número (10 ou 11 dígitos).'); return;
              }
@@ -302,23 +350,28 @@ function setupAccountHubEvents(user) {
              submitButton.textContent = 'Salvando...';
 
              try {
+                 // Chama a API para atualizar o perfil
                  const response = await fetch('/api/auth/profile', {
                      method: 'PUT',
                      headers: { 'Content-Type': 'application/json' },
-                     credentials: 'include',
-                     body: JSON.stringify({ name: name, phone: rawPhone || null })
+                     credentials: 'include', // Envia o cookie de autenticação
+                     body: JSON.stringify({ name: name, phone: rawPhone || null }) // Envia null se vazio
                  });
                  const data = await response.json();
+
                  if (!response.ok) throw new Error(data.message || 'Falha ao atualizar');
 
                  showMessage('Perfil atualizado com sucesso!');
+                 // Atualiza dados do usuário no localStorage com a resposta
                  const updatedUserData = { ...user, name: data.data.name, phone: data.data.phone };
                  saveUser(updatedUserData);
-                 document.querySelector('.user-display-name').textContent = updatedUserData.name || updatedUserData.username || 'Usuário'; // Atualiza nome na tela
+                 // Atualiza nome exibido na tela (se visível)
+                 const displayNameElement = document.querySelector('.user-display-name');
+                 if (displayNameElement) displayNameElement.textContent = updatedUserData.name || updatedUserData.username || 'Usuário';
                  showActionList(); // Volta para a lista de ações
 
              } catch (error) {
-                 console.error('Erro na atualização:', error);
+                 console.error('Erro na atualização do perfil:', error);
                  showMessage(error.message || 'Erro ao atualizar perfil');
              } finally {
                  submitButton.disabled = false;
@@ -327,12 +380,30 @@ function setupAccountHubEvents(user) {
          });
      }
 
+    // --- Listeners para a Barra de Navegação Inferior ---
+    console.log("Setting up bottom navigation listeners...");
+    cleanAndAddListener('nav-home', 'click', () => navigateTo('events'));
+    cleanAndAddListener('nav-search', 'click', showDevelopmentModal); // Altere para navigateTo('search') se implementar
+    cleanAndAddListener('nav-agenda', 'click', () => navigateTo('agenda'));
+    cleanAndAddListener('nav-favorites', 'click', showDevelopmentModal); // Altere para navigateTo('favorites') se implementar
+    cleanAndAddListener('nav-profile', 'click', () => {
+        // Se já está na página de perfil e editando, volta para a lista de ações
+        const editFormContainer = document.getElementById('editFormContainer');
+        if (editFormContainer && !editFormContainer.classList.contains('is-hidden')) {
+             showActionList();
+        }
+        console.log("Profile nav item clicked (already on page).");
+        // Não precisa fazer nada se já estiver na visualização principal do perfil
+    });
+    // --- FIM: Listeners para a Barra de Navegação Inferior ---
+
     console.log("Account Hub events set up complete.");
 }
 
 
 /**
  * Adiciona ou garante que os estilos CSS necessários para a página de conta/hub existam.
+ * (Pode ser otimizado movendo estilos para arquivos CSS globais/específicos)
  */
 function addAccountHubStyles() {
     const styleId = 'account-hub-styles';
@@ -341,16 +412,17 @@ function addAccountHubStyles() {
     console.log("Adding Account Hub page styles...");
     const styles = document.createElement('style');
     styles.id = styleId;
-    // Adiciona os estilos CSS definidos anteriormente
     styles.textContent = `
-      /* ... (Cole aqui TODOS os estilos CSS da função addAccountHubStyles da resposta anterior) ... */
-      .account-hub-page .profile-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; margin-bottom: 20px; }
-      .account-hub-page .profile-header h1 { margin: 0 0 0 15px; font-size: 20px; font-weight: 600; color: #eee; }
-      .account-hub-page .back-button { background: none; border: none; color: #ccc; padding: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+      /* Estilos para a página Minha Conta / Editar Perfil */
+      .account-hub-page .profile-content { padding: 0 20px 100px; /* Mais espaço inferior por causa do nav */ text-align: center; }
+      /* ... (outros estilos de .profile-header, .profile-image-container, .user-display-name, .user-badge, etc. como definidos anteriormente) ... */
+      .account-hub-page .page-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; margin-bottom: 20px; }
+      .account-hub-page .page-header h1 { flex-grow: 1; text-align: center; margin: 0; font-size: 1.25rem; font-weight: 600; color: #eee; padding-right: 44px; /* Compensa botão voltar */ }
+      .account-hub-page .back-button { background: none; border: none; color: #ccc; padding: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 34px; flex-shrink: 0; margin-right: 10px; }
       .account-hub-page .back-button:hover { color: white; }
       .account-hub-page .back-button svg { width: 24px; height: 24px; }
-      .account-hub-page .profile-content { padding: 0 20px 80px; text-align: center; }
-      #userInfoDisplay { margin-bottom: 30px; }
+
+      #userInfoDisplay { margin-bottom: 30px; margin-top: 10px; }
       .profile-image-container { position: relative; width: 100px; height: 100px; margin: 0 auto 15px auto; }
       .profile-image { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background-color: #333; display: flex; align-items: center; justify-content: center; border: 2px solid #444; }
       .profile-image img { width: 100%; height: 100%; object-fit: cover; }
@@ -362,6 +434,7 @@ function addAccountHubStyles() {
       .admin-badge { background-color: rgba(255, 69, 58, 0.1); color: #ff453a; border-color: rgba(255, 69, 58, 0.3); }
       .premium-badge { background: linear-gradient(45deg, rgba(67, 157, 254, 0.1), rgba(128, 0, 255, 0.1)); color: #ae50ff; border-color: rgba(128, 0, 255, 0.3); }
       .user-badge.user-badge { background-color: rgba(142, 142, 147, 0.1); color: #8e8e93; border-color: rgba(142, 142, 147, 0.3); }
+
       .profile-action-list { max-width: 450px; margin: 20px auto; display: flex; flex-direction: column; gap: 12px; }
       .btn-profile-action { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background-color: #1c1c1e; color: #ddd; border: 1px solid #3a3a3c; padding: 14px 18px; border-radius: 10px; font-size: 15px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; }
       .btn-profile-action:hover { background-color: #2c2c2e; border-color: #555; }
@@ -371,8 +444,9 @@ function addAccountHubStyles() {
       .btn-profile-action.logout-action svg { color: #ff453a; }
       .btn-profile-action.logout-action:hover { background-color: rgba(255, 69, 58, 0.15); border-color: rgba(255, 69, 58, 0.4); color: #ff6359; }
       .btn-profile-action.logout-action:hover svg { color: #ff6359; }
-      .profile-form-container { max-width: 450px; margin: 20px auto; }
-      .profile-form { text-align: left; }
+
+      .profile-form-container { max-width: 450px; margin: 0 auto; /* Removido margin top */ }
+      .profile-form { text-align: left; padding-top: 20px; /* Adicionado padding top */}
       .profile-form .form-group { margin-bottom: 20px; }
       .profile-form label { display: block; margin-bottom: 8px; color: #aaa; font-size: 14px; font-weight: 500; }
       .profile-form input { width: 100%; box-sizing: border-box; background-color: #1c1c1e; border: 1px solid #3a3a3c; border-radius: 8px; padding: 12px 15px; color: white; font-size: 16px; }
@@ -380,17 +454,11 @@ function addAccountHubStyles() {
       .profile-form input:disabled { background-color: #2c2c2e; color: #777; opacity: 0.7; cursor: not-allowed; border-color: #3a3a3c; }
       .input-hint { display: block; font-size: 12px; color: #666; margin-top: 6px; }
       .profile-form .form-buttons { display: flex; gap: 10px; margin-top: 25px; }
-      .profile-form .btn { flex: 1; }
-      .profile-form .btn.secondary { background-color: #3a3a3c; border-color: #555; }
+      .profile-form .btn { flex: 1; padding: 12px; /* Ajuste padding se necessário */ }
+      .profile-form .btn-save { background: linear-gradient(45deg, #439DFE, #8000FF); color: white;}
+      .profile-form .btn.secondary { background-color: #3a3a3c; border-color: #555; color: #ccc; }
       .profile-form .btn.secondary:hover { background-color: #4a4a4c; }
-      .premium-banner { background: linear-gradient(45deg, rgba(67, 157, 254, 0.1), rgba(128, 0, 255, 0.1)); border: 1px solid rgba(128, 0, 255, 0.3); border-radius: 10px; padding: 15px; margin: 25px 0; display: flex; flex-direction: column; gap: 15px; text-align: left; }
-      .premium-banner-content { display: flex; align-items: center; gap: 15px; }
-      .premium-banner-icon { background: linear-gradient(45deg, #439DFE, #8000FF); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-      .premium-banner-icon svg { color: white; width: 20px; height: 20px; }
-      .premium-banner-text h3 { margin: 0 0 5px 0; color: white; font-size: 16px;}
-      .premium-banner-text p { margin: 0; font-size: 12px; color: #aaa; }
-      .premium-upgrade-btn { background: linear-gradient(45deg, #439DFE, #8000FF); border: none; border-radius: 8px; padding: 10px; color: white; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; margin-top: 10px; }
-      .premium-upgrade-btn:hover { opacity: 0.9; }
+
       .is-hidden { display: none !important; }
     `;
     document.head.appendChild(styles);

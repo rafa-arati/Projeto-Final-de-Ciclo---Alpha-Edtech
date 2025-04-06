@@ -148,76 +148,79 @@ export function renderUserQRCodes(userQRCodes) {
 
 // --- Renderização Lista Admin/Criador ---
 /**
- * Renderiza a lista de promoções/QR codes na visão do admin/criador (estilo simplificado).
+ * Renderiza a lista de promoções/QR codes na visão do admin/criador (versão com cards).
  * @param {Array} items - Lista de promoções (registros base de promoções).
  * @returns {string} HTML da lista.
  */
 function renderPromotionsListAdmin(items) {
+    const listContainerId = 'admin-promotions-list-container'; // ID para o container da lista
+
     if (!items || items.length === 0) {
-        return '<p class="no-items-message" style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhuma promoção criada para este evento.</p>';
+        return `<div id="${listContainerId}" class="admin-promotions-list"><p class="no-items-message">Nenhuma promoção criada para este evento.</p></div>`;
     }
 
-    const listStyle = `list-style: none; padding: 0; margin: 0; max-height: 400px; overflow-y: auto; border-top: 1px solid var(--border-color); margin-top: 15px;`;
-    const itemStyle = `border-bottom: 1px solid var(--border-color); padding: 12px 5px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;`;
-    const statusColors = { active: '#28a745', used: '#ffc107', expired: '#dc3545' };
+    const statusColors = { active: '#28a745', used: '#ffc107', expired: '#dc3545', unavailable: '#6c757d' }; // Adicionado indisponível
 
-    return `
-    <div style="border-top: 1px solid var(--border-color); margin-top: 15px;">
-        <ul style="${listStyle}">
-          ${items.map(item => {
-            const title = item.description || 'Promoção Principal';
-            const now = new Date();
-            let status = 'Ativa';
-            let statusColor = statusColors.active;
-            let generated = item.generated_codes || 0;
-            let remaining = item.max_codes ? item.max_codes - generated : '∞';
+    const cardsHTML = items.map(item => {
+        const title = item.description || 'Promoção Principal';
+        const now = new Date();
+        let statusText = 'Ativa';
+        let statusColor = statusColors.active;
+        let generated = item.generated_codes || 0;
+        let max = item.max_codes;
+        let remaining = max ? max - generated : 'Ilimitado';
 
-            if (item.generation_deadline && new Date(item.generation_deadline) < now) {
-                status = 'Geração Encerrada'; statusColor = statusColors.expired;
-            } else if (item.usage_deadline && new Date(item.usage_deadline) < now) {
-                status = 'Expirada'; statusColor = statusColors.expired;
-            } else if (item.max_codes !== null && generated >= item.max_codes) {
-                status = 'Esgotada'; statusColor = statusColors.used; remaining = 0;
-            }
+        const generationDeadline = item.generation_deadline ? new Date(item.generation_deadline) : null;
+        const usageDeadline = item.usage_deadline ? new Date(item.usage_deadline) : null;
 
-            return `
-              <li style="${itemStyle}">
-                <div style="flex-grow: 1; font-size: 0.9rem;">
-                  <strong style="font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 4px;">
-                    ${title}
-                    <span style="font-size: 0.7rem; background-color: ${statusColor}20; border: 1px solid ${statusColor}80; color: ${statusColor}; padding: 2px 6px; border-radius: 10px; margin-left: 8px;">
-                      ${status}
-                    </span>
-                  </strong>
-                  <span style="color: var(--text-secondary); font-size: 0.8rem; display: block;">
-                    ${getBenefitDescription(item)}
-                  </span>
-                  <span style="color: var(--text-secondary); font-size: 0.8rem; display: block;">
-                    ${item.max_codes ? `Limite: ${item.max_codes} (Gerados: ${generated} / Restam: ${remaining})` : 'Sem limite'}
-                  </span>
-                  ${item.generation_deadline ? `
-                    <span style="color: var(--text-secondary); font-size: 0.8rem; display: block;">
-                      Gerar até: ${formatExpirationDate(item.generation_deadline)}
-                    </span>` : ''}
-                  ${item.usage_deadline ? `
-                    <span style="color: var(--text-secondary); font-size: 0.8rem; display: block;">
-                      Usar até: ${formatExpirationDate(item.usage_deadline)}
-                    </span>` : ''}
-                </div>
-                <button
-                  class="delete-item-btn"
-                  data-id="${item.id || item.promotion_id}"
-                  data-type="PROMOÇÃO"
-                  title="Excluir Promoção e todos os QR Codes"
-                  style="background: none; border: none; color: var(--danger-bg); cursor: pointer; font-size: 1.3rem; padding: 0 0 0 10px; line-height: 1;">
-                  &times;
-                </button>
-              </li>
-            `;
-          }).join('')}
-        </ul>
-    </div>
-    `;
+        if (generationDeadline && generationDeadline < now) {
+            statusText = 'Geração Encerrada'; statusColor = statusColors.unavailable;
+        } else if (usageDeadline && usageDeadline < now) {
+            statusText = 'Expirada'; statusColor = statusColors.expired;
+        } else if (max !== null && generated >= max) {
+            statusText = 'Esgotada'; statusColor = statusColors.used; remaining = 0;
+        }
+
+        const benefit = getBenefitDescription(item); // Usando a função helper
+        const genDeadlineFormatted = formatExpirationDate(item.generation_deadline);
+        const useDeadlineFormatted = formatExpirationDate(item.usage_deadline);
+
+        return `
+          <div class="promotion-admin-card" data-promotion-id="${item.id || item.promotion_id}">
+            <div class="promo-card-header">
+              <h4 class="promo-card-title">${title}</h4>
+              <span class="promo-card-status" style="background-color: ${statusColor}; border: 1px solid ${statusColor};">
+                ${statusText}
+              </span>
+            </div>
+            <div class="promo-card-body">
+              <p class="promo-card-benefit"><strong>Benefício:</strong> ${benefit}</p>
+              <p class="promo-card-stats">
+                <strong>Códigos:</strong> 
+                ${max ? `Limite: ${max} / Gerados: ${generated} / Restantes: ${remaining}` : 'Sem limite de códigos'}
+              </p>
+              ${item.generation_deadline ? `<p class="promo-card-deadline"><strong>Gerar até:</strong> ${genDeadlineFormatted}</p>` : ''}
+              ${item.usage_deadline ? `<p class="promo-card-deadline"><strong>Usar até:</strong> ${useDeadlineFormatted}</p>` : ''}
+            </div>
+            <div class="promo-card-actions">
+              <button 
+                  class="delete-item-btn icon-button" 
+                  data-id="${item.id || item.promotion_id}" 
+                  data-type="PROMOÇÃO" 
+                  title="Excluir Promoção e todos os QR Codes">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                  </svg>
+                  Excluir
+              </button>
+            </div>
+          </div>
+        `;
+    }).join('');
+
+    // Retorna o container com os cards dentro
+    return `<div id="${listContainerId}" class="admin-promotions-list">${cardsHTML}</div>`;
 }
 
 // --- Função de Submit (Definida fora) ---

@@ -1,263 +1,532 @@
-/* Estilos específicos para a página de detalhes do evento */
+/* Variáveis de Cor e Espaçamento */
+:root {
+  --details-bg-primary: #000;
+  --details-bg-secondary: #1c1c1e;
+  --details-bg-tertiary: #2c2c2e;
+  --details-bg-quaternary: #3a3a3c;
+  --details-text-primary: #ffffff;
+  --details-text-secondary: #adb5bd; /* Cinza mais claro */
+  --details-text-tertiary: #6c757d;  /* Cinza mais escuro */
+  --details-accent-primary: #8000FF; /* Roxo */
+  --details-accent-secondary: #439DFE; /* Azul */
+  --details-border-color: #444;
+  --details-danger-color: #e57373; /* Vermelho claro para texto */
+  --details-danger-bg: rgba(200, 60, 60, 0.15);
+  --details-danger-border: rgba(200, 60, 60, 0.6);
+  --details-success-color: #4caf50;
+  --details-warning-color: #ffc107;
+  --details-border-radius: 10px;
+  --details-padding-base: 15px;
+  --details-padding-large: 20px;
+}
 
-/* Container Geral */
+/* --- Estilos Gerais da Página de Detalhes --- */
 .event-details-page .app-container {
-    max-width: 850px; /* Um pouco mais largo para conteúdo */
-    margin: 0 auto;
-    padding-bottom: 80px; /* Espaço para nav inferior */
-  }
-  
-  .event-details-content {
-    padding: 0; /* Remover padding geral, aplicar em seções */
-  }
-  
-  /* Imagem Principal */
-  .event-image-container-detail {
-    width: 100%;
-    max-height: 45vh; /* Altura um pouco maior */
-    overflow: hidden;
-    background-color: #1c1c1e; /* Fundo enquanto carrega */
-    margin-bottom: 20px; /* Espaço abaixo da imagem */
-    border-bottom: 1px solid #2a2a2c; /* Linha sutil abaixo */
-  }
-  
-  .event-image-detail {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  
-  /* Seção genérica de conteúdo (para espaçamento) */
-  .content-section {
-    padding: 25px 20px; /* Padding lateral e vertical */
-    border-bottom: 1px solid #2a2a2c; /* Separador padrão */
-  }
-  .content-section:last-of-type { /* Remove borda do último */
-    border-bottom: none;
-  }
-  
-  /* Título das Seções */
-  .section-title {
-    font-size: 1rem; /* 16px */
-    font-weight: 600;
-    color: #e0e0e0; /* Cor mais clara para títulos */
-    margin-bottom: 15px;
-    padding-bottom: 5px;
-    /* border-bottom: 1px solid #444; */ /* Linha opcional abaixo do título */
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  /* Bloco de Informações Chave */
-  .event-key-info {
-    display: flex; /* Usa Flexbox */
-    flex-wrap: wrap; /* Permite quebrar linha */
-    gap: 15px 25px; /* Espaçamento vertical e horizontal */
-    align-items: flex-start; /* Alinha itens no topo */
-    background-color: #111; /* Fundo sutilmente diferente */
-    border-radius: 8px; /* Bordas arredondadas */
-    padding: 20px;
-    margin: 0 15px 20px 15px; /* Margens laterais e inferior */
-    border: 1px solid #2a2a2c;
-  }
-  
-  .info-item {
-    display: flex;
-    align-items: center; /* Alinha ícone e texto verticalmente */
-    gap: 10px;
-    font-size: 0.9rem; /* 14.4px */
-    color: #ccc;
-    flex-basis: calc(50% - 15px); /* Tenta ocupar metade do espaço (ajuste) */
-    min-width: 180px; /* Garante largura mínima */
-  }
-  
-  .info-item svg {
-    width: 20px;
-    height: 20px;
-    color: #8000FF;
-    flex-shrink: 0;
-  }
-  
-  .info-item address {
-    font-style: normal;
-    line-height: 1.4;
-  }
-  
-  /* Container do Like dentro do bloco de info */
+  max-width: 900px; /* Largura máxima da página */
+  margin: 0 auto;
+  padding-bottom: 80px; /* Espaço para nav inferior */
+  background-color: var(--details-bg-primary);
+}
+
+.event-details-content {
+  padding: 0; /* Remover padding geral, aplicar em seções */
+}
+
+/* Cabeçalho da Página (Reutiliza de common.css, mas garante alguns estilos) */
+.event-details-page .page-header {
+  display: flex;
+  align-items: center;
+  padding: var(--details-padding-base);
+  border-bottom: 1px solid var(--details-border-color);
+  margin-bottom: 0; /* Reset margin bottom */
+  background-color: var(--details-bg-primary); /* Garante fundo */
+}
+
+.event-details-page .page-header .back-button {
+  background: none;
+  border: none;
+  color: var(--details-text-secondary);
+  padding: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+.event-details-page .page-header .back-button:hover {
+  color: var(--details-text-primary);
+}
+.event-details-page .page-header .back-button svg {
+  width: 24px; height: 24px;
+}
+
+.event-details-page .page-header h1 {
+  flex-grow: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  color: var(--details-text-primary);
+  padding-right: 44px; /* (largura botao + margin-right) */
+}
+
+/* --- Seção da Imagem Principal --- */
+.event-image-container-detail {
+  width: 100%;
+  max-height: 400px; /* Altura máxima da imagem */
+  overflow: hidden;
+  background-color: var(--details-bg-secondary);
+  position: relative; /* Para posicionar overlay */
+}
+
+.event-image-detail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Cobre a área sem distorcer */
+  display: block;
+  min-height: 250px; /* Altura mínima caso a imagem seja pequena */
+}
+
+/* --- Seções de Conteúdo --- */
+.content-section {
+  padding: var(--details-padding-large) var(--details-padding-large);
+  border-bottom: 1px solid var(--details-border-color);
+  background-color: var(--details-bg-primary); /* Fundo padrão */
+}
+.content-section:last-of-type {
+  border-bottom: none;
+}
+
+/* Título das Seções */
+.section-title {
+  font-size: 1rem; /* 16px */
+  font-weight: 600;
+  color: var(--details-text-primary);
+  margin-bottom: 18px; /* Mais espaço abaixo */
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--details-bg-quaternary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* --- Bloco de Informações Chave --- */
+.event-key-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Colunas responsivas */
+  gap: 18px 25px; /* Espaçamento vertical e horizontal */
+  align-items: center; /* Centraliza verticalmente itens na linha */
+  background-color: var(--details-bg-secondary); /* Fundo diferente */
+  border-radius: var(--details-border-radius);
+  padding: var(--details-padding-large);
+  margin: var(--details-padding-large); /* Margens externas */
+  border: 1px solid var(--details-border-color);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Espaço ícone-texto */
+  font-size: 0.95rem; /* 15px */
+  color: var(--details-text-secondary);
+  line-height: 1.5;
+}
+
+.info-item svg {
+  width: 20px;
+  height: 20px;
+  color: var(--details-accent-primary); /* <-- MUDOU PARA CINZA CLARO (#adb5bd) */
+  /* Ou use: color: var(--details-text-primary); para branco */
+  flex-shrink: 0;
+}
+
+.info-item address {
+  font-style: normal;
+}
+
+/* Container do Like */
+.like-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Tenta alinhar à direita no grid se possível */
+  justify-self: end;
+  grid-column: -1 / -2; /* Tenta colocar na última coluna */
+  padding: 5px 10px;
+  background-color: var(--details-bg-tertiary);
+  border-radius: 20px;
+}
+/* Em telas menores, pode precisar ajustar */
+@media (max-width: 768px) {
   .like-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto; /* Tenta empurrar para a direita no flex container */
-    padding: 5px 10px;
-    background-color: #222;
-    border-radius: 20px;
+    grid-column: auto; /* Volta ao fluxo normal */
+    justify-self: start;
   }
-  
-  .like-button {
-    background: none; /* Sem fundo */
-    border: none;
-    width: 30px; /* Menor */
-    height: 30px;
-    padding: 0;
-    cursor: pointer;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    color: #aaa; /* Cor padrão do coração */
-    transition: color 0.2s ease, transform 0.2s ease;
-  }
-  .like-button:hover:not(:disabled) {
-    color: #fff;
-    transform: scale(1.15);
-  }
-  .like-button.active {
-    color: #ff4081; /* Cor quando ativo */
-  }
-  .like-button.active .heart-icon path {
-    fill: #ff4081; /* Preenche o coração quando ativo */
-  }
-  .like-button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .like-count { font-size: 0.9rem; font-weight: 600; color: #fff; }
-  .like-label { display: none; /* Esconde o texto "Curtidas" */ }
-  
-  
-  /* Descrição */
-  .event-description p {
-    font-size: 0.95rem; /* 15.2px */
-    line-height: 1.65;
-    color: #d1d1d1; /* Cor de texto principal */
-  }
-  
-  /* Links */
-  .event-external-link a, .event-detail-link {
-    color: #5c9dff; /* Azul mais claro para links */
-    text-decoration: none;
-    word-break: break-all;
-    font-size: 0.9rem;
-    display: inline-block;
-    margin-top: 5px;
-    padding: 3px 6px;
-    background-color: rgba(92, 157, 255, 0.1);
-    border-radius: 4px;
-  }
-  .event-external-link a:hover, .event-detail-link:hover {
-    text-decoration: underline;
-    background-color: rgba(92, 157, 255, 0.2);
-  }
-  
-  /* Ações do Criador/Admin */
-  .creator-actions .creator-action-buttons {
-    display: grid; /* Usa Grid para botões */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Colunas responsivas */
-    gap: 12px;
-  }
-  .creator-actions .btn-profile-action {
-     /* Reutiliza estilos do perfil, mas garante que existam */
-     display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background-color: #1c1c1e; color: #ddd; border: 1px solid #3a3a3c; padding: 14px 18px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; font-weight: 500;
-  }
-  .creator-actions .btn-profile-action:hover { background-color: #2c2c2e; border-color: #555; }
-  .creator-actions .btn-profile-action svg { width: 18px; height: 18px; color: #8000FF; flex-shrink: 0; }
-  
-  /* Seção de Vídeos */
-  .video-grid {
-      display: grid;
-      gap: 20px; /* Maior espaçamento */
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Ajusta tamanho mínimo */
-  }
-  .video-wrapper {
-      position: relative; padding-bottom: 56.25%; /* 16:9 */
-      height: 0; overflow: hidden; border-radius: 12px; /* Mais arredondado */
-      background: #111; box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Sombra sutil */
-  }
-  .video-wrapper iframe, .video-wrapper blockquote {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
-  }
-  .no-videos { color: #888; font-style: italic; text-align: center; padding: 20px 0;}
-  
-  /* Promoções e QR Codes (Estilos básicos - refine conforme necessário) */
-  .event-promotions .promotions-list,
-  .user-qrcodes-section .qr-codes-grid {
-    /* Adicione estilos para os cards de promoção/qrcode se necessário */
-    /* Exemplo: */
+}
+
+
+.like-button {
+  background: none; border: none; width: 32px; height: 32px; padding: 0;
+  cursor: pointer; display: inline-flex; justify-content: center; align-items: center;
+  color: var(--details-text-secondary);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.like-button:hover:not(:disabled) { color: var(--details-text-primary); transform: scale(1.15); }
+.like-button.active { color: #ff4081; }
+.like-button.active .heart-icon path { fill: #ff4081; }
+.like-button:disabled { opacity: 0.5; cursor: not-allowed; }
+.like-count { font-size: 0.95rem; font-weight: 600; color: var(--details-text-primary); }
+.like-label { display: none; }
+
+/* --- Descrição do Evento --- */
+.event-description p {
+  font-size: 1rem; /* 16px */
+  line-height: 1.7;
+  color: var(--details-text-primary);
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* --- Links --- */
+.event-external-link a, .event-detail-link {
+  color: var(--details-accent-secondary);
+  text-decoration: none;
+  word-break: break-all;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-top: 5px;
+  padding: 4px 8px;
+  background-color: rgba(67, 157, 254, 0.1);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+.event-external-link a:hover, .event-detail-link:hover {
+  text-decoration: underline;
+  background-color: rgba(67, 157, 254, 0.2);
+}
+
+/* --- Ações do Criador/Admin --- */
+.creator-actions .creator-action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px; /* Mais espaço */
+}
+.creator-actions .btn-profile-action {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background-color: var(--details-bg-secondary); color: var(--details-text-secondary);
+  border: 1px solid var(--details-border-color); padding: 15px 20px; /* Mais padding */
+  border-radius: var(--details-border-radius); font-size: 0.95rem; /* 15px */
+  cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease;
+  font-weight: 500;
+}
+.creator-actions .btn-profile-action:hover {
+  background-color: var(--details-bg-tertiary);
+  border-color: #555;
+  color: var(--details-text-primary);
+}
+.creator-actions .btn-profile-action svg {
+  width: 18px; height: 18px;
+  color: var(--details-accent-primary);
+  flex-shrink: 0;
+}
+
+/* --- Seção de Vídeos --- */
+.video-grid {
     display: grid;
-    gap: 15px;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  }
-  /* Estilos de .promotion-card, .qr-code-card, etc., viriam do qrcode-manager ou styles.js */
-  
-  .event-description p {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #e0e0e0;
-  
-    /* --- ADICIONE ESTAS PROPRIEDADES --- */
-    white-space: normal;    /* Garante que o navegador tente quebrar linhas (geralmente padrão) */
-    word-wrap: break-word;  /* Permite quebrar palavras longas (alias de overflow-wrap) */
-    overflow-wrap: break-word; /* Propriedade padrão para quebrar palavras longas */
-    word-break: break-word; /* Ajuda extra para forçar a quebra se necessário */
-  /* Responsividade */
+    gap: 25px; /* Maior espaçamento */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Ajusta tamanho mínimo */
+}
+.video-wrapper {
+    position: relative; padding-bottom: 56.25%; /* 16:9 */
+    height: 0; overflow: hidden; border-radius: 12px; /* Mais arredondado */
+    background: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.25); /* Sombra sutil */
+}
+.video-wrapper iframe, .video-wrapper blockquote {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
+}
+.no-videos { color: var(--details-text-secondary); font-style: italic; text-align: center; padding: 30px 0;}
 
-  @media (max-width: 768px) {
-    body::-webkit-scrollbar,
-    .app-wrapper::-webkit-scrollbar { /* Use o seletor correto */
-        display: none;
-        width: 0;
-        height: 0;
-        background: transparent;
-    }
+/* ============================================== */
+/* --- Estilos dos Modais (QR Code / Promo) --- */
+/* ============================================== */
 
-    body,
-    .app-wrapper { /* Use o seletor correto */
-        -ms-overflow-style: none;  /* IE e Edge */
-        scrollbar-width: none;  /* Firefox */
-     }
-    .event-key-info {
-        grid-template-columns: 1fr; /* Força uma coluna */
-        flex-direction: column; /* Empilha itens no flex fallback */
-        align-items: flex-start;
-        gap: 12px; /* Menor espaçamento */
-    }
-    .info-item {
-        flex-basis: auto; /* Largura total */
-        width: 100%;
-    }
-    .like-container {
-        margin-left: 0; /* Remove alinhamento à direita */
-        margin-top: 10px;
-        justify-content: flex-start; /* Alinha à esquerda */
-        width: fit-content; /* Largura baseada no conteúdo */
-    }
-    .creator-actions .creator-action-buttons {
-        grid-template-columns: 1fr; /* Botões em coluna única */
-    }
-     .video-grid {
-        grid-template-columns: 1fr; /* Vídeos em coluna única */
-    }
+/* Estilo Base do Modal (pode vir de common.css, mas garantido aqui) */
+.modal {
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8);
+    align-items: center; justify-content: center;
+}
+.modal.active { display: flex; }
 
-    
+.modal-content {
+  background-color: var(--details-bg-secondary);
+  border-radius: var(--details-border-radius);
+  padding: var(--details-padding-large);
+  width: 90%;
+  max-width: 550px; /* Largura padrão modal */
+  position: relative;
+  border: 1px solid var(--details-border-color);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  max-height: 85vh; /* Altura máxima */
+  display: flex;
+  flex-direction: column; /* Permite scroll interno */
+}
+
+.close-modal {
+  position: absolute; top: 12px; right: 15px; font-size: 24px;
+  font-weight: bold; cursor: pointer; color: var(--details-text-secondary);
+  line-height: 1;
+}
+.close-modal:hover { color: var(--details-text-primary); }
+
+.modal-content h3 { /* Título do modal */
+  margin-top: 0; margin-bottom: 20px;
+  color: var(--details-text-primary); font-size: 1.3rem; text-align: center;
+  border-bottom: 1px solid var(--details-border-color); padding-bottom: 15px;
+}
+
+.modal-buttons {
+  display: flex; justify-content: flex-end; /* Alinha botões à direita */
+  gap: 12px; margin-top: 25px; padding-top: 15px;
+  border-top: 1px solid var(--details-border-color);
+}
+/* Botões genéricos no modal (pode vir de common.css) */
+.modal-buttons .btn {
+  padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;
+  font-size: 0.95rem; font-weight: 500; transition: opacity 0.2s;
+}
+.modal-buttons .btn:hover { opacity: 0.9; }
+.modal-buttons .btn.secondary { background-color: var(--details-bg-quaternary); color: var(--details-text-secondary); }
+.modal-buttons .btn.secondary:hover { background-color: #555; color: var(--details-text-primary); }
+.modal-buttons .btn.danger { background-color: var(--details-danger-bg); color: var(--details-danger-color); border: 1px solid var(--details-danger-border); }
+.modal-buttons .btn.danger:hover { background-color: rgba(200, 60, 60, 0.3); border-color: var(--details-danger-color); }
+.modal-buttons .btn[style*="linear-gradient"] { /* Estilo para botão primário */
+   color: white;
+}
+
+/* --- Modal Criar Promoção/QR Code (#qrcode-modal) --- */
+#qrcode-modal #qrcode-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #EEEEEE !important; /* COR CINZA MUITO CLARO - !important para FORÇAR */
+  /* Ou use: color: #FFFFFF !important; para branco puro */
+  font-size: 0.9rem; 
+  font-weight: 500;
+  text-align: left; 
+}
+
+#qrcode-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px; /* Mais espaço entre grupos */
+  overflow-y: auto; /* Scroll se o form for muito grande */
+  padding-right: 5px; /* Espaço para scrollbar */
+}
+
+#qrcode-form .form-group {
+  margin-bottom: 0; /* Remover margin duplicada */
+}
+
+#qrcode-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--details-text-primary); /* COR BRANCA/CLARA PARA LABEL */
+  font-size: 0.9rem; /* 14.4px */
+  font-weight: 500;
+  text-align: left;
+}
+
+#qrcode-form input[type="text"],
+#qrcode-form input[type="number"],
+#qrcode-form input[type="datetime-local"],
+#qrcode-form select,
+#qrcode-form textarea {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: var(--details-bg-tertiary);
+  border: 1px solid var(--details-border-color);
+  border-radius: 8px;
+  color: var(--details-text-primary);
+  font-size: 0.95rem;
+  transition: border-color 0.3s;
+}
+
+#qrcode-form input:focus,
+#qrcode-form select:focus,
+#qrcode-form textarea:focus {
+  border-color: var(--details-accent-primary);
+  outline: none;
+  background-color: var(--details-bg-quaternary);
+}
+
+#qrcode-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23adb5bd' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+#qrcode-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+#qrcode-form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8); /* Ajusta cor do ícone do calendário */
+  cursor: pointer;
+}
+
+#discount-group { /* Container do campo de desconto */
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+  overflow: hidden;
+  max-height: 0; /* Começa escondido */
+  opacity: 0;
+}
+#discount-group[style*="block"] { /* Quando display: block é setado */
+  max-height: 100px; /* Altura suficiente para o campo */
+  opacity: 1;
+  margin-top: 15px; /* Adiciona espaço quando visível */
+}
+
+/* --- Modal Visualizar Promoções (#view-qrcodes-modal) --- */
+#view-qrcodes-modal .modal-content {
+  max-width: 750px; /* Mais largo para o grid */
+}
+
+/* Container da Lista no Modal - GRID */
+.admin-promotions-list {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding: 15px 5px 15px 15px; /* Ajusta padding para scrollbar */
+  margin-top: 15px;
+  border-top: 1px solid var(--details-border-color);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Colunas responsivas, mínimo 300px */
+  gap: 20px; /* Espaço entre cards */
+}
+/* Estilos de scrollbar para Webkit */
+.admin-promotions-list::-webkit-scrollbar { width: 8px; }
+.admin-promotions-list::-webkit-scrollbar-track { background: var(--details-bg-tertiary); border-radius: 4px; }
+.admin-promotions-list::-webkit-scrollbar-thumb { background-color: #555; border-radius: 4px; }
+.admin-promotions-list::-webkit-scrollbar-thumb:hover { background-color: #777; }
+
+/* Card de Promoção Individual (Admin View) */
+.promotion-admin-card {
+  background-color: var(--details-bg-tertiary);
+  border: 1px solid var(--details-border-color);
+  border-radius: var(--details-border-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.promotion-admin-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Cabeçalho do Card */
+.promo-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  background-color: var(--details-bg-quaternary);
+  padding: 12px var(--details-padding-base);
+  border-bottom: 1px solid var(--details-border-color);
+}
+.promo-card-title {
+  margin: 0; font-size: 1.1rem; font-weight: 600;
+  color: var(--details-text-primary); flex-grow: 1; margin-right: 10px;
+}
+.promo-card-status {
+  padding: 5px 10px; border-radius: 15px; font-size: 0.75rem;
+  font-weight: bold; color: white; white-space: nowrap; flex-shrink: 0;
+  /* Background e border aplicados inline */
+}
+
+/* Corpo do Card */
+.promo-card-body {
+  padding: var(--details-padding-base); font-size: 0.9rem;
+  color: var(--details-text-secondary); line-height: 1.6;
+  flex-grow: 1; /* Ocupa espaço vertical */
+}
+.promo-card-body p { margin: 0 0 10px 0; }
+.promo-card-body p:last-child { margin-bottom: 0; }
+.promo-card-body strong { color: var(--details-text-primary); font-weight: 500; margin-right: 5px; }
+.promo-card-benefit { font-style: italic; }
+.promo-card-stats { font-size: 0.85em; color: #b0b0b0; }
+.promo-card-deadline { font-size: 0.8em; color: #a0a0a0; }
+
+/* Ações do Card */
+.promo-card-actions {
+  padding: 12px var(--details-padding-base);
+  background-color: var(--details-bg-tertiary);
+  border-top: 1px solid var(--details-border-color);
+  text-align: right;
+}
+.delete-item-btn {
+  background-color: var(--details-danger-bg); color: var(--details-danger-color);
+  border: 1px solid var(--details-danger-border); padding: 7px 14px;
+  border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500;
+  transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;
+}
+.delete-item-btn:hover {
+  background-color: rgba(200, 60, 60, 0.3); color: #ff5252;
+  border-color: var(--details-danger-color);
+}
+.delete-item-btn svg { margin-bottom: -2px; width: 14px; height: 14px;}
+
+/* Mensagem de Nenhum Item */
+.admin-promotions-list .no-items-message {
+  grid-column: 1 / -1; /* Ocupa todas as colunas */
+  text-align: center; color: var(--details-text-secondary); padding: 40px 10px; font-style: italic;
+}
+
+/* --- Modal Excluir Promoção/QR Code (#delete-qrcode-modal) --- */
+#delete-qrcode-modal .modal-content {
+  max-width: 450px; /* Menor */
+  text-align: center;
+}
+#delete-qrcode-modal p {
+  color: var(--details-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* --- Responsividade --- */
+@media (max-width: 768px) {
+  .event-key-info {
+    grid-template-columns: 1fr; /* Uma coluna */
+    margin-left: var(--details-padding-base); margin-right: var(--details-padding-base);
   }
-  
-  @media (max-width: 480px) {
-    .content-section {
-        padding: 20px 15px;
-    }
-    .section-title {
-        font-size: 0.95rem;
-    }
-    .event-key-info {
-         margin-left: 10px; margin-right: 10px; padding: 15px;
-    }
-    .info-item {
-        font-size: 0.85rem;
-    }
-    .event-description p {
-         font-size: 0.9rem;
-    }
-     .creator-actions .btn-profile-action {
-          padding: 12px 15px;
-          font-size: 13px;
-     }
-  }
+  .like-container { justify-self: start; margin-top: 10px; }
+  .creator-actions .creator-action-buttons { grid-template-columns: 1fr; }
+  .video-grid { grid-template-columns: 1fr; }
+  .admin-promotions-list { grid-template-columns: 1fr; } /* Uma coluna em telas menores */
+}
+
+@media (max-width: 480px) {
+  .content-section { padding: var(--details-padding-base); }
+  .section-title { font-size: 0.95rem; }
+  .event-key-info { padding: var(--details-padding-base); gap: 15px; }
+  .info-item { font-size: 0.9rem; gap: 10px; }
+  .event-description p { font-size: 0.95rem; }
+  .creator-actions .btn-profile-action { padding: 12px 15px; font-size: 0.9rem; }
+  .modal-content { padding: var(--details-padding-base); }
+  .modal-content h3 { font-size: 1.15rem; margin-bottom: 15px; padding-bottom: 10px;}
+  .modal-buttons { flex-direction: column; gap: 10px; }
+  .modal-buttons .btn { width: 100%; }
+  #qrcode-form { gap: 15px; }
+  .admin-promotions-list { gap: 15px; padding: 10px; }
+  .promotion-admin-card { border-radius: 8px; }
+  .promo-card-header { padding: 10px 15px; }
+  .promo-card-title { font-size: 1rem; }
+  .promo-card-body { padding: 15px; font-size: 0.9rem; }
+  .promo-card-actions { padding: 10px 15px; }
+  .delete-item-btn { padding: 6px 12px; font-size: 0.8rem; gap: 5px;}
 }
