@@ -1,521 +1,263 @@
-/* ===== BASE ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+/* Estilos específicos para a página de detalhes do evento */
 
-body {
-    background-color: #000;
-    color: #fff;
-}
-
-/* ===== LAYOUT ===== */
-.page-container {
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.content-container {
-    max-width: 1000px;
-    width: 100%;
+/* Container Geral */
+.event-details-page .app-container {
+    max-width: 850px; /* Um pouco mais largo para conteúdo */
     margin: 0 auto;
-}
-
-/* ===== HEADER ===== */
-.header {
-    position: relative;
-    z-index: 10;
-    padding: 15px;
-}
-
-/* ===== ICONS ===== */
-.icon {
-    width: 24px;
-    height: 24px;
-    display: block;
-}
-
-/* ===== ICON BUTTONS ===== */
-.back-button {
-    background-color: rgba(0, 0, 0, 0.7);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-}
-
-.back-button .icon {
-    color: white;
-    width: 20px;
-    height: 20px;
-}
-
-.back-button:hover {
-    background-color: rgba(0, 0, 0, 0.9);
-    transform: scale(1.05);
-}
-
-.icon-button {
-    background-color: rgba(0, 0, 0, 0.7);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.icon-button .icon {
-    color: white;
-    width: 20px;
-    height: 20px;
-}
-
-.icon-button:hover {
-    background-color: rgba(0, 0, 0, 0.9);
-    transform: scale(1.05);
-}
-
-/* Efeito especial para o botão de favorito */
-.icon-button:first-child .icon {
-    fill: transparent;
-    stroke: white;
-    stroke-width: 2px;
-}
-
-.icon-button:first-child.active .icon {
-    fill: #ff4081;
-    stroke: #ff4081;
-}
-
-.action-buttons {
-    display: flex;
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    gap: 10px;
-    z-index: 10;
-}
-
-/* ===== EVENT IMAGE ===== */
-.event-image-container {
-    position: relative;
-    height: 300px;
-    overflow: hidden;
-    margin-top: -50px;
-}
-
-.event-image-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+    padding-bottom: 80px; /* Espaço para nav inferior */
+  }
+  
+  .event-details-content {
+    padding: 0; /* Remover padding geral, aplicar em seções */
+  }
+  
+  /* Imagem Principal */
+  .event-image-container-detail {
     width: 100%;
-    height: 100px;
-    background: linear-gradient(to bottom, #000, transparent);
-    z-index: 1;
-}
-
-.event-image {
+    max-height: 45vh; /* Altura um pouco maior */
+    overflow: hidden;
+    background-color: #1c1c1e; /* Fundo enquanto carrega */
+    margin-bottom: 20px; /* Espaço abaixo da imagem */
+    border-bottom: 1px solid #2a2a2c; /* Linha sutil abaixo */
+  }
+  
+  .event-image-detail {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
-}
-
-/* ===== EVENT OVERLAY ===== */
-.event-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 20px;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
-    color: white;
-    z-index: 2;
-}
-
-/* ===== BADGE ===== */
-.event-badge {
-    position: absolute;
-    right: 20px;
-    bottom: 20px;
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #439DFE, #8000FF);
-    color: white;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-    font-weight: bold;
-    font-size: 12px;
-    z-index: 3;
-}
-
-/* ===== TABS ===== */
-
-.tab-content {
-    margin: 10px;
-    padding: 10px;
-}
-
-.event-tabs {
-    display: flex;
-    border-bottom: 1px solid #333;
-}
-
-.event-tab {
-    padding: 15px 20px;
+    display: block;
+  }
+  
+  /* Seção genérica de conteúdo (para espaçamento) */
+  .content-section {
+    padding: 25px 20px; /* Padding lateral e vertical */
+    border-bottom: 1px solid #2a2a2c; /* Separador padrão */
+  }
+  .content-section:last-of-type { /* Remove borda do último */
+    border-bottom: none;
+  }
+  
+  /* Título das Seções */
+  .section-title {
+    font-size: 1rem; /* 16px */
     font-weight: 600;
+    color: #e0e0e0; /* Cor mais clara para títulos */
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    /* border-bottom: 1px solid #444; */ /* Linha opcional abaixo do título */
     text-transform: uppercase;
-    font-size: 14px;
-    color: #aaa;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-}
-
-.event-tab.active {
-    color: white;
-    border-bottom: 2px solid #9abfe7;
-}
-
-/* ===== DETAILS ===== */
-.event-details {
+    letter-spacing: 0.5px;
+  }
+  
+  /* Bloco de Informações Chave */
+  .event-key-info {
+    display: flex; /* Usa Flexbox */
+    flex-wrap: wrap; /* Permite quebrar linha */
+    gap: 15px 25px; /* Espaçamento vertical e horizontal */
+    align-items: flex-start; /* Alinha itens no topo */
+    background-color: #111; /* Fundo sutilmente diferente */
+    border-radius: 8px; /* Bordas arredondadas */
     padding: 20px;
-}
-
-.detail-item {
-    margin-bottom: 25px;
-}
-
-.section-title {
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 15px;
-    margin-bottom: 10px;
-    color: #aaa;
-}
-
-/* ===== LINK ===== */
-.event-link {
-    color: #9abfe7;
-    text-decoration: none;
-    word-break: break-all;
-    display: inline-block;
-    margin-top: 5px;
-    padding: 8px 12px;
-    background-color: rgba(220, 231, 243, 0.1);
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-.event-link:hover {
-    background-color: rgba(64, 139, 220, 0.2);
-    text-decoration: underline;
-}
-
-/* ===== BUTTONS ===== */
-.buy-button {
-    background: linear-gradient(135deg, #439DFE, #8000FF);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-    width: 100%;
-    transition: all 0.3s ease;
-}
-
-.buy-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(67, 157, 254, 0.3);
-}
-
-.event-interaction {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #333;
-}
-
-.like-section {
+    margin: 0 15px 20px 15px; /* Margens laterais e inferior */
+    border: 1px solid #2a2a2c;
+  }
+  
+  .info-item {
+    display: flex;
+    align-items: center; /* Alinha ícone e texto verticalmente */
+    gap: 10px;
+    font-size: 0.9rem; /* 14.4px */
+    color: #ccc;
+    flex-basis: calc(50% - 15px); /* Tenta ocupar metade do espaço (ajuste) */
+    min-width: 180px; /* Garante largura mínima */
+  }
+  
+  .info-item svg {
+    width: 20px;
+    height: 20px;
+    color: #8000FF;
+    flex-shrink: 0;
+  }
+  
+  .info-item address {
+    font-style: normal;
+    line-height: 1.4;
+  }
+  
+  /* Container do Like dentro do bloco de info */
+  .like-container {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 5px;
-    /* Reduz espaço antes do título "Curtidas" */
-}
-
-.like-button {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    width: 45px;
-    height: 45px;
+    margin-left: auto; /* Tenta empurrar para a direita no flex container */
+    padding: 5px 10px;
+    background-color: #222;
+    border-radius: 20px;
+  }
+  
+  .like-button {
+    background: none; /* Sem fundo */
+    border: none;
+    width: 30px; /* Menor */
+    height: 30px;
     padding: 0;
-    transition: background-color 0.3s ease, transform 0.2s ease;
     cursor: pointer;
-    /* Garante que o cursor é pointer */
     display: inline-flex;
-    /* Ajuda a alinhar o SVG interno */
     justify-content: center;
     align-items: center;
-}
-
-/* Estilo PADRÃO do ícone (coração NÃO curtido) */
-.like-button .heart-icon path {
-    fill: rgba(255, 255, 255, 0.7);
-    /* Cor branca/cinza padrão */
-    transition: fill 0.2s ease;
-    /* Transição suave da cor */
-}
-
-/* Estilo do botão QUANDO ATIVO (curtido) */
-.like-button.active {
-    background-color: rgba(255, 64, 129, 0.15);
-    /* Fundo levemente rosa/vermelho */
-    border-color: rgba(255, 64, 129, 0.4);
-}
-
-/* Estilo do ÍCONE quando o botão está ATIVO (coração curtido) */
-.like-section button#like-button.active svg.heart-icon path {
-    fill: #ff4081
-        /* Use !important SÓ para testar */
-}
-
-/* Efeito HOVER (opcional, mas melhora a interação) */
-.like-button:hover:not(:disabled) {
-    transform: scale(1.1);
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.like-button.active:hover:not(:disabled) {
-    background-color: rgba(255, 64, 129, 0.3);
-}
-
-/* Estilo para botão desabilitado (quando não logado) */
-.like-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.like-count {
-    font-size: 18px;
-    font-weight: 600;
-    color: #ccc;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (min-width: 500px) {
-    .event-image-container {
-        height: 400px;
-    }
-
-    .event-image-container::before {
-        height: 150px;
-    }
-
-    .event-badge {
-        width: 60px;
-        height: 60px;
-    }
-
-    .buy-button {
-        width: auto;
-    }
-}
-
-@media (min-width: 768px) {
-    .event-image-container {
-        height: 500px;
-    }
-
-    .event-image-container::before {
-        height: 200px;
-    }
-
-    .event-details {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 30px;
-    }
-
-    .detail-item {
-        margin-bottom: 0;
-    }
-
-    .map-container {
-        grid-column: span 2;
-    }
-
-    .buy-button {
-        width: 100%;
-        max-width: 300px;
-    }
-
-    .video-section {
-        margin: 2rem 0;
-        padding: 0 20px;
-    }
-
-    .video-grid {
-        display: grid;
-        gap: 1.5rem;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-
-    .video-wrapper {
-        position: relative;
-        padding-bottom: 56.25%;
-        height: 0;
-        overflow: hidden;
-        border-radius: 8px;
-        background: #000;
-    }
-
-    .video-wrapper iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
-
-    .tiktok-video {
-        padding-bottom: 125%;
-    }
-
-    .tiktok-embed {
-        width: 100%;
-        min-width: 325px;
-        max-width: 605px;
-        margin: 0 auto;
-    }
-}
-
-/* Estilo para o formulário de QR Code */
-#qrcode-form {
-    display: flex;
-    flex-direction: column;
+    color: #aaa; /* Cor padrão do coração */
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+  .like-button:hover:not(:disabled) {
+    color: #fff;
+    transform: scale(1.15);
+  }
+  .like-button.active {
+    color: #ff4081; /* Cor quando ativo */
+  }
+  .like-button.active .heart-icon path {
+    fill: #ff4081; /* Preenche o coração quando ativo */
+  }
+  .like-button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .like-count { font-size: 0.9rem; font-weight: 600; color: #fff; }
+  .like-label { display: none; /* Esconde o texto "Curtidas" */ }
+  
+  
+  /* Descrição */
+  .event-description p {
+    font-size: 0.95rem; /* 15.2px */
+    line-height: 1.65;
+    color: #d1d1d1; /* Cor de texto principal */
+  }
+  
+  /* Links */
+  .event-external-link a, .event-detail-link {
+    color: #5c9dff; /* Azul mais claro para links */
+    text-decoration: none;
+    word-break: break-all;
+    font-size: 0.9rem;
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 6px;
+    background-color: rgba(92, 157, 255, 0.1);
+    border-radius: 4px;
+  }
+  .event-external-link a:hover, .event-detail-link:hover {
+    text-decoration: underline;
+    background-color: rgba(92, 157, 255, 0.2);
+  }
+  
+  /* Ações do Criador/Admin */
+  .creator-actions .creator-action-buttons {
+    display: grid; /* Usa Grid para botões */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Colunas responsivas */
+    gap: 12px;
+  }
+  .creator-actions .btn-profile-action {
+     /* Reutiliza estilos do perfil, mas garante que existam */
+     display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background-color: #1c1c1e; color: #ddd; border: 1px solid #3a3a3c; padding: 14px 18px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; font-weight: 500;
+  }
+  .creator-actions .btn-profile-action:hover { background-color: #2c2c2e; border-color: #555; }
+  .creator-actions .btn-profile-action svg { width: 18px; height: 18px; color: #8000FF; flex-shrink: 0; }
+  
+  /* Seção de Vídeos */
+  .video-grid {
+      display: grid;
+      gap: 20px; /* Maior espaçamento */
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Ajusta tamanho mínimo */
+  }
+  .video-wrapper {
+      position: relative; padding-bottom: 56.25%; /* 16:9 */
+      height: 0; overflow: hidden; border-radius: 12px; /* Mais arredondado */
+      background: #111; box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Sombra sutil */
+  }
+  .video-wrapper iframe, .video-wrapper blockquote {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
+  }
+  .no-videos { color: #888; font-style: italic; text-align: center; padding: 20px 0;}
+  
+  /* Promoções e QR Codes (Estilos básicos - refine conforme necessário) */
+  .event-promotions .promotions-list,
+  .user-qrcodes-section .qr-codes-grid {
+    /* Adicione estilos para os cards de promoção/qrcode se necessário */
+    /* Exemplo: */
+    display: grid;
     gap: 15px;
-}
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  /* Estilos de .promotion-card, .qr-code-card, etc., viriam do qrcode-manager ou styles.js */
+  
+  .event-description p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #e0e0e0;
+  
+    /* --- ADICIONE ESTAS PROPRIEDADES --- */
+    white-space: normal;    /* Garante que o navegador tente quebrar linhas (geralmente padrão) */
+    word-wrap: break-word;  /* Permite quebrar palavras longas (alias de overflow-wrap) */
+    overflow-wrap: break-word; /* Propriedade padrão para quebrar palavras longas */
+    word-break: break-word; /* Ajuda extra para forçar a quebra se necessário */
+  /* Responsividade */
 
-#qrcode-form .form-group {
-    margin-bottom: 15px;
-}
+  @media (max-width: 768px) {
+    body::-webkit-scrollbar,
+    .app-wrapper::-webkit-scrollbar { /* Use o seletor correto */
+        display: none;
+        width: 0;
+        height: 0;
+        background: transparent;
+    }
 
-#qrcode-form label {
-    display: block;
-    margin-bottom: 8px;
-    color: #8000FF;
-    font-size: 14px;
-    font-weight: 500;
-}
+    body,
+    .app-wrapper { /* Use o seletor correto */
+        -ms-overflow-style: none;  /* IE e Edge */
+        scrollbar-width: none;  /* Firefox */
+     }
+    .event-key-info {
+        grid-template-columns: 1fr; /* Força uma coluna */
+        flex-direction: column; /* Empilha itens no flex fallback */
+        align-items: flex-start;
+        gap: 12px; /* Menor espaçamento */
+    }
+    .info-item {
+        flex-basis: auto; /* Largura total */
+        width: 100%;
+    }
+    .like-container {
+        margin-left: 0; /* Remove alinhamento à direita */
+        margin-top: 10px;
+        justify-content: flex-start; /* Alinha à esquerda */
+        width: fit-content; /* Largura baseada no conteúdo */
+    }
+    .creator-actions .creator-action-buttons {
+        grid-template-columns: 1fr; /* Botões em coluna única */
+    }
+     .video-grid {
+        grid-template-columns: 1fr; /* Vídeos em coluna única */
+    }
 
-#qrcode-form input[type="text"],
-#qrcode-form input[type="number"],
-#qrcode-form input[type="datetime-local"],
-#qrcode-form select,
-#qrcode-form textarea {
-    width: 100%;
-    padding: 12px 15px;
-    background-color: #222;
-    border: 1px solid #333;
-    border-radius: 8px;
-    color: white;
-    font-size: 14px;
-    transition: border-color 0.3s;
-}
-
-#qrcode-form input:focus,
-#qrcode-form select:focus,
-#qrcode-form textarea:focus {
-    border-color: #8000FF;
-    outline: none;
-}
-
-#qrcode-form select {
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238000FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 16px;
-    padding-right: 36px;
-}
-
-#qrcode-form textarea {
-    min-height: 80px;
-    resize: vertical;
-}
-
-#qrcode-form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-}
-
-/* Botão de envio do formulário */
-#qrcode-form .modal-buttons {
-    margin-top: 20px;
-}
-
-#qrcode-form .btn {
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: all 0.2s ease;
-}
-
-#qrcode-form .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(67, 157, 254, 0.3);
-}
-
-/* Correção para todos os modais */
-.modal-content {
-    max-width: 90%;
-    width: 450px;
-    background-color: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 12px;
-    padding: 25px;
-}
-
-.modal-content h3 {
-    font-size: 18px;
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: white;
-}
-
-.close-modal {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 24px;
-    color: #666;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.close-modal:hover {
-    color: white;
+    
+  }
+  
+  @media (max-width: 480px) {
+    .content-section {
+        padding: 20px 15px;
+    }
+    .section-title {
+        font-size: 0.95rem;
+    }
+    .event-key-info {
+         margin-left: 10px; margin-right: 10px; padding: 15px;
+    }
+    .info-item {
+        font-size: 0.85rem;
+    }
+    .event-description p {
+         font-size: 0.9rem;
+    }
+     .creator-actions .btn-profile-action {
+          padding: 12px 15px;
+          font-size: 13px;
+     }
+  }
 }

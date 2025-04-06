@@ -141,6 +141,9 @@ body {
 }
 
 .carousel-arrow {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
     background-color: rgba(0, 0, 0, 0.5);
     border: none;
     color: white;
@@ -150,7 +153,21 @@ body {
     border-radius: 50%;
     position: absolute;
     z-index: 1;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, opacity 0.3s ease, visibility 0.3s ease; /* Adiciona transições */
+}
+
+/* Classe para MOSTRAR a seta */
+.carousel-arrow.is-visible {
+    opacity: 1;
+    pointer-events: auto; /* Permite interação */
+    visibility: visible;  /* Torna visível */
+}
+
+.carousel-arrow.is-hidden {
+    opacity: 0;
+    pointer-events: none; /* Impede interação quando escondido */
+    /* Ou, se preferir esconder completamente: */
+    /* display: none; */
 }
 
 .carousel-arrow.left {
