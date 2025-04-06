@@ -1,4 +1,5 @@
-// --- Ícones (ADICIONAR editIcon) ---
+import { renderUserQRCodes as renderUserQRCodesHTML} from './qrcode-manager.js';
+
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
 const calendarIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>`;
 const clockIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>`;
@@ -12,6 +13,34 @@ const listQrIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox
 const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 // *** FIM DA LINHA ADICIONADA ***
 
+function setupEventEditButton(eventId) {
+  const editButton = document.getElementById('edit-event-btn');
+  if (editButton) {
+      editButton.addEventListener('click', () => {
+          window.location.href = `/events/edit/${eventId}`;
+      });
+  }
+}
+
+// *** MODIFIQUE A FUNÇÃO setupEventHandlers ***
+export function setupEventHandlers(eventIdParam) {
+  currentEventId = eventIdParam;
+  
+  // Configura o botão de edição
+  setupEventEditButton(currentEventId);
+
+  // Restante da configuração original
+  if (!document.getElementById('qrcode-modal') ||
+      !document.getElementById('view-qrcodes-modal') ||
+      !document.getElementById('delete-qrcode-modal')) {
+      return;
+  }
+
+  console.log(`Configurando Handlers para Evento ID: ${currentEventId}`);
+  setupCreateModal();
+  setupViewModal();
+  setupDeleteConfirmationModal();
+}
 
 /**
  * Formata a data do evento para exibição
@@ -74,19 +103,18 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
     };
 
      // Placeholder para renderizar QR Codes do usuário
-    const renderUserQRCodesSection = () => {
-        if (!user || !userQRCodes || userQRCodes.length === 0) return '';
-        // A lógica real de renderização deve vir do qrcode-manager.js
-        return `
-            <section class="user-qrcodes-section content-section">
-                <h2 class="section-title">Seus QR Codes (${userQRCodes.length})</h2>
-                <div class="qr-codes-grid">
-                    <p><i>(Seus QR Codes gerados apareceriam aqui)</i></p>
-                </div>
-            </section>
-        `;
-    };
-
+     const renderUserQRCodesSection = () => {
+      if (!user || !userQRCodes || userQRCodes.length === 0) return '';
+      const qrCodeCardsHTML = renderUserQRCodesHTML(userQRCodes); // Usa a função importada
+      return `
+          <section class="user-qrcodes-section content-section">
+              <h2 class="section-title">Seu QR Code Gerado</h2>
+              <div class="qr-codes-grid">
+                  ${qrCodeCardsHTML || '<p>Erro ao renderizar QR Codes.</p>'}
+              </div>
+          </section>
+      `;
+  };
 
     // Renderiza ações do criador/admin
     const renderCreatorActions = () => {
@@ -181,3 +209,5 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
 // (formatEventDate já está acima)
 
 // ... (outras funções que você possa ter neste arquivo) ...
+
+
