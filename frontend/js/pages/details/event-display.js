@@ -202,12 +202,3 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
 
       </div> </div> `;
 }
-
-
-// --- Funções Exportadas (mantidas ou adicionadas) ---
-
-// (formatEventDate já está acima)
-
-// ... (outras funções que você possa ter neste arquivo) ...
-
-
