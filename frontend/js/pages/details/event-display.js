@@ -1,5 +1,5 @@
 // Importar renderUserQRCodes - mantendo a importação da branch main
-import { renderUserQRCodes as renderUserQRCodesHTML } from './qrcode-manager.js';
+//import { renderUserQRCodes as renderUserQRCodesHTML } from './qrcode-manager.js';
 
 // Ícones (mantidos como antes)
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
@@ -42,58 +42,58 @@ export function setupEventHandlers(eventIdParam) {
  * @returns {string} Data e hora formatadas (ex: "15 de abril de 2025 às 00:00") ou 'Data não definida'.
  */
 export function formatEventDate(dateString, timeString) {
-    if (!dateString) return 'Data não definida';
+  if (!dateString) return 'Data não definida';
 
-    try {
-        // Tenta criar um objeto Date diretamente da string principal.
-        // O construtor Date() lida bem com YYYY-MM-DD e ISO 8601 (YYYY-MM-DDTHH:MM:SS.sssZ).
-        const dateObj = new Date(dateString);
+  try {
+    // Tenta criar um objeto Date diretamente da string principal.
+    // O construtor Date() lida bem com YYYY-MM-DD e ISO 8601 (YYYY-MM-DDTHH:MM:SS.sssZ).
+    const dateObj = new Date(dateString);
 
-        // Verifica se a data criada é válida
-        if (isNaN(dateObj.getTime())) {
-            // Se falhou, tenta combinar dateString (assumindo YYYY-MM-DD) com timeString (HH:MM)
-            if (timeString) {
-                const combinedDate = new Date(`${dateString}T${timeString}:00`);
-                if (!isNaN(combinedDate.getTime())) {
-                    // Usa a data combinada se for válida
-                    dateObj.setTime(combinedDate.getTime());
-                } else {
-                     throw new Error("Data/hora inválida recebida");
-                }
-            } else {
-                 // Se não tem timeString e a dataString inicial falhou, considera inválido
-                 throw new Error("Data inválida recebida");
-            }
+    // Verifica se a data criada é válida
+    if (isNaN(dateObj.getTime())) {
+      // Se falhou, tenta combinar dateString (assumindo YYYY-MM-DD) com timeString (HH:MM)
+      if (timeString) {
+        const combinedDate = new Date(`${dateString}T${timeString}:00`);
+        if (!isNaN(combinedDate.getTime())) {
+          // Usa a data combinada se for válida
+          dateObj.setTime(combinedDate.getTime());
+        } else {
+          throw new Error("Data/hora inválida recebida");
         }
-
-        // Agora temos um dateObj válido. Vamos formatar.
-
-        // Opções para a parte da data
-        const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' }; // Ex: 15 de abril de 2025
-
-        // Formata a parte da data usando o fuso horário local do navegador
-        let formattedString = dateObj.toLocaleDateString('pt-BR', dateOptions);
-
-        // Verifica se a data original tinha informação de hora significativa
-        // (desconsidera T00:00:00.000Z que pode ser adicionado automaticamente para datas sem hora)
-        const hasSignificantTime = (dateString.includes('T') && !dateString.endsWith('T00:00:00.000Z') && !dateString.endsWith('T00:00:00Z')) ||
-                                   (timeString && timeString !== '00:00'); // Ou se um timeString foi fornecido
-
-        if (hasSignificantTime) {
-            // Opções para a parte da hora (formato 24h)
-            const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
-            // Formata a hora usando o fuso horário local do navegador
-            formattedString += ` às ${dateObj.toLocaleTimeString('pt-BR', timeOptions)}`;
-        }
-        // Se não tinha hora significativa, retorna apenas a data formatada.
-
-        return formattedString;
-
-    } catch (e) {
-        console.error("Erro ao formatar data/hora:", dateString, timeString, e);
-        // Fallback: retorna a data original (pode ser a string ISO) ou 'Data inválida'
-        return dateString || 'Data inválida';
+      } else {
+        // Se não tem timeString e a dataString inicial falhou, considera inválido
+        throw new Error("Data inválida recebida");
+      }
     }
+
+    // Agora temos um dateObj válido. Vamos formatar.
+
+    // Opções para a parte da data
+    const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' }; // Ex: 15 de abril de 2025
+
+    // Formata a parte da data usando o fuso horário local do navegador
+    let formattedString = dateObj.toLocaleDateString('pt-BR', dateOptions);
+
+    // Verifica se a data original tinha informação de hora significativa
+    // (desconsidera T00:00:00.000Z que pode ser adicionado automaticamente para datas sem hora)
+    const hasSignificantTime = (dateString.includes('T') && !dateString.endsWith('T00:00:00.000Z') && !dateString.endsWith('T00:00:00Z')) ||
+      (timeString && timeString !== '00:00'); // Ou se um timeString foi fornecido
+
+    if (hasSignificantTime) {
+      // Opções para a parte da hora (formato 24h)
+      const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
+      // Formata a hora usando o fuso horário local do navegador
+      formattedString += ` às ${dateObj.toLocaleTimeString('pt-BR', timeOptions)}`;
+    }
+    // Se não tinha hora significativa, retorna apenas a data formatada.
+
+    return formattedString;
+
+  } catch (e) {
+    console.error("Erro ao formatar data/hora:", dateString, timeString, e);
+    // Fallback: retorna a data original (pode ser a string ISO) ou 'Data inválida'
+    return dateString || 'Data inválida';
+  }
 }
 
 /**
@@ -106,22 +106,22 @@ export function formatEventDate(dateString, timeString) {
  * @returns {string} HTML da página.
  */
 export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = [], availablePromotions = []) {
-    if (!event) return '<p>Erro: Dados do evento não disponíveis.</p>';
+  if (!event) return '<p>Erro: Dados do evento não disponíveis.</p>';
 
-    // Remove a verificação do horário na string e formata a data/hora
-    const eventDateOnly = event.event_date ? event.event_date.split('T')[0] : '';
-    const eventDateFormatted = formatEventDate(eventDateOnly, event.event_time);
+  // Remove a verificação do horário na string e formata a data/hora
+  const eventDateOnly = event.event_date ? event.event_date.split('T')[0] : '';
+  const eventDateFormatted = formatEventDate(eventDateOnly, event.event_time);
 
-    const eventCategory = `${event.category_name || ''}${event.subcategory_name ? ` / ${event.subcategory_name}` : ''}`.trim();
-    const eventLinkDisplay = event.event_link ? `<a href="${event.event_link}" target="_blank" rel="noopener noreferrer" class="event-detail-link">${event.event_link}</a>` : 'Não informado';
+  const eventCategory = `${event.category_name || ''}${event.subcategory_name ? ` / ${event.subcategory_name}` : ''}`.trim();
+  const eventLinkDisplay = event.event_link ? `<a href="${event.event_link}" target="_blank" rel="noopener noreferrer" class="event-detail-link">${event.event_link}</a>` : 'Não informado';
 
-    // Renderiza promoções disponíveis
-    const renderAvailablePromotions = () => {
-        if (!user || !availablePromotions || availablePromotions.length === 0) return '';
-        // A lógica real de renderização de promoções deve vir do promotion-manager.js
-        // Este é apenas um exemplo:
-        const firstPromoId = availablePromotions[0]?.promotion_id; // Pega o ID da primeira promoção como exemplo
-        return `
+  // Renderiza promoções disponíveis
+  const renderAvailablePromotions = () => {
+    if (!user || !availablePromotions || availablePromotions.length === 0) return '';
+    // A lógica real de renderização de promoções deve vir do promotion-manager.js
+    // Este é apenas um exemplo:
+    const firstPromoId = availablePromotions[0]?.promotion_id; // Pega o ID da primeira promoção como exemplo
+    return `
             <section class="event-promotions content-section">
                 <h2 class="section-title">Promoções Disponíveis (${availablePromotions.length})</h2>
                 <div class="promotions-list">
@@ -130,13 +130,13 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
                 </div>
             </section>
         `;
-    };
+  };
 
-    // Placeholder para renderizar QR Codes do usuário
-    const renderUserQRCodesSection = () => {
-        if (!user || !userQRCodes || userQRCodes.length === 0) return '';
-        const qrCodeCardsHTML = renderUserQRCodesHTML(userQRCodes); // Usa a função importada
-        return `
+  // Placeholder para renderizar QR Codes do usuário
+  const renderUserQRCodesSection = () => {
+    if (!user || !userQRCodes || userQRCodes.length === 0) return '';
+    const qrCodeCardsHTML = renderUserQRCodesHTML(userQRCodes); // Usa a função importada
+    return `
             <section class="user-qrcodes-section content-section">
                 <h2 class="section-title">Seu QR Code Gerado</h2>
                 <div class="qr-codes-grid">
@@ -144,12 +144,12 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
                 </div>
             </section>
         `;
-    };
+  };
 
-    // Renderiza ações do criador/admin
-    const renderCreatorActions = () => {
-        if (!canManageQrCodes) return '';
-        return `
+  // Renderiza ações do criador/admin
+  const renderCreatorActions = () => {
+    if (!canManageQrCodes) return '';
+    return `
             <section class="creator-actions content-section">
                 <h2 class="section-title">Gerenciar Evento</h2>
                 <div class="creator-action-buttons">
@@ -165,10 +165,10 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
                 </div>
             </section>
         `;
-    };
+  };
 
-    // Gera o HTML final
-    return `
+  // Gera o HTML final
+  return `
     <div class="app-wrapper event-details-page">
       <div class="app-container">
         <header class="page-header">
