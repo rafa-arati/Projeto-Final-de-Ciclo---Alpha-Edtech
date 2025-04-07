@@ -163,7 +163,7 @@ function setupBottomNavigation() {
                 }
             });
         } else if (index === 2) { // Agenda (terceiro item)
-            item.addEventListener('click', () => {
+            newItem.addEventListener('click', () => {
                 navigateTo('agenda');
             });
         } else {
@@ -289,9 +289,9 @@ export function setupUIEvents() {
         console.log("Listener de resize da janela configurado.");
     }
 
-     // Configura navegação (cliques) das setas
-     const arrows = document.querySelectorAll('.carousel-arrow');
-     arrows.forEach(arrow => {
+    // Configura navegação (cliques) das setas
+    const arrows = document.querySelectorAll('.carousel-arrow');
+    arrows.forEach(arrow => {
         const newArrow = arrow.cloneNode(true);
         arrow.parentNode.replaceChild(newArrow, arrow); // Limpa listeners antigos
 
@@ -309,7 +309,7 @@ export function setupUIEvents() {
                 }
             }
         });
-     });
+    });
 
     // Nota: A visibilidade inicial e os listeners de scroll são configurados
     // por initializeCarouselVisibility(), que é chamado após a renderização dos carrosséis.

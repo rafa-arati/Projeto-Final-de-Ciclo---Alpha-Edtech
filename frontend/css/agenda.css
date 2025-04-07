@@ -114,56 +114,98 @@
 .events-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
-.event-item {
+/* NOVO ESTILO DE CARD - mais moderno e consistente com o estilo do app */
+.event-card-item {
     display: flex;
-    align-items: center;
     background-color: #222;
-    border-radius: 8px;
-    padding: 15px;
+    border-radius: 12px;
+    overflow: hidden;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.3s;
+    border: 1px solid #333;
+    height: 100px;
 }
 
-.event-item:hover {
+.event-card-item:hover {
     background-color: #2a2a2a;
     transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.event-date {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(45deg, #439DFE, #8000FF);
-    border-radius: 8px;
+.event-card-date {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-right: 15px;
+    min-width: 60px;
+    background: linear-gradient(45deg, #439DFE, #8000FF);
+    color: white;
+    padding: 10px;
+}
+
+.event-card-day {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.event-card-month {
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.event-card-image {
+    width: 100px;
+    height: 100px;
     flex-shrink: 0;
 }
 
-.event-day {
-    font-size: 18px;
-    font-weight: bold;
+.event-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.event-card-info {
+    flex: 1;
+    padding: 12px 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.event-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 5px 0;
     color: white;
 }
 
-.event-info {
-    flex: 1;
-}
-
-.event-title {
-    font-size: 16px;
-    margin: 0 0 5px 0;
-}
-
-.event-location,
-.event-time {
-    font-size: 12px;
+.event-card-location {
+    font-size: 13px;
     color: #aaa;
-    margin: 0;
+    margin: 0 0 8px 0;
+}
+
+.event-card-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.event-card-time,
+.event-card-category {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #999;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 3px 8px;
+    border-radius: 4px;
 }
 
 .no-events {
@@ -173,7 +215,7 @@
     padding: 20px 0;
 }
 
-/* Estilos do Modal de Evento */
+/* Estilos do Modal de Detalhes */
 #event-details-modal .modal-content {
     max-width: 90%;
     width: 400px;
@@ -182,6 +224,7 @@
 #modal-event-title {
     margin-top: 5px;
     margin-bottom: 15px;
+    font-size: 20px;
 }
 
 #modal-event-details {
@@ -217,6 +260,108 @@
     color: white;
 }
 
+/* Estilos para o modal de múltiplos eventos */
+#multiple-events-modal .modal-content {
+    max-width: 90%;
+    width: 450px;
+    padding-bottom: 15px;
+}
+
+.events-modal-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.multiple-event-item {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding: 12px 0;
+}
+
+.multiple-event-item:last-child {
+    border-bottom: none;
+}
+
+.multiple-event-image {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    margin-right: 15px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.multiple-event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.multiple-event-details {
+    flex: 1;
+}
+
+.multiple-event-details h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.multiple-event-details p {
+    margin: 0 0 5px 0;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.multiple-event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.multiple-event-meta .time,
+.multiple-event-meta .category {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #999;
+}
+
+.multiple-event-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-left: 15px;
+}
+
+.multiple-event-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+.multiple-event-actions .btn-view {
+    background: linear-gradient(45deg, #439DFE, #8000FF);
+    color: white;
+}
+
+.multiple-event-actions .btn-gcal {
+    background-color: #444;
+    color: white;
+}
+
+.multiple-event-actions button:hover {
+    opacity: 0.9;
+}
+
 /* Estilos responsivos */
 @media (max-width: 480px) {
     .calendar-days .day {
@@ -227,5 +372,41 @@
 
     .modal-buttons {
         flex-direction: column;
+    }
+
+    .event-card-item {
+        height: auto;
+        flex-wrap: wrap;
+    }
+
+    .event-card-date {
+        min-width: 50px;
+        padding: 8px;
+    }
+
+    .event-card-image {
+        width: 80px;
+        height: 80px;
+    }
+
+    .multiple-event-actions {
+        flex-direction: row;
+        margin-top: 10px;
+        margin-left: 0;
+    }
+
+    .multiple-event-item {
+        flex-wrap: wrap;
+    }
+
+    .multiple-event-image {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 360px) {
+    .event-card-image {
+        display: none;
     }
 }
