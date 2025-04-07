@@ -13,15 +13,6 @@ const listQrIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox
 const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 // *** FIM DA LINHA ADICIONADA ***
 
-function setupEventEditButton(eventId) {
-  const editButton = document.getElementById('edit-event-btn');
-  if (editButton) {
-    editButton.addEventListener('click', () => {
-      window.location.href = `/events/edit/${eventId}`;
-    });
-  }
-}
-
 // *** MODIFIQUE A FUNÇÃO setupEventHandlers ***
 export function setupEventHandlers(eventIdParam) {
   currentEventId = eventIdParam;

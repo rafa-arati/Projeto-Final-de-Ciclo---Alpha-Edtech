@@ -117,6 +117,27 @@ export default async function renderEventDetails(queryParams) {
     // Renderizar o HTML principal da página
     appContainer.innerHTML = renderEventDisplay(event, user, canManageQrCodes, userQRCodes);
 
+
+    const editButton = document.getElementById('edit-event-btn');
+    if (editButton) {
+      editButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Impedir propagação do evento
+
+        // Verificar permissões
+        if (!user) {
+          showMessage("Você precisa estar logado para editar eventos");
+          return;
+        }
+
+        if (user.role === 'admin' || (user.role === 'premium' && event.creator_id &&
+          user.id && event.creator_id.toString() === user.id.toString())) {
+          // Usar o formato exato da URL que funciona em seu sistema
+          window.location.hash = `create-event?edit=${eventId}`;
+        } else {
+          showMessage("Você só pode editar seus próprios eventos");
+        }
+      });
+    }
     // Adicionar validador de QR Code para admins/premium
     if (user && (user.role === 'admin' || user.role === 'premium')) {
       // Adicionar a seção de validação logo após as ações do criador
