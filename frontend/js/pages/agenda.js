@@ -4,16 +4,16 @@ import { fetchEvents } from '../modules/events-api.js';
 import { getLoggedInUser } from '../modules/store.js';
 
 export default async function renderAgenda(queryParams) {
-    const appContainer = document.getElementById('app');
-    if (!appContainer) return;
+  const appContainer = document.getElementById('app');
+  if (!appContainer) return;
 
-    // Obter o mês e ano atual (ou da URL)
-    const today = new Date();
-    const currentMonth = queryParams.get('month') ? parseInt(queryParams.get('month')) : today.getMonth();
-    const currentYear = queryParams.get('year') ? parseInt(queryParams.get('year')) : today.getFullYear();
+  // Obter o mês e ano atual (ou da URL)
+  const today = new Date();
+  const currentMonth = queryParams.get('month') ? parseInt(queryParams.get('month')) : today.getMonth();
+  const currentYear = queryParams.get('year') ? parseInt(queryParams.get('year')) : today.getFullYear();
 
-    // Gerar o HTML da página
-    appContainer.innerHTML = `
+  // Gerar o HTML da página
+  appContainer.innerHTML = `
     <div class="app-wrapper">
       <div class="app-container">
         <!-- Cabeçalho com botão de voltar -->
@@ -121,591 +121,472 @@ export default async function renderAgenda(queryParams) {
             </div>
           </div>
         </div>
+        
+        <!-- Modal de múltiplos eventos -->
+        <div id="multiple-events-modal" class="modal">
+          <div class="modal-content">
+            <span class="close-modal" id="close-multiple-events">&times;</span>
+            <h3 id="multiple-events-title">Eventos no dia</h3>
+            <div id="multiple-events-list" class="events-modal-list">
+              <!-- Lista de eventos será preenchida dinamicamente -->
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `;
 
-    // Adicionar estilos específicos do calendário
-    addCalendarStyles();
+  // Carregar eventos e preencher o calendário
+  try {
+    // Definir filtros para o mês atual
+    const startDate = new Date(currentYear, currentMonth, 1);
+    const endDate = new Date(currentYear, currentMonth + 1, 0);
 
-    // Carregar eventos e preencher o calendário
-    try {
-        // Definir filtros para o mês atual
-        const startDate = new Date(currentYear, currentMonth, 1);
-        const endDate = new Date(currentYear, currentMonth + 1, 0);
+    // Formatação das datas para a API
+    const startDateFormatted = formatDateForAPI(startDate);
+    const endDateFormatted = formatDateForAPI(endDate);
 
-        // Formatação das datas para a API
-        const startDateFormatted = formatDateForAPI(startDate);
-        const endDateFormatted = formatDateForAPI(endDate);
+    // Buscar eventos
+    const events = await fetchEvents({
+      start_date: startDateFormatted,
+      end_date: endDateFormatted
+    });
 
-        // Buscar eventos
-        const events = await fetchEvents({
-            start_date: startDateFormatted,
-            end_date: endDateFormatted
-        });
+    // Gerar calendário
+    renderCalendar(currentMonth, currentYear, events);
 
-        // Gerar calendário
-        renderCalendar(currentMonth, currentYear, events);
+    // Renderizar lista de eventos
+    renderEventsList(events);
 
-        // Renderizar lista de eventos
-        renderEventsList(events);
+    // Configurar navegação
+    setupNavigation(currentMonth, currentYear);
 
-        // Configurar navegação
-        setupNavigation(currentMonth, currentYear);
-
-        // Configurar eventos da UI
-        setupEventHandlers(events);
-    } catch (error) {
-        console.error('Erro ao carregar eventos:', error);
-        showMessage('Não foi possível carregar os eventos do mês');
-    }
+    // Configurar eventos da UI
+    setupEventHandlers(events);
+  } catch (error) {
+    console.error('Erro ao carregar eventos:', error);
+    showMessage('Não foi possível carregar os eventos do mês');
+  }
 }
 
 // Função auxiliar para obter o nome do mês
 function getMonthName(month) {
-    const monthNames = [
-        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
-    return monthNames[month];
+  const monthNames = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+  return monthNames[month];
 }
 
 // Função para formatar data para a API (YYYY-MM-DD)
 function formatDateForAPI(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // Função para renderizar o calendário
 function renderCalendar(month, year, events) {
-    const calendarDays = document.getElementById('calendar-days');
-    if (!calendarDays) return;
+  const calendarDays = document.getElementById('calendar-days');
+  if (!calendarDays) return;
 
-    calendarDays.innerHTML = '';
+  calendarDays.innerHTML = '';
 
-    // Primeiro dia do mês atual
-    const firstDay = new Date(year, month, 1);
+  // Primeiro dia do mês atual
+  const firstDay = new Date(year, month, 1);
 
-    // Último dia do mês atual
-    const lastDay = new Date(year, month + 1, 0);
+  // Último dia do mês atual
+  const lastDay = new Date(year, month + 1, 0);
 
-    // Dia da semana do primeiro dia (0 = Domingo, 1 = Segunda, etc.)
-    const firstDayIndex = firstDay.getDay();
+  // Dia da semana do primeiro dia (0 = Domingo, 1 = Segunda, etc.)
+  const firstDayIndex = firstDay.getDay();
 
-    // Total de dias no mês
-    const daysInMonth = lastDay.getDate();
+  // Total de dias no mês
+  const daysInMonth = lastDay.getDate();
 
-    // Dias do mês anterior para completar a primeira semana
-    const prevMonthLastDay = new Date(year, month, 0).getDate();
+  // Dias do mês anterior para completar a primeira semana
+  const prevMonthLastDay = new Date(year, month, 0).getDate();
 
-    // Criar um mapa de eventos por dia para consulta rápida
-    const eventsByDay = {};
-    events.forEach(event => {
-        const eventDate = new Date(event.event_date || event.start_date);
-        if (eventDate.getMonth() === month && eventDate.getFullYear() === year) {
-            const day = eventDate.getDate();
-            if (!eventsByDay[day]) {
-                eventsByDay[day] = [];
-            }
-            eventsByDay[day].push(event);
-        }
-    });
+  // Criar um mapa de eventos por dia para consulta rápida
+  const eventsByDay = {};
+  events.forEach(event => {
+    const eventDate = new Date(event.event_date || event.start_date);
+    if (eventDate.getMonth() === month && eventDate.getFullYear() === year) {
+      const day = eventDate.getDate();
+      if (!eventsByDay[day]) {
+        eventsByDay[day] = [];
+      }
+      eventsByDay[day].push(event);
+    }
+  });
 
-    // Adicionar dias do mês anterior
-    for (let i = firstDayIndex; i > 0; i--) {
-        const day = prevMonthLastDay - i + 1;
-        calendarDays.innerHTML += `
+  // Adicionar dias do mês anterior
+  for (let i = firstDayIndex; i > 0; i--) {
+    const day = prevMonthLastDay - i + 1;
+    calendarDays.innerHTML += `
       <div class="day other-month">${day}</div>
     `;
-    }
+  }
 
-    // Adicionar dias do mês atual
-    for (let i = 1; i <= daysInMonth; i++) {
-        const today = new Date();
-        const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-        const hasEvents = eventsByDay[i] && eventsByDay[i].length > 0;
+  // Adicionar dias do mês atual
+  for (let i = 1; i <= daysInMonth; i++) {
+    const today = new Date();
+    const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    const hasEvents = eventsByDay[i] && eventsByDay[i].length > 0;
 
-        calendarDays.innerHTML += `
+    calendarDays.innerHTML += `
       <div class="day ${isToday ? 'today' : ''} ${hasEvents ? 'has-events' : ''}" data-day="${i}">
         ${i}
         ${hasEvents ? `<span class="event-dot" title="${eventsByDay[i].length} eventos"></span>` : ''}
       </div>
     `;
-    }
+  }
 
-    // Adicionar dias do próximo mês para completar a grade
-    const totalDays = calendarDays.children.length;
-    const remainingCells = 42 - totalDays; // 6 linhas * 7 dias = 42 células
+  // Adicionar dias do próximo mês para completar a grade
+  const totalDays = calendarDays.children.length;
+  const remainingCells = 42 - totalDays; // 6 linhas * 7 dias = 42 células
 
-    for (let i = 1; i <= remainingCells; i++) {
-        calendarDays.innerHTML += `
+  for (let i = 1; i <= remainingCells; i++) {
+    calendarDays.innerHTML += `
       <div class="day other-month">${i}</div>
     `;
-    }
+  }
 }
 
 // Função para renderizar lista de eventos
 function renderEventsList(events) {
-    const eventsList = document.getElementById('events-list');
-    if (!eventsList) return;
+  const eventsList = document.getElementById('events-list');
+  if (!eventsList) return;
 
-    if (events.length === 0) {
-        eventsList.innerHTML = '<p class="no-events">Nenhum evento encontrado neste mês</p>';
-        return;
-    }
+  if (events.length === 0) {
+    eventsList.innerHTML = '<p class="no-events">Nenhum evento encontrado neste mês</p>';
+    return;
+  }
 
-    // Ordenar eventos por data
-    events.sort((a, b) => {
-        const dateA = new Date(a.event_date || a.start_date);
-        const dateB = new Date(b.event_date || b.start_date);
-        return dateA - dateB;
-    });
+  // Ordenar eventos por data
+  events.sort((a, b) => {
+    const dateA = new Date(a.event_date || a.start_date);
+    const dateB = new Date(b.event_date || b.start_date);
+    return dateA - dateB;
+  });
 
-    // Renderizar cada evento
-    eventsList.innerHTML = events.map(event => {
-        const eventDate = new Date(event.event_date || event.start_date);
-        const day = eventDate.getDate();
-        const eventTime = event.event_time || event.start_time || '';
+  // Imagens base64 para placeholder (evita erro de rede)
+  const defaultImageBase64 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCAxMDAgODAiPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iODAiIGZpbGw9IiMyMjIiLz48dGV4dCB4PSI1MCIgeT0iNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2FhYSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+RXZlbnRvPC90ZXh0Pjwvc3ZnPg==';
 
-        return `
-      <div class="event-item" data-id="${event.id}">
-        <div class="event-date">
-          <span class="event-day">${day}</span>
+  // Renderizar cada evento
+  eventsList.innerHTML = events.map(event => {
+    // Obtenha a data do evento
+    const eventDate = new Date(event.event_date || event.start_date);
+    const day = eventDate.getDate();
+    const eventTime = event.event_time || event.start_time || '';
+
+    // Obtenha dados da categoria
+    const category = event.category_name || '';
+    const subcategory = event.subcategory_name || '';
+
+    // URL da imagem (use uma imagem base64 padrão se não tiver)
+    const imageUrl = event.photo_url || defaultImageBase64;
+
+    return `
+      <div class="event-card-item" data-id="${event.id}">
+        <div class="event-card-date">
+          <span class="event-card-day">${day}</span>
+          <span class="event-card-month">${getMonthName(eventDate.getMonth()).substring(0, 3)}</span>
         </div>
-        <div class="event-info">
-          <h4 class="event-title">${event.event_name || event.title}</h4>
-          <p class="event-location">${event.location || ''}</p>
-          ${eventTime ? `<p class="event-time">${eventTime}</p>` : ''}
+        <div class="event-card-image">
+          <img src="${imageUrl}" alt="${event.event_name || event.title}">
+        </div>
+        <div class="event-card-info">
+          <h4 class="event-card-title">${event.event_name || event.title}</h4>
+          <p class="event-card-location">${event.location || ''}</p>
+          <div class="event-card-details">
+            ${eventTime ? `<span class="event-card-time"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${eventTime}</span>` : ''}
+            ${category ? `<span class="event-card-category">${category}${subcategory ? ` / ${subcategory}` : ''}</span>` : ''}
+          </div>
         </div>
       </div>
     `;
-    }).join('');
+  }).join('');
 }
 
 // Configurar navegação do calendário
 function setupNavigation(currentMonth, currentYear) {
-    // Botão para mês anterior
-    document.getElementById('prev-month')?.addEventListener('click', () => {
-        let newMonth = currentMonth - 1;
-        let newYear = currentYear;
+  // Botão para mês anterior
+  document.getElementById('prev-month')?.addEventListener('click', () => {
+    let newMonth = currentMonth - 1;
+    let newYear = currentYear;
 
-        if (newMonth < 0) {
-            newMonth = 11;
-            newYear--;
-        }
+    if (newMonth < 0) {
+      newMonth = 11;
+      newYear--;
+    }
 
-        navigateTo('agenda', { month: newMonth, year: newYear });
-    });
+    navigateTo('agenda', { month: newMonth, year: newYear });
+  });
 
-    // Botão para próximo mês
-    document.getElementById('next-month')?.addEventListener('click', () => {
-        let newMonth = currentMonth + 1;
-        let newYear = currentYear;
+  // Botão para próximo mês
+  document.getElementById('next-month')?.addEventListener('click', () => {
+    let newMonth = currentMonth + 1;
+    let newYear = currentYear;
 
-        if (newMonth > 11) {
-            newMonth = 0;
-            newYear++;
-        }
+    if (newMonth > 11) {
+      newMonth = 0;
+      newYear++;
+    }
 
-        navigateTo('agenda', { month: newMonth, year: newYear });
-    });
+    navigateTo('agenda', { month: newMonth, year: newYear });
+  });
 
-    // Configurar navegação do menu inferior
-    document.getElementById('nav-home')?.addEventListener('click', () => {
-        navigateTo('events');
-    });
+  // Configurar navegação do menu inferior
+  document.getElementById('nav-home')?.addEventListener('click', () => {
+    navigateTo('events');
+  });
 
-    document.getElementById('nav-search')?.addEventListener('click', () => {
-        showMessage('Funcionalidade em desenvolvimento');
-    });
+  document.getElementById('nav-search')?.addEventListener('click', () => {
+    showMessage('Funcionalidade em desenvolvimento');
+  });
 
-    document.getElementById('nav-favorites')?.addEventListener('click', () => {
-        showMessage('Funcionalidade em desenvolvimento');
-    });
+  document.getElementById('nav-favorites')?.addEventListener('click', () => {
+    showMessage('Funcionalidade em desenvolvimento');
+  });
 
-    document.getElementById('nav-profile')?.addEventListener('click', () => {
-        navigateTo('edit-profile');
-    });
+  document.getElementById('nav-profile')?.addEventListener('click', () => {
+    navigateTo('edit-profile');
+  });
 }
 
 // Configurar handlers de eventos
 function setupEventHandlers(events) {
-    // Adicionar click nos itens da lista de eventos
-    const eventItems = document.querySelectorAll('.event-item');
-    eventItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const eventId = item.getAttribute('data-id');
-            const event = events.find(e => e.id.toString() === eventId);
-            if (event) {
-                showEventDetailsModal(event);
-            }
-        });
+  // Adicionar click nos itens da lista de eventos
+  const eventItems = document.querySelectorAll('.event-card-item');
+  eventItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const eventId = item.getAttribute('data-id');
+      const event = events.find(e => e.id.toString() === eventId);
+      if (event) {
+        showEventDetailsModal(event);
+      }
     });
+  });
 
-    // Adicionar click nos dias com eventos
-    const daysWithEvents = document.querySelectorAll('.day.has-events');
-    daysWithEvents.forEach(day => {
-        day.addEventListener('click', () => {
-            const dayNumber = parseInt(day.getAttribute('data-day'));
-            const dayEvents = events.filter(event => {
-                const eventDate = new Date(event.event_date || event.start_date);
-                return eventDate.getDate() === dayNumber;
-            });
+  // Adicionar click nos dias com eventos
+  const daysWithEvents = document.querySelectorAll('.day.has-events');
+  daysWithEvents.forEach(day => {
+    day.addEventListener('click', () => {
+      const dayNumber = parseInt(day.getAttribute('data-day'));
+      const dayEvents = events.filter(event => {
+        const eventDate = new Date(event.event_date || event.start_date);
+        return eventDate.getDate() === dayNumber;
+      });
 
-            if (dayEvents.length === 1) {
-                showEventDetailsModal(dayEvents[0]);
-            } else if (dayEvents.length > 1) {
-                // Mostrar lista de eventos para o dia selecionado
-                showMessage(`${dayEvents.length} eventos encontrados para o dia ${dayNumber}`);
-
-                // Rolar para a lista de eventos
-                const eventsList = document.getElementById('events-list');
-                eventsList?.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
+      if (dayEvents.length === 1) {
+        showEventDetailsModal(dayEvents[0]);
+      } else if (dayEvents.length > 1) {
+        // Mostrar modal com todos os eventos do dia
+        showMultipleEventsModal(dayEvents, dayNumber);
+      }
     });
+  });
 
-    // Configurar fechamento do modal
-    document.getElementById('close-event-details')?.addEventListener('click', () => {
-        document.getElementById('event-details-modal').classList.remove('active');
-    });
+  // Configurar fechamento dos modais
+  document.getElementById('close-event-details')?.addEventListener('click', () => {
+    document.getElementById('event-details-modal').classList.remove('active');
+  });
 
-    // Clicar fora do modal para fechar
-    const modal = document.getElementById('event-details-modal');
-    if (modal) {
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.classList.remove('active');
-            }
-        });
+  document.getElementById('close-multiple-events')?.addEventListener('click', () => {
+    document.getElementById('multiple-events-modal').classList.remove('active');
+  });
+
+  // Clicar fora dos modais para fechar
+  window.addEventListener('click', (event) => {
+    const eventModal = document.getElementById('event-details-modal');
+    const multipleEventsModal = document.getElementById('multiple-events-modal');
+
+    if (event.target === eventModal) {
+      eventModal.classList.remove('active');
     }
+
+    if (event.target === multipleEventsModal) {
+      multipleEventsModal.classList.remove('active');
+    }
+  });
 }
 
 // Mostrar detalhes do evento no modal
 function showEventDetailsModal(event) {
-    const modal = document.getElementById('event-details-modal');
-    const title = document.getElementById('modal-event-title');
-    const details = document.getElementById('modal-event-details');
-    const viewButton = document.getElementById('view-event-btn');
-    const gcalButton = document.getElementById('add-to-gcal-btn');
+  const modal = document.getElementById('event-details-modal');
+  const title = document.getElementById('modal-event-title');
+  const details = document.getElementById('modal-event-details');
+  const viewButton = document.getElementById('view-event-btn');
+  const gcalButton = document.getElementById('add-to-gcal-btn');
 
-    if (!modal || !title || !details || !viewButton || !gcalButton) return;
+  if (!modal || !title || !details || !viewButton || !gcalButton) return;
 
-    // Preencher informações do evento
-    title.textContent = event.event_name || event.title;
+  // Limpar handlers anteriores
+  const newViewButton = viewButton.cloneNode(true);
+  viewButton.parentNode.replaceChild(newViewButton, viewButton);
 
-    const eventDate = new Date(event.event_date || event.start_date);
-    const formattedDate = eventDate.toLocaleDateString('pt-BR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+  const newGcalButton = gcalButton.cloneNode(true);
+  gcalButton.parentNode.replaceChild(newGcalButton, gcalButton);
 
-    const eventTime = event.event_time || event.start_time || '';
-    const location = event.location || '';
-    const description = event.description || '';
+  // Preencher informações do evento
+  title.textContent = event.event_name || event.title;
 
-    details.innerHTML = `
+  const eventDate = new Date(event.event_date || event.start_date);
+  const formattedDate = eventDate.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const eventTime = event.event_time || event.start_time || '';
+  const location = event.location || '';
+  const description = event.description || '';
+  const category = event.category_name || '';
+  const subcategory = event.subcategory_name || '';
+
+  details.innerHTML = `
     <p><strong>Data:</strong> ${formattedDate}</p>
     ${eventTime ? `<p><strong>Horário:</strong> ${eventTime}</p>` : ''}
     ${location ? `<p><strong>Local:</strong> ${location}</p>` : ''}
+    ${category ? `<p><strong>Categoria:</strong> ${category}${subcategory ? ` / ${subcategory}` : ''}</p>` : ''}
     ${description ? `<p><strong>Descrição:</strong> ${description}</p>` : ''}
   `;
 
-    // Configurar botão para ver detalhes completos
-    viewButton.addEventListener('click', () => {
-        navigateTo('details', { id: event.id });
+  // Configurar botão para ver detalhes completos
+  newViewButton.addEventListener('click', () => {
+    navigateTo('details', { id: event.id });
+  });
+
+  // Configurar botão para adicionar ao Google Agenda
+  newGcalButton.addEventListener('click', () => {
+    // Criar link para Google Agenda
+    const gcalLink = createGoogleCalendarLink(event);
+
+    // Abrir link em nova aba
+    window.open(gcalLink, '_blank');
+  });
+
+  // Mostrar o modal
+  modal.classList.add('active');
+}
+
+// Função para exibir o modal de múltiplos eventos
+function showMultipleEventsModal(events, dayNumber) {
+  const modal = document.getElementById('multiple-events-modal');
+  const title = document.getElementById('multiple-events-title');
+  const eventsList = document.getElementById('multiple-events-list');
+
+  if (!modal || !title || !eventsList) return;
+
+  // Formatar o título do modal
+  const date = new Date();
+  date.setDate(dayNumber);
+  const formattedDay = date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+  title.textContent = `Eventos em ${formattedDay}`;
+
+  // Limpar lista anterior
+  eventsList.innerHTML = '';
+
+  // Renderizar cada evento na lista
+  events.forEach(event => {
+    const eventCard = document.createElement('div');
+    eventCard.className = 'multiple-event-item';
+
+    // Formatar hora do evento
+    const eventTime = event.event_time || event.start_time || '';
+    const timeDisplay = eventTime ? eventTime : 'Horário não definido';
+
+    // Criar categoria/subcategoria display
+    const category = event.category_name || '';
+    const subcategory = event.subcategory_name || '';
+    const categoryDisplay = category ? `${category}${subcategory ? ` / ${subcategory}` : ''}` : '';
+
+    // URL da imagem com placeholder melhorado
+    const defaultImageBase64 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSIzMCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iI2VlZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+RXZlbnRvPC90ZXh0Pjwvc3ZnPg==';
+    const imageUrl = event.photo_url || defaultImageBase64;
+
+    eventCard.innerHTML = `
+        <div class="multiple-event-image">
+            <img src="${imageUrl}" alt="${event.event_name || event.title}">
+        </div>
+        <div class="multiple-event-details">
+            <h4>${event.event_name || event.title}</h4>
+            <p>${event.location || ''}</p>
+            <div class="multiple-event-meta">
+                <span class="time">${timeDisplay}</span>
+                ${categoryDisplay ? `<span class="category">${categoryDisplay}</span>` : ''}
+            </div>
+        </div>
+        <div class="multiple-event-actions">
+            <button class="btn-view" data-id="${event.id}">Ver</button>
+            <button class="btn-gcal" data-id="${event.id}">+ Google</button>
+        </div>
+    `;
+
+    eventsList.appendChild(eventCard);
+
+    // Adicionar event listeners aos botões
+    const viewBtn = eventCard.querySelector('.btn-view');
+    viewBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+      navigateTo('details', { id: event.id });
     });
 
-    // Configurar botão para adicionar ao Google Agenda
-    gcalButton.addEventListener('click', () => {
-        // Criar link para Google Agenda
-        const gcalLink = createGoogleCalendarLink(event);
-
-        // Abrir link em nova aba
-        window.open(gcalLink, '_blank');
+    const gcalBtn = eventCard.querySelector('.btn-gcal');
+    gcalBtn.addEventListener('click', () => {
+      const gcalLink = createGoogleCalendarLink(event);
+      window.open(gcalLink, '_blank');
     });
+  });
 
-    // Mostrar o modal
-    modal.classList.add('active');
+  // Mostrar o modal
+  modal.classList.add('active');
 }
 
 // Criar link para Google Agenda
 function createGoogleCalendarLink(event) {
-    // Título do evento
-    const title = encodeURIComponent(event.event_name || event.title || 'Evento');
+  // Título do evento
+  const title = encodeURIComponent(event.event_name || event.title || 'Evento');
 
-    // Datas de início e fim
-    const startDate = new Date(event.event_date || event.start_date);
-    let startTime = null;
+  // Datas de início e fim
+  const startDate = new Date(event.event_date || event.start_date);
+  let startTime = null;
 
-    if (event.event_time || event.start_time) {
-        const timeStr = event.event_time || event.start_time;
-        const [hours, minutes] = timeStr.split(':');
-        startDate.setHours(parseInt(hours), parseInt(minutes), 0);
-        startTime = true;
-    } else {
-        // Se não tem horário, definir para início do dia
-        startDate.setHours(0, 0, 0);
-    }
+  if (event.event_time || event.start_time) {
+    const timeStr = event.event_time || event.start_time;
+    const [hours, minutes] = timeStr.split(':');
+    startDate.setHours(parseInt(hours), parseInt(minutes), 0);
+    startTime = true;
+  } else {
+    // Se não tem horário, definir para início do dia
+    startDate.setHours(0, 0, 0);
+  }
 
-    // Data de fim - se não tem data de fim, usar a mesma data, mas +1 hora ou +1 dia
-    const endDate = new Date(startDate);
-    if (startTime) {
-        endDate.setHours(endDate.getHours() + 1); // Adiciona 1 hora se tiver horário
-    } else {
-        endDate.setDate(endDate.getDate() + 1); // Adiciona 1 dia se não tiver horário
-    }
+  // Data de fim - se não tem data de fim, usar a mesma data, mas +1 hora ou +1 dia
+  const endDate = new Date(startDate);
+  if (startTime) {
+    endDate.setHours(endDate.getHours() + 1); // Adiciona 1 hora se tiver horário
+  } else {
+    endDate.setDate(endDate.getDate() + 1); // Adiciona 1 dia se não tiver horário
+  }
 
-    // Formatar datas para o formato do Google Agenda
-    const formatGCal = (date) => {
-        return date.toISOString().replace(/-|:|\.\d\d\d/g, '');
-    };
+  // Formatar datas para o formato do Google Agenda
+  const formatGCal = (date) => {
+    return date.toISOString().replace(/-|:|\.\d\d\d/g, '');
+  };
 
-    const startDateStr = formatGCal(startDate);
-    const endDateStr = formatGCal(endDate);
+  const startDateStr = formatGCal(startDate);
+  const endDateStr = formatGCal(endDate);
 
-    // Local do evento
-    const location = encodeURIComponent(event.location || '');
+  // Local do evento
+  const location = encodeURIComponent(event.location || '');
 
-    // Descrição
-    const description = encodeURIComponent(event.description || '');
+  // Descrição
+  const description = encodeURIComponent(event.description || '');
 
-    // Construir URL
-    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateStr}/${endDateStr}&details=${description}&location=${location}&sf=true&output=xml`;
-}
-
-// Adicionar estilos específicos do calendário
-function addCalendarStyles() {
-    const styleId = 'calendar-styles';
-
-    // Verificar se os estilos já existem
-    if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = `
-      /* Estilos do Calendário */
-      .month-selector {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px;
-        background-color: #222;
-        border-radius: 10px;
-        margin: 20px 20px 30px 20px;
-      }
-      
-      .month-btn {
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        transition: background-color 0.3s;
-      }
-      
-      .month-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-      
-      #current-month-display {
-        font-size: 18px;
-        font-weight: 500;
-        margin: 0;
-        color: white;
-      }
-      
-      .calendar-container {
-        padding: 0 20px;
-        margin-bottom: 30px;
-      }
-      
-      .calendar-header {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        margin-bottom: 10px;
-      }
-      
-      .weekday {
-        text-align: center;
-        font-size: 12px;
-        font-weight: 500;
-        padding: 10px 0;
-        color: #888;
-      }
-      
-      .calendar-days {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 5px;
-      }
-      
-      .day {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 10px;
-        height: 40px;
-        border-radius: 8px;
-        font-size: 14px;
-        position: relative;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      
-      .day:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
-      
-      .day.other-month {
-        color: #666;
-      }
-      
-      .day.today {
-        background-color: rgba(128, 0, 255, 0.2);
-        font-weight: bold;
-      }
-      
-      .day.has-events {
-        font-weight: bold;
-        position: relative;
-      }
-      
-      .event-dot {
-        position: absolute;
-        bottom: 4px;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: linear-gradient(45deg, #439DFE, #8000FF);
-      }
-      
-      .month-events {
-        padding: 0 20px;
-        margin-bottom: 70px;
-      }
-      
-      .month-events h3 {
-        font-size: 16px;
-        margin-bottom: 15px;
-        color: #ccc;
-      }
-      
-      .events-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .event-item {
-        display: flex;
-        align-items: center;
-        background-color: #222;
-        border-radius: 8px;
-        padding: 15px;
-        cursor: pointer;
-        transition: transform 0.2s, background-color 0.3s;
-      }
-      
-      .event-item:hover {
-        background-color: #2a2a2a;
-        transform: translateY(-2px);
-      }
-      
-      .event-date {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(45deg, #439DFE, #8000FF);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        flex-shrink: 0;
-      }
-      
-      .event-day {
-        font-size: 18px;
-        font-weight: bold;
-        color: white;
-      }
-      
-      .event-info {
-        flex: 1;
-      }
-      
-      .event-title {
-        font-size: 16px;
-        margin: 0 0 5px 0;
-      }
-      
-      .event-location, .event-time {
-        font-size: 12px;
-        color: #aaa;
-        margin: 0;
-      }
-      
-      .no-events {
-        color: #888;
-        font-style: italic;
-        text-align: center;
-        padding: 20px 0;
-      }
-      
-      /* Estilos do Modal */
-      #event-details-modal .modal-content {
-        max-width: 90%;
-        width: 400px;
-      }
-      
-      #modal-event-title {
-        margin-top: 5px;
-        margin-bottom: 15px;
-      }
-      
-      #modal-event-details {
-        margin-bottom: 20px;
-      }
-      
-      #modal-event-details p {
-        margin: 10px 0;
-        color: #ccc;
-      }
-      
-      .modal-buttons {
-        display: flex;
-        gap: 10px;
-      }
-      
-      .modal-buttons .btn {
-        flex: 1;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      
-      .modal-buttons .btn:first-child {
-        background: linear-gradient(45deg, #439DFE, #8000FF);
-        color: white;
-      }
-      
-      .modal-buttons .btn.secondary {
-        background-color: #444;
-        color: white;
-      }
-    `;
-
-        document.head.appendChild(style);
-    }
+  // Construir URL
+  return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateStr}/${endDateStr}&details=${description}&location=${location}&sf=true&output=xml`;
 }

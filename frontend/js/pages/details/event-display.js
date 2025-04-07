@@ -1,5 +1,5 @@
-// Importa apenas se necessário para placeholders (se você removeu a seção de QR do usuário daqui)
-// import { renderUserQRCodes as renderUserQRCodesHTML} from './qrcode-manager.js';
+// Importar renderUserQRCodes - mantendo a importação da branch main
+import { renderUserQRCodes as renderUserQRCodesHTML } from './qrcode-manager.js';
 
 // Ícones (mantidos como antes)
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
@@ -13,7 +13,28 @@ const qrCodeIcon = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="cu
 const listQrIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>`;
 const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
-// <<< --- FUNÇÃO DE FORMATAR DATA CORRIGIDA --- >>>
+// Adicionando a função setupEventHandlers da branch main
+let currentEventId;
+
+export function setupEventHandlers(eventIdParam) {
+  currentEventId = eventIdParam;
+
+  // Configura o botão de edição
+  setupEventEditButton(currentEventId);
+
+  // Restante da configuração original
+  if (!document.getElementById('qrcode-modal') ||
+    !document.getElementById('view-qrcodes-modal') ||
+    !document.getElementById('delete-qrcode-modal')) {
+    return;
+  }
+
+  console.log(`Configurando Handlers para Evento ID: ${currentEventId}`);
+  setupCreateModal();
+  setupViewModal();
+  setupDeleteConfirmationModal();
+}
+
 /**
  * Formata a data/hora do evento para exibição amigável em pt-BR.
  * @param {string | null} dateString - String da data (pode ser YYYY-MM-DD ou ISO 8601 como YYYY-MM-DDTHH:MM:SS.sssZ).
@@ -74,8 +95,6 @@ export function formatEventDate(dateString, timeString) {
         return dateString || 'Data inválida';
     }
 }
-// <<< --- FIM DA FUNÇÃO CORRIGIDA --- >>>
-
 
 /**
  * Renderiza o HTML da página de detalhes do evento.
@@ -83,21 +102,49 @@ export function formatEventDate(dateString, timeString) {
  * @param {Object|null} user - Usuário logado ou null.
  * @param {boolean} canManageQrCodes - Se o usuário pode gerenciar QR Codes.
  * @param {Array} userQRCodes - Lista de QR Codes do usuário para este evento.
+ * @param {Array} availablePromotions - Lista de promoções disponíveis para este evento.
  * @returns {string} HTML da página.
  */
-export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = []) {
+export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = [], availablePromotions = []) {
     if (!event) return '<p>Erro: Dados do evento não disponíveis.</p>';
 
-    // <<< AJUSTE NA CHAMADA E LÓGICA DE HORA >>>
-    // Verifica se a string da data já inclui a hora (padrão ISO)
-   // Remove a verificação do horário na string e formata apenas a data
+    // Remove a verificação do horário na string e formata a data/hora
     const eventDateOnly = event.event_date ? event.event_date.split('T')[0] : '';
-    const eventDateFormatted = formatEventDate(eventDateOnly, null); // Sempre passa null para o horário
+    const eventDateFormatted = formatEventDate(eventDateOnly, event.event_time);
 
     const eventCategory = `${event.category_name || ''}${event.subcategory_name ? ` / ${event.subcategory_name}` : ''}`.trim();
     const eventLinkDisplay = event.event_link ? `<a href="${event.event_link}" target="_blank" rel="noopener noreferrer" class="event-detail-link">${event.event_link}</a>` : 'Não informado';
-        // A seção de promoções será renderizada dinamicamente por promotion-manager.js
-    // A seção de QR Codes do usuário foi removida daqui
+
+    // Renderiza promoções disponíveis
+    const renderAvailablePromotions = () => {
+        if (!user || !availablePromotions || availablePromotions.length === 0) return '';
+        // A lógica real de renderização de promoções deve vir do promotion-manager.js
+        // Este é apenas um exemplo:
+        const firstPromoId = availablePromotions[0]?.promotion_id; // Pega o ID da primeira promoção como exemplo
+        return `
+            <section class="event-promotions content-section">
+                <h2 class="section-title">Promoções Disponíveis (${availablePromotions.length})</h2>
+                <div class="promotions-list">
+                     <p><i>(Lista de promoções apareceria aqui)</i></p>
+                     ${firstPromoId ? `<button class="btn generate-qrcode-btn" data-promotion-id="${firstPromoId}">Gerar QR Code (Exemplo)</button>` : ''}
+                </div>
+            </section>
+        `;
+    };
+
+    // Placeholder para renderizar QR Codes do usuário
+    const renderUserQRCodesSection = () => {
+        if (!user || !userQRCodes || userQRCodes.length === 0) return '';
+        const qrCodeCardsHTML = renderUserQRCodesHTML(userQRCodes); // Usa a função importada
+        return `
+            <section class="user-qrcodes-section content-section">
+                <h2 class="section-title">Seu QR Code Gerado</h2>
+                <div class="qr-codes-grid">
+                    ${qrCodeCardsHTML || '<p>Erro ao renderizar QR Codes.</p>'}
+                </div>
+            </section>
+        `;
+    };
 
     // Renderiza ações do criador/admin
     const renderCreatorActions = () => {
