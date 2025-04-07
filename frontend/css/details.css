@@ -311,9 +311,7 @@
 #qrcode-modal #qrcode-form label {
   display: block;
   margin-bottom: 8px;
-  color: #EEEEEE !important; /* COR CINZA MUITO CLARO - !important para FORÇAR */
-  /* Ou use: color: #FFFFFF !important; para branco puro */
-  font-size: 0.9rem; 
+  color: #EEEEEE !important; 
   font-weight: 500;
   text-align: left; 
 }
@@ -383,16 +381,30 @@
   cursor: pointer;
 }
 
-#discount-group { /* Container do campo de desconto */
-  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-  overflow: hidden;
-  max-height: 0; /* Começa escondido */
+#discount-group {
+  /* Define o estado base escondido SEM usar display:none */
+  max-height: 0;
   opacity: 0;
+  overflow: hidden;
+  margin-top: 0 !important; /* Usa !important para garantir override inicial */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+  box-sizing: border-box;
+  /* Transição suave para as propriedades que mudam */
+  transition: max-height 0.35s ease-in-out, opacity 0.3s ease-in-out, margin-top 0.35s ease-in-out, padding 0.35s ease-in-out, border-width 0.35s ease-in-out;
+  visibility: hidden; /* Ajuda a esconder completamente */
 }
-#discount-group[style*="block"] { /* Quando display: block é setado */
-  max-height: 100px; /* Altura suficiente para o campo */
-  opacity: 1;
-  margin-top: 15px; /* Adiciona espaço quando visível */
+
+#discount-group.discount-visible {
+  max-height: 150px;      /* Altura máxima suficiente para label + input + margens */
+  opacity: 1;             /* Totalmente opaco */
+  margin-top: 15px !important; /* Adiciona espaço acima (IMPORTANTE para garantir) */
+  padding-top: 5px !important;  /* Padding interno */
+  padding-bottom: 5px !important;
+  overflow: visible;      /* Mostra conteúdo */
+  visibility: visible;    /* Torna visível */
+  /* border-width: 1px !important; */ /* Descomente se você quiser uma borda */
 }
 
 /* --- Modal Visualizar Promoções (#view-qrcodes-modal) --- */
