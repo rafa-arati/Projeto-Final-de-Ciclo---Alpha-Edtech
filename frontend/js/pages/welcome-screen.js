@@ -8,10 +8,6 @@ export default function renderHome(queryParams) {
 
   appContainer.innerHTML = `
         <div class="container">
-            <div class="status-bar">
-                <span>${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-            
             <div class="logo">
                 <span>R</span><span>OTA</span><span>CULTURAL</span>
             </div>
@@ -27,14 +23,7 @@ export default function renderHome(queryParams) {
                 </svg>
                 Entrar com Google
             </button>
-            
-            <button class="social-button" id="apple-login">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-                    <path d="M17.05 20.28c-.98.95-2.05.9-3.08.45-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.43C2.32 14.85 3.24 6.15 9.06 5.9c1.37.06 2.33.8 3.15.74.96-.1 1.82-.84 3.08-.77 2.05.16 3.44 1.26 4.1 3.16-3.63 2.22-2.57 6.75.66 7.83-.6 1.82-1.35 3.6-3 4.42zm-3.8-16C13.12 3.04 13.45 1 15.24 0c.13 2.4-2.14 4.03-2 4.28z" fill="#000"/>
-                </svg>
-                Entrar com ID Apple
-            </button>
-            
+              
             <button class="create-account" id="create-account-btn">Criar uma conta</button>
             
             <div class="terms">
