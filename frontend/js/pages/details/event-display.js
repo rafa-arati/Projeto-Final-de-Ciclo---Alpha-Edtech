@@ -1,4 +1,4 @@
-import { renderUserQRCodes as renderUserQRCodesHTML} from './qrcode-manager.js';
+import { renderUserQRCodes as renderUserQRCodesHTML } from './qrcode-manager.js';
 
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
 const calendarIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>`;
@@ -16,24 +16,24 @@ const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
 function setupEventEditButton(eventId) {
   const editButton = document.getElementById('edit-event-btn');
   if (editButton) {
-      editButton.addEventListener('click', () => {
-          window.location.href = `/events/edit/${eventId}`;
-      });
+    editButton.addEventListener('click', () => {
+      window.location.href = `/events/edit/${eventId}`;
+    });
   }
 }
 
 // *** MODIFIQUE A FUNÇÃO setupEventHandlers ***
 export function setupEventHandlers(eventIdParam) {
   currentEventId = eventIdParam;
-  
+
   // Configura o botão de edição
   setupEventEditButton(currentEventId);
 
   // Restante da configuração original
   if (!document.getElementById('qrcode-modal') ||
-      !document.getElementById('view-qrcodes-modal') ||
-      !document.getElementById('delete-qrcode-modal')) {
-      return;
+    !document.getElementById('view-qrcodes-modal') ||
+    !document.getElementById('delete-qrcode-modal')) {
+    return;
   }
 
   console.log(`Configurando Handlers para Evento ID: ${currentEventId}`);
@@ -49,22 +49,22 @@ export function setupEventHandlers(eventIdParam) {
  * @returns {string} Data e hora formatadas
  */
 export function formatEventDate(date, time) {
-   // ... (código da função como antes) ...
-    if (!date) return 'Data não definida';
-    try {
-        const dateObj = new Date(date);
-        dateObj.setUTCDate(dateObj.getUTCDate() + 1);
-        const optionsDate = { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' };
-        let formatted = dateObj.toLocaleDateString('pt-BR', optionsDate);
-        if (time) {
-            const [hours, minutes] = time.split(':');
-            formatted += ` às ${hours}h${minutes}`;
-        }
-        return formatted;
-    } catch (e) {
-        console.error("Erro ao formatar data/hora:", e);
-        return `${date || ''}${time ? ' ' + time : ''}`;
+  // ... (código da função como antes) ...
+  if (!date) return 'Data não definida';
+  try {
+    const dateObj = new Date(date);
+    dateObj.setUTCDate(dateObj.getUTCDate() + 1);
+    const optionsDate = { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' };
+    let formatted = dateObj.toLocaleDateString('pt-BR', optionsDate);
+    if (time) {
+      const [hours, minutes] = time.split(':');
+      formatted += ` às ${hours}h${minutes}`;
     }
+    return formatted;
+  } catch (e) {
+    console.error("Erro ao formatar data/hora:", e);
+    return `${date || ''}${time ? ' ' + time : ''}`;
+  }
 }
 
 
@@ -79,19 +79,19 @@ export function formatEventDate(date, time) {
  * @returns {string} HTML da página.
  */
 export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = [], availablePromotions = []) {
-    // ... (início da função como antes, definindo eventDateFormatted, eventCategory, etc.) ...
-    const eventDateFormatted = formatEventDate(event.event_date, event.event_time);
-    const eventCategory = `${event.category_name || ''}${event.subcategory_name ? ` / ${event.subcategory_name}` : ''}`;
-    const eventLinkDisplay = event.event_link ? `<a href="${event.event_link}" target="_blank" rel="noopener noreferrer" class="event-detail-link">${event.event_link}</a>` : 'Não informado';
+  // ... (início da função como antes, definindo eventDateFormatted, eventCategory, etc.) ...
+  const eventDateFormatted = formatEventDate(event.event_date, event.event_time);
+  const eventCategory = `${event.category_name || ''}${event.subcategory_name ? ` / ${event.subcategory_name}` : ''}`;
+  const eventLinkDisplay = event.event_link ? `<a href="${event.event_link}" target="_blank" rel="noopener noreferrer" class="event-detail-link">${event.event_link}</a>` : 'Não informado';
 
 
-    // Placeholder para renderizar promoções
-     const renderAvailablePromotions = () => {
-        if (!user || !availablePromotions || availablePromotions.length === 0) return '';
-        // A lógica real de renderização de promoções deve vir do promotion-manager.js
-        // Este é apenas um exemplo:
-        const firstPromoId = availablePromotions[0]?.promotion_id; // Pega o ID da primeira promoção como exemplo
-        return `
+  // Placeholder para renderizar promoções
+  const renderAvailablePromotions = () => {
+    if (!user || !availablePromotions || availablePromotions.length === 0) return '';
+    // A lógica real de renderização de promoções deve vir do promotion-manager.js
+    // Este é apenas um exemplo:
+    const firstPromoId = availablePromotions[0]?.promotion_id; // Pega o ID da primeira promoção como exemplo
+    return `
             <section class="event-promotions content-section">
                 <h2 class="section-title">Promoções Disponíveis (${availablePromotions.length})</h2>
                 <div class="promotions-list">
@@ -100,13 +100,13 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
                 </div>
             </section>
         `;
-    };
+  };
 
-     // Placeholder para renderizar QR Codes do usuário
-     const renderUserQRCodesSection = () => {
-      if (!user || !userQRCodes || userQRCodes.length === 0) return '';
-      const qrCodeCardsHTML = renderUserQRCodesHTML(userQRCodes); // Usa a função importada
-      return `
+  // Placeholder para renderizar QR Codes do usuário
+  const renderUserQRCodesSection = () => {
+    if (!user || !userQRCodes || userQRCodes.length === 0) return '';
+    const qrCodeCardsHTML = renderUserQRCodesHTML(userQRCodes); // Usa a função importada
+    return `
           <section class="user-qrcodes-section content-section">
               <h2 class="section-title">Seu QR Code Gerado</h2>
               <div class="qr-codes-grid">
@@ -116,10 +116,10 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
       `;
   };
 
-    // Renderiza ações do criador/admin
-    const renderCreatorActions = () => {
-        if (!canManageQrCodes) return '';
-        return `
+  // Renderiza ações do criador/admin
+  const renderCreatorActions = () => {
+    if (!canManageQrCodes) return '';
+    return `
             <section class="creator-actions content-section">
                 <h2 class="section-title">Gerenciar Evento</h2>
                 <div class="creator-action-buttons">
@@ -135,11 +135,11 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
                 </div>
             </section>
         `;
-    };
+  };
 
 
-    // Gera o HTML final
-    return `
+  // Gera o HTML final
+  return `
     <div class="app-wrapper event-details-page">
       <div class="app-container">
         <header class="page-header">
