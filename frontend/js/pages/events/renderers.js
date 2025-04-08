@@ -39,12 +39,18 @@ export function renderCarousels() {
 
   // Verificar se há um usuário logado antes de mostrar "PARA VOCÊ"
   const user = getLoggedInUser();
+  /*
   if (user && paraVoceContainer && paraVoceSection) {
-    // Se o usuário estiver logado, mostrar a seção "PARA VOCÊ"
-    paraVoceSection.style.display = 'block';
-    renderEventsInCarousel(paraVoceContainer, personalizedEvents);
+      // Se o usuário estiver logado, mostrar a seção "PARA VOCÊ"
+      paraVoceSection.style.display = 'block';
+      renderEventsInCarousel(paraVoceContainer, personalizedEvents);
   } else if (paraVoceSection) {
-    // Se não estiver logado, ocultar a seção
+      // Se não estiver logado, ocultar a seção
+      paraVoceSection.style.display = 'none';
+  }
+  */
+  // Sempre ocultar a seção independentemente do estado de login
+  if (paraVoceSection) {
     paraVoceSection.style.display = 'none';
   }
 
