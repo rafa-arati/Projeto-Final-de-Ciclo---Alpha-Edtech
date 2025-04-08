@@ -2,34 +2,28 @@ const express = require('express');
 const router = express.Router();
 const eventController = require('../controllers/eventController');
 const likeController = require('../controllers/likeController');
-const { authenticate, isAdmin } = require('../middleware/authMiddleware');
+// --- Certifique-se de importar o authenticate ---
+const { authenticate, isAdmin } = require('../middleware/authMiddleware'); 
 const multer = require('multer');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Rotas Públicas
-router.get('/events', eventController.listEvents); // Mantido como listEvents da versão HEAD
-router.get('/events/:id', eventController.getEventById);
+// --- Rotas Públicas --- 
+// (Estas rotas NÃO precisam do authenticate, qualquer um pode ver)
+router.get('/events', eventController.listEvents); 
+router.get('/highlighted-events', eventController.getHighlightedEvents);
+router.get('/today-events', eventController.getTodayEvents);
+router.get('/events/:id', authenticate, eventController.getEventById); 
 
-// Rotas autenticadas
+// --- Rotas que JÁ REQUEREM autenticação ---
 router.get('/my-events', authenticate, eventController.listMyEvents);
+router.get('/personalized-events', authenticate, eventController.getPersonalizedEvents);
+router.post('/events/:eventId/like', authenticate, likeController.toggleLike);
 
-// Rotas do admin e premium
+// Rotas de Admin/Premium (já tinham authenticate)
 router.post('/events', authenticate, upload.single('imagem'), eventController.createEvent);
 router.put('/events/:id', authenticate, upload.single('imagem'), eventController.updateEvent);
 router.delete('/events/:id', authenticate, eventController.deleteEvent);
-
-// Rota para curtir/descurtir um evento (requer autenticação)
-router.post('/events/:eventId/like', authenticate, likeController.toggleLike);
-
-// Rota para eventos em destaque (mais curtidos)
-router.get('/highlighted-events', eventController.getHighlightedEvents);
-
-// Rota para eventos personalizados (requer autenticação)
-router.get('/personalized-events', authenticate, eventController.getPersonalizedEvents);
-
-// Rota para eventos que acontecem hoje
-router.get('/today-events', eventController.getTodayEvents);
 
 module.exports = router;

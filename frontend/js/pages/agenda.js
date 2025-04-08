@@ -17,14 +17,14 @@ export default async function renderAgenda(queryParams) {
     <div class="app-wrapper">
       <div class="app-container">
         <!-- Cabeçalho com botão de voltar -->
-        <header style="padding: 20px 0 0 20px;">
-          <a href="#events" class="back-button" style="display: inline-flex; align-items: center; color: white; text-decoration: none;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            <span style="margin-left: 8px;">Agenda</span>
-          </a>
-        </header>
+       <header class="page-header">
+        <a class="back-button" href="#events" title="Voltar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <h1 id="agenda-title">Agenda</h1>
+      </header>
         
         <!-- Seletor de Mês -->
         <div class="month-selector">
@@ -73,14 +73,6 @@ export default async function renderAgenda(queryParams) {
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             <span>Home</span>
-          </div>
-          <div class="nav-item" id="nav-search">
-            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
-              <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-            <span>Procurar</span>
           </div>
           <div class="nav-item active" id="nav-agenda">
             <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">

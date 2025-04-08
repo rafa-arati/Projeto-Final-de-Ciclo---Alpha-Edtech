@@ -25,11 +25,6 @@ export default function renderLogin(queryParams) {
             <div class="logo"><span>R</span>OTA<span>CULTURAL</span></div>
             <div class="welcome">Bem-vindo!</div>
 
-            <div class="toggle-form">
-                <button class="toggle-btn active" id="user-login-btn">Usuário</button>
-                <button class="toggle-btn" id="admin-login-btn">Administrador</button>
-            </div>
-
             <form id="loginForm">
                 <input type="hidden" id="userType" value="user">
 
@@ -103,7 +98,6 @@ export default function renderLogin(queryParams) {
 
 // Configura eventos da página
 function setupLoginEvents() {
-  setupToggleButtons();
   setupLoginForm();
   setupForgotPassword();
   setupSocialButtons();
@@ -138,7 +132,7 @@ function setupLoginForm() {
     e.preventDefault();
     const identifier = document.getElementById('loginIdentifier').value;
     const password = document.getElementById('loginPassword').value;
-    const userType = document.getElementById('userType').value;
+
 
     if (!identifier || !password) {
       showMessage('Por favor, preencha todos os campos.');
@@ -146,13 +140,7 @@ function setupLoginForm() {
     }
 
     try {
-      const result = await loginUser(identifier, password, userType);
-
-      if (userType === 'admin' && result.user.role !== 'admin') {
-        showMessage('Você não tem permissões de administrador.');
-        return;
-      }
-
+      const result = await loginUser(identifier, password); 
       showMessage('Login bem-sucedido! Redirecionando...');
       setTimeout(() => navigateTo('events'), 1500);
     } catch (error) {
@@ -160,7 +148,6 @@ function setupLoginForm() {
     }
   });
 }
-
 // Helper: Link "Esqueceu a senha"
 function setupForgotPassword() {
   document.querySelector('.forgot-password')?.addEventListener('click', (e) => {

@@ -175,65 +175,94 @@ function renderPromotionsListAdmin(items) {
 /**
  * Manipula o envio do formulário de criação de promoção.
  */
+// frontend/js/pages/details/qrcode-manager.js
+
 async function handleCreatePromotionSubmit(e) {
     e.preventDefault();
     console.log("[handleCreatePromotionSubmit] Iniciando submit...");
 
-    if (!currentEventId) { console.error("ID do evento não está definido no submit"); return; }
-    const form = e.target; // << Pega a referência do formulário
+    const form = e.target; 
     const submitButton = form.querySelector('button[type="submit"]');
-    if (!submitButton) { console.error("Botão de submit não encontrado dentro do form"); return; }
+    const originalButtonText = submitButton?.textContent; // Pega texto antes de desabilitar
 
-    const originalButtonText = submitButton.textContent;
-    submitButton.disabled = true; submitButton.textContent = 'Criando...';
+    // Pega valores das datas
+    const generationDeadlineValue = form.querySelector('#qrcode-generation-deadline')?.value;
+    const usageDeadlineValue = form.querySelector('#qrcode-usage-deadline')?.value;
 
-    // Pegar referências para discountGroup e discountInput AQUI
+    // ----- ADICIONAR VALIDAÇÃO FRONTEND -----
+    if (generationDeadlineValue && usageDeadlineValue) {
+        try {
+            const generationDate = new Date(generationDeadlineValue);
+            const usageDate = new Date(usageDeadlineValue);
+
+            // Compara apenas se ambas as datas são válidas
+            if (!isNaN(generationDate.getTime()) && !isNaN(usageDate.getTime())) {
+                if (usageDate < generationDate) {
+                     // Mostra erro para o usuário
+                     showMessage('Erro: A data limite para usar não pode ser anterior à data limite para gerar.', 'error');
+                     // NÃO continua com o submit
+                     return; 
+                }
+            }
+        } catch (dateError) {
+             console.warn("Erro ao comparar datas no frontend:", dateError);
+             // Deixa o backend validar se houver erro aqui
+        }
+    }
+    // ----- FIM VALIDAÇÃO FRONTEND -----
+
+    // Desabilitar botão
+    if(submitButton) {
+        submitButton.disabled = true; 
+        submitButton.textContent = 'Criando...';
+    }
+    
+    // Pega outros dados do formulário...
     const discountGroup = document.getElementById('discount-group');
     const discountInput = document.getElementById('qrcode-discount');
+    const promotionData = {
+        eventId: currentEventId, // Assume que currentEventId está acessível
+        description: form.querySelector('#qrcode-description')?.value.trim(),
+        benefitType: form.querySelector('#qrcode-benefit-type')?.value,
+        benefitDescription: form.querySelector('#qrcode-benefit-description')?.value.trim(),
+        discountPercentage: null,
+        maxCodes: form.querySelector('#qrcode-max-codes')?.value || null,
+        generationDeadline: generationDeadlineValue || null, // Envia string ou null
+        usageDeadline: usageDeadlineValue || null        // Envia string ou null
+    };
+
+    // Validações de outros campos...
+    if (!promotionData.description || !promotionData.benefitType || !promotionData.benefitDescription) {
+        showMessage("Preencha os campos obrigatórios (*)", 'error');
+        if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
+        return;
+    }
+    if (promotionData.benefitType === 'discount') {
+         if (!discountInput || !discountInput.value) {
+             showMessage("Informe o percentual de desconto.", 'error');
+             if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
+             return;
+         }
+         promotionData.discountPercentage = parseInt(discountInput.value, 10);
+         if (isNaN(promotionData.discountPercentage) || promotionData.discountPercentage < 1 || promotionData.discountPercentage > 100) {
+            showMessage("Percentual de desconto inválido (1-100).", 'error');
+            if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
+            return;
+         }
+    }
 
     try {
-        const promotionData = {
-            eventId: currentEventId,
-            description: form.querySelector('#qrcode-description')?.value.trim(),
-            benefitType: form.querySelector('#qrcode-benefit-type')?.value,
-            benefitDescription: form.querySelector('#qrcode-benefit-description')?.value.trim(),
-            discountPercentage: null,
-            maxCodes: form.querySelector('#qrcode-max-codes')?.value || null,
-            generationDeadline: form.querySelector('#qrcode-generation-deadline')?.value || null,
-            usageDeadline: form.querySelector('#qrcode-usage-deadline')?.value || null
-        };
-
-        // Validações... (iguais às anteriores)
-        if (!promotionData.description || !promotionData.benefitType || !promotionData.benefitDescription) throw new Error("Preencha os campos obrigatórios (*)");
-        if (promotionData.benefitType === 'discount') {
-             if (!discountInput || !discountInput.value) throw new Error("Informe o percentual de desconto."); // Verifica se input existe
-             promotionData.discountPercentage = parseInt(discountInput.value, 10);
-             if (isNaN(promotionData.discountPercentage) || promotionData.discountPercentage < 1 || promotionData.discountPercentage > 100) throw new Error("Percentual de desconto inválido (1-100).");
-        }
-        // ... (outras validações) ...
-
-
-        // Chama API
-        await createPromotion(promotionData);
+        // Chama API (agora com validação prévia no backend)
+        await createPromotion(promotionData); // Usa a função importada do events-api.js
         showMessage('Promoção criada com sucesso!', 'success');
-
-        // <<< --- LIMPEZA DO FORMULÁRIO --- >>>
-        form.reset(); // Limpa todos os campos do formulário
-        // Esconde o campo de desconto manualmente após o reset
-        if (discountGroup) {
-             discountGroup.classList.remove('discount-visible'); // Usa a classe CSS
-        }
-        if (discountInput) {
-             discountInput.required = false; // Garante que não seja mais obrigatório
-        }
-        console.log("[handleCreatePromotionSubmit] Formulário limpo.");
-        // <<< --- FIM DA LIMPEZA --- >>>
-
-        document.getElementById('qrcode-modal')?.classList.remove('active'); // Fecha o modal
-        await refreshAdminPromotionsList(); // Atualiza a lista no outro modal
-
+        form.reset(); 
+        if (discountGroup) { discountGroup.classList.remove('discount-visible'); }
+        if (discountInput) { discountInput.required = false; }
+        document.getElementById('qrcode-modal')?.classList.remove('active');
+        await refreshAdminPromotionsList(); 
     } catch (error) {
-        console.error('Erro ao criar promoção:', error);
+        console.error('Erro ao criar promoção (frontend):', error);
+        // Mostra a mensagem de erro vinda do backend (que agora inclui a validação de data)
         showMessage(error.message || 'Erro ao criar promoção', 'error');
     } finally {
         // Garante que o botão seja reabilitado
@@ -241,10 +270,8 @@ async function handleCreatePromotionSubmit(e) {
             submitButton.disabled = false;
             submitButton.textContent = originalButtonText;
         }
-        console.log("[handleCreatePromotionSubmit] Processo finalizado.");
     }
 }
-
 // --- Configuração dos Modais ---
 
 /** Configura o modal e o formulário de criação. */

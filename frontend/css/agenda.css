@@ -1,4 +1,10 @@
 /* Estilos do Calendário */
+#agenda-title {
+    font-size: 20px;
+    color: rgb(238, 238, 238);
+    margin: 0;
+  }
+
 .month-selector {
     display: flex;
     justify-content: space-between;

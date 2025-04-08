@@ -3,198 +3,207 @@ import { showMessage } from '../../modules/utils.js';
 import { navigateTo } from '../../modules/router.js';
 import { getLoggedInUser } from '../../modules/store.js';
 
+// Importações dos módulos da pasta details
 import { renderEventDisplay } from './event-display.js';
 import { setupLikeButton } from './like-handler.js';
 import { processVideos } from './media-handler.js';
 import { renderPromotionsForUser } from './promotion-manager.js';
-import { setupEventHandlers as setupQRCodeHandlers } from './qrcode-manager.js'; // Renomeado para clareza
+import { setupEventHandlers as setupQRCodeHandlers } from './qrcode-manager.js'; // Handlers dos modais Criar/Ver/Deletar
 import { initializeStyles } from './styles.js';
-
-import { renderQRCodeValidator, setupQRCodeValidator, addQRCodeValidatorStyles } from './qrcode-validator.js';
+import { renderQRCodeValidator, setupQRCodeValidator, addQRCodeValidatorStyles } from './qrcode-validator.js'; // Handlers do modal Scan
 
 /**
  * Renderiza a página de detalhes do evento
  * @param {URLSearchParams} queryParams - Parâmetros da URL
  */
 export default async function renderEventDetails(queryParams) {
-  const appContainer = document.getElementById('app');
-  const eventId = queryParams.get('id');
-  const user = getLoggedInUser(); // Pega usuário do localStorage
+    const appContainer = document.getElementById('app');
+    const eventId = queryParams.get('id');
+    const user = getLoggedInUser(); // Pega usuário do localStorage
 
-  if (!eventId) {
-    showMessage('Evento não encontrado');
-    navigateTo('events');
-    return;
-  }
-
-  if (!appContainer) {
-    console.error("Elemento #app não encontrado no DOM.");
-    return;
-  }
-
-  // Limpa o conteúdo anterior e mostra mensagem de carregamento
-  appContainer.innerHTML = '<div class="loading-message" style="text-align: center; padding: 40px; color: #aaa;">Carregando detalhes do evento...</div>';
-
-  try {
-    // Carregar dados do evento (inclui like status se user estiver logado)
-    console.log(`Buscando detalhes do evento ID: ${eventId}`);
-    const event = await getEventById(eventId);
-    if (!event) {
-      showMessage('Evento não encontrado');
-      navigateTo('events');
-      return;
+    if (!eventId) {
+        showMessage('Evento não encontrado');
+        navigateTo('events');
+        return;
     }
-    console.log("Detalhes do evento carregados:", event);
 
-    // Determinar se o usuário pode gerenciar QR Codes
-    const creatorId = event.creator_id ? parseInt(event.creator_id, 10) : null;
-    const userId = user ? parseInt(user.id, 10) : null;
-    const canManageQrCodes = (user?.role === 'admin') || (user?.role === 'premium' && userId === creatorId);
-    console.log(`Pode gerenciar QR Codes: ${canManageQrCodes}`);
+    if (!appContainer) {
+        console.error("Elemento #app não encontrado no DOM.");
+        return;
+    }
 
-    // Carregar promoções e QR Codes do usuário (APENAS SE LOGADO)
-    let availablePromotions = [];
-    let userQRCodes = []; // Array que conterá os QR codes já gerados pelo usuário PARA ESTE EVENTO
-    let qrCodes = []; // QR Codes para admins/premium
+    // Limpa o conteúdo anterior e mostra mensagem de carregamento
+    appContainer.innerHTML = '<div class="loading-message" style="text-align: center; padding: 40px; color: #aaa;">Carregando detalhes do evento...</div>';
 
-    if (user) {
-      console.log("Usuário logado, buscando promoções e QR codes...");
-      try {
-        // Busca todas as promoções disponíveis para este evento
-        availablePromotions = await getEventPromotions(eventId);
-        console.log(`Promoções disponíveis carregadas: ${availablePromotions.length}`);
+    try {
+        // Carregar dados do evento
+        console.log(`Buscando detalhes do evento ID: ${eventId}`);
+        const event = await getEventById(eventId);
+        if (!event) {
+            showMessage('Evento não encontrado');
+            navigateTo('events');
+            return;
+        }
+        console.log("Detalhes do evento carregados:", event);
 
-        // Carregar QR Codes para admins/premium
-        if (canManageQrCodes) {
-          try {
-            const qrUrl = `/api/qrcode/event/${eventId}`;
-            console.log("Tentando carregar QR Codes de:", qrUrl);
+        // Determinar se o usuário pode gerenciar QR Codes
+        const creatorId = event.creator_id ? parseInt(event.creator_id, 10) : null;
+        const userId = user ? parseInt(user.id, 10) : null;
+        const canManageQrCodes = (user?.role === 'admin') || (user?.role === 'premium' && userId === creatorId);
+        console.log(`Pode gerenciar QR Codes: ${canManageQrCodes}`);
 
-            const qrResponse = await fetch(qrUrl, {
-              credentials: 'include'
+        // Carregar promoções e QR Codes do usuário (APENAS SE LOGADO)
+        let availablePromotions = [];
+        let userQRCodes = []; // QR codes que o usuário gerou para ESTE evento
+        let qrCodes = []; // Promoções/QR Codes para admins/premium (lista do modal 'Visualizar')
+
+        if (user) {
+            console.log("Usuário logado, buscando promoções e QR codes...");
+            try {
+                availablePromotions = await getEventPromotions(eventId);
+                console.log(`Promoções disponíveis carregadas: ${availablePromotions.length}`);
+
+                // Carregar todas as promoções/QR codes para admins/premium (para o modal 'Visualizar')
+                if (canManageQrCodes) {
+                     try {
+                         // A API /qrcode/event/{eventId} deve retornar as *promoções* criadas
+                         const qrUrl = `/api/qrcode/event/${eventId}`; // Endpoint correto pode variar
+                         console.log("Carregando lista de promoções/QR Codes (admin/criador) de:", qrUrl);
+                         const qrResponse = await fetch(qrUrl, { credentials: 'include' });
+                         if (qrResponse.ok) {
+                             qrCodes = await qrResponse.json(); // Assume que retorna um array de promoções
+                             console.log("Lista de promoções (admin/criador) carregada:", qrCodes.length);
+                         } else {
+                             console.error("Erro ao carregar lista admin:", qrResponse.status);
+                             qrCodes = [];
+                         }
+                     } catch (error) {
+                         console.error('Erro ao carregar lista admin/criador:', error);
+                         qrCodes = [];
+                     }
+                }
+
+
+                // Busca TODOS os QR codes que o usuário já gerou
+                const allUserQRCodes = await getUserQRCodes();
+                if (allUserQRCodes && Array.isArray(allUserQRCodes)) {
+                    const parsedEventId = parseInt(eventId, 10);
+                    userQRCodes = allUserQRCodes.filter(qr => qr.event_id === parsedEventId);
+                    console.log(`QR Codes do usuário para este evento (${eventId}): ${userQRCodes.length}`);
+                } else {
+                    console.warn("Resposta de getUserQRCodes inválida.");
+                    userQRCodes = [];
+                }
+            } catch (error) {
+                console.error('Erro ao carregar promoções ou QR codes do usuário:', error);
+                showMessage('Erro ao carregar promoções/QR codes. Tente recarregar.', 'error');
+                availablePromotions = []; userQRCodes = [];
+            }
+        } else {
+            console.log("Usuário não logado. Não buscará promoções/QR codes.");
+        }
+
+        // Renderizar o HTML principal da página
+        initializeStyles(); // Garante estilos CSS
+        appContainer.innerHTML = renderEventDisplay(event, user, canManageQrCodes, userQRCodes, availablePromotions);
+
+        // Configurar botão de edição do evento (se existir)
+        const editButton = document.getElementById('edit-event-btn');
+        if (editButton) {
+             editButton.addEventListener('click', (e) => {
+                 e.stopPropagation();
+                 if (!user) { showMessage("Você precisa estar logado para editar eventos"); return; }
+                 if (user.role === 'admin' || (user.role === 'premium' && String(event.creator_id) === String(user.id))) {
+                     window.location.hash = `create-event?edit=${eventId}`;
+                 } else {
+                     showMessage("Você só pode editar seus próprios eventos");
+                 }
+             });
+        }
+
+        // Configurar handlers GERAIS da página de detalhes
+        setupQRCodeHandlers(eventId, qrCodes); // Configura modais CRIAR/VER/DELETAR
+        setupLikeButton(eventId, event); // Configura botão de like
+        processVideos(event); // Processa e exibe vídeos
+
+        // --- NOVA LÓGICA PARA O BOTÃO DE ABRIR O SCANNER ---
+        const openScanButton = document.getElementById('open-scan-modal-btn');
+        const scanModal = document.getElementById('scan-qrcode-modal');
+        const scanModalContent = document.getElementById('scan-modal-content');
+        const closeScanModalButton = document.getElementById('close-scan-modal');
+
+        if (openScanButton && scanModal && scanModalContent && closeScanModalButton) {
+            // Listener para ABRIR o modal
+            openScanButton.addEventListener('click', () => {
+                console.log("Abrindo modal de scan...");
+                addQRCodeValidatorStyles(); // Garante estilos do validador
+                scanModalContent.innerHTML = renderQRCodeValidator(); // Renderiza o conteúdo
+                scanModal.classList.add('active'); // Mostra o modal
+
+                // Inicializa o scanner DEPOIS que o modal está visível
+                try {
+                    setupQRCodeValidator(eventId); // Passa o eventId atual
+                    console.log("setupQRCodeValidator chamado via modal.");
+                } catch (error) {
+                    console.error("Erro ao inicializar scanner no modal:", error);
+                    showMessage("Erro ao iniciar scanner.", "error");
+                    scanModal.classList.remove('active');
+                }
             });
 
-            if (qrResponse.ok) {
-              const contentType = qrResponse.headers.get("content-type");
+            // Listener para FECHAR o modal pelo botão X
+            closeScanModalButton.addEventListener('click', () => {
+                scanModal.classList.remove('active');
+                const videoElem = document.getElementById('qr-video');
+                if (videoElem && videoElem.srcObject) {
+                    videoElem.srcObject.getTracks().forEach(track => track.stop());
+                    videoElem.srcObject = null;
+                    console.log("Câmera parada ao fechar modal.");
+                }
+            });
 
-              if (contentType && contentType.includes("application/json")) {
-                qrCodes = await qrResponse.json();
-                console.log("QR Codes carregados:", qrCodes.length);
-              } else {
-                console.error("Resposta não é JSON:", await qrResponse.text());
-                qrCodes = [];
-              }
-            } else {
-              console.error("Resposta não ok:", qrResponse.status, await qrResponse.text());
-              qrCodes = [];
-            }
-          } catch (error) {
-            console.error('Erro ao carregar QR Codes:', error);
-            qrCodes = [];
-          }
-        }
+            // Listener para FECHAR o modal clicando fora
+            const closeScanModalOnClickOutside = (event) => {
+                if (scanModal && event.target === scanModal) {
+                     scanModal.classList.remove('active');
+                     const videoElem = document.getElementById('qr-video');
+                     if (videoElem && videoElem.srcObject) {
+                         videoElem.srcObject.getTracks().forEach(track => track.stop());
+                         videoElem.srcObject = null;
+                         console.log("Câmera parada ao fechar modal (click fora).");
+                     }
+                 }
+             };
+             // Limpa listener antigo para evitar duplicação
+             window.removeEventListener("click", closeScanModalOnClickOutside);
+             window.addEventListener("click", closeScanModalOnClickOutside);
 
-        // Busca TODOS os QR codes que o usuário já gerou (para qualquer evento)
-        try {
-          const allUserQRCodes = await getUserQRCodes(); // Assume que esta função busca todos do usuário
-
-          // Filtra para pegar apenas os QR codes DESTE evento
-          if (allUserQRCodes && Array.isArray(allUserQRCodes)) {
-            const parsedEventId = parseInt(eventId, 10);
-            userQRCodes = allUserQRCodes.filter(qr => qr.event_id === parsedEventId);
-            console.log(`QR Codes do usuário para este evento (${eventId}): ${userQRCodes.length}`);
-          } else {
-            console.warn("Não foi possível obter QR Codes do usuário ou a resposta não foi um array.");
-            userQRCodes = []; // Garante que seja um array vazio
-          }
-        } catch (error) {
-          console.error('Erro ao carregar QR Codes do usuário:', error);
-          userQRCodes = [];
-        }
-      } catch (error) {
-        console.error('Erro ao carregar promoções ou QR codes do usuário:', error);
-        showMessage('Erro ao carregar promoções/QR codes. Tente recarregar.', 'error');
-        availablePromotions = []; // Garante que seja um array vazio em caso de erro
-        userQRCodes = []; // Garante que seja um array vazio em caso de erro
-      }
-    } else {
-      console.log("Usuário não logado. Não buscará promoções/QR codes.");
-    }
-
-    // Inicializar estilos CSS necessários para esta página
-    initializeStyles();
-
-    // Renderizar o HTML principal da página, passando os dados carregados
-    // *** userQRCodes é passado aqui ***
-    appContainer.innerHTML = renderEventDisplay(event, user, canManageQrCodes, userQRCodes, availablePromotions);
-
-    // Configurar botão de edição do evento
-    const editButton = document.getElementById('edit-event-btn');
-    if (editButton) {
-      editButton.addEventListener('click', (e) => {
-        e.stopPropagation(); // Impedir propagação do evento
-
-        // Verificar permissões
-        if (!user) {
-          showMessage("Você precisa estar logado para editar eventos");
-          return;
-        }
-
-        if (user.role === 'admin' || (user.role === 'premium' && event.creator_id &&
-          user.id && event.creator_id.toString() === user.id.toString())) {
-          // Usar o formato exato da URL que funciona em seu sistema
-          window.location.hash = `create-event?edit=${eventId}`;
         } else {
-          showMessage("Você só pode editar seus próprios eventos");
+            // Log se algum elemento essencial para o modal de scan não for encontrado
+            console.warn("Elementos para o modal de scan não foram encontrados:", {
+                openScanButton: !!openScanButton,
+                scanModal: !!scanModal,
+                scanModalContent: !!scanModalContent,
+                closeScanModalButton: !!closeScanModalButton
+            });
         }
-      });
+        // --- FIM DA NOVA LÓGICA ---
+
+        // Renderizar promoções para usuário comum (se aplicável)
+        if (user && !canManageQrCodes) {
+            console.log("Renderizando promoções para usuário comum...");
+            renderPromotionsForUser(availablePromotions, userQRCodes);
+        } else if (!user) {
+            const userPromoContainer = document.getElementById('user-promotions-container');
+            if (userPromoContainer) userPromoContainer.style.display = 'none';
+        }
+
+        console.log("Página de detalhes renderizada e handlers configurados.");
+
+    } catch (error) {
+        console.error('Erro fatal ao carregar detalhes do evento:', error);
+        showMessage(error.message || 'Erro ao carregar detalhes do evento');
+        appContainer.innerHTML = '<div class="error-message" style="text-align: center; padding: 40px; color: #e57373;">Erro ao carregar evento. Redirecionando...</div>';
+        setTimeout(() => navigateTo('events'), 2000);
     }
-
-    // Adicionar validador de QR Code para admins/premium
-    if (user && (user.role === 'admin' || user.role === 'premium')) {
-      // Adicionar a seção de validação logo após as ações do criador
-      const creatorActionsSection = document.querySelector('.creator-actions');
-      if (creatorActionsSection) {
-        const validatorHTML = renderQRCodeValidator();
-        const validatorSection = document.createElement('div');
-        validatorSection.innerHTML = validatorHTML;
-        creatorActionsSection.after(validatorSection.firstElementChild);
-
-        // Adicionar estilos e configurar os eventos
-        addQRCodeValidatorStyles();
-        setupQRCodeValidator();
-      }
-    }
-
-    // Configurar componentes interativos APÓS o HTML ser renderizado
-    console.log("Configurando handlers...");
-    setupQRCodeHandlers(eventId, qrCodes); // Configurar com os QR codes carregados
-    setupLikeButton(eventId, event); // Configura botão de like
-    processVideos(event); // Processa e exibe vídeos
-
-    // Renderizar a seção de promoções para o usuário comum (se logado e não for admin/criador)
-    if (user && !canManageQrCodes) {
-      console.log("Renderizando promoções para usuário comum...");
-      // Passa as promoções disponíveis E os QRCodes que o usuário já tem
-      renderPromotionsForUser(availablePromotions, userQRCodes);
-    } else if (user && canManageQrCodes) {
-      console.log("Usuário é admin/criador, não renderizando seção de promoções de usuário.");
-    } else {
-      // Esconder o container se o usuário não estiver logado
-      const userPromoContainer = document.getElementById('user-promotions-container');
-      if (userPromoContainer) userPromoContainer.style.display = 'none';
-    }
-
-    console.log("Página de detalhes renderizada com sucesso.");
-
-  } catch (error) {
-    console.error('Erro fatal ao carregar detalhes do evento:', error);
-    showMessage(error.message || 'Erro ao carregar detalhes do evento');
-    // Limpa o container e redireciona se houver erro crítico
-    appContainer.innerHTML = '<div class="error-message" style="text-align: center; padding: 40px; color: #e57373;">Erro ao carregar evento. Redirecionando...</div>';
-    setTimeout(() => navigateTo('events'), 2000);
-    // Adicionar estilos e configurar os eventos
-    addQRCodeValidatorStyles();
-    setupQRCodeValidator(eventId);
-  }
 }

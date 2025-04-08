@@ -196,6 +196,7 @@ body {
 
 .event-image {
     width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
@@ -205,18 +206,28 @@ body {
     left: 0;
     right: 0;
     padding: 15px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    /* Você já tinha ou adicionou um gradiente aqui, mantenha-o */
+    background: linear-gradient(to top, 
+        rgba(30, 0, 50, 0.5), /* Roxo mais escuro e mais opaco na base */
+        rgba(30, 0, 50, 0.5) 90%, /* Preto semi-transparente no meio */
+        transparent 100% /* Transparente no topo */
+    );
+    z-index: 1; 
+    box-sizing: border-box;
 }
 
 .event-title {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 5px;
+    color: #fff;
+    paint-order: stroke fill;           
 }
 
+/* Adicione também para o .event-subtitle se desejar */
 .event-subtitle {
     font-size: 14px;
-    color: #ccc;
+    color: #eee; /* Cor do preenchimento */
 }
 
 .event-date {

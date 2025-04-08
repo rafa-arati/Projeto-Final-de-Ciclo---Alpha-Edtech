@@ -165,32 +165,52 @@ body {
     flex-direction: column;
     gap: 15px;
     margin-top: 20px;
+    margin-bottom: 21px;
 }
 
-.primary-button {
-    background-color: #333;
+.primary-button.submit-event-btn { 
+    background: linear-gradient(45deg, #439DFE, #8000FF); 
     color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
+    border: 1px solid #a050ff; 
+    padding: 13px 18px;        
+    border-radius: 10px;       
     cursor: pointer;
     font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;                 
+    font-weight: 500;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.primary-button svg {
-    width: 20px;
-    height: 20px;
+.primary-button.submit-event-btn:hover {
+    background-color: #2b2b2b;  
+    border-color: #bf7fff;     
+    box-shadow: 0 0 8px rgba(160, 80, 255, 0.3); 
 }
 
-.secondary-button {
-    background-color: #B33A3A;
-    color: #fff;
+.primary-button.submit-event-btn:disabled {
+    background-color: #333 !important; 
+    color: #777 !important;
+    border-color: #444 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+/* Ajuste opcional no SVG do ícone (se necessário) */
+.primary-button.submit-event-btn svg {
+    width: 18px;  
+    height: 18px;
+    fill: #bf7fff; 
+}
+
+.secondary-button.cancel-event-btn{
+    background-color: #1c1c1e;
+    border: solid 1px #ff6359;   
+    color: #ff6359;
     padding: 12px;
-    border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
@@ -274,3 +294,53 @@ body {
   #add-video-btn:hover {
     background: #444 !important;
   }
+
+  .modal-buttons #confirmarCancelar {
+    background-image: none; 
+    
+    /* Aplica o estilo da imagem */
+    background-color: #1c1c1e;
+    color: #ff6359;
+    border: 1px solid #ff6359; 
+    height: 44px;
+    padding: 12px 18px;
+    margin-top: 10px;
+    border-radius: 10px; 
+    font-size: 15px;
+    font-weight: 500;
+    text-align: center; 
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+  
+  /* Efeito Hover para o botão 'Sim, descartar' */
+  .modal-buttons #confirmarCancelar:hover {
+    background-color: #2c2c2e;    /* Fundo levemente mais claro */
+    border-color: #ff6359;     /* Borda fica vermelha */
+    color: #ff827a;            /* Texto fica um pouco mais claro */
+    opacity: 1;
+  }
+  
+  /* Estilo desabilitado */
+  .modal-buttons #confirmarCancelar:disabled {
+      background-color: #333;
+      color: #666;
+      border-color: #444;
+      cursor: not-allowed;
+      opacity: 0.6;
+  }
+  
+  /* Garante que o botão secundário ('Não, continuar') mantenha ou receba o estilo anterior */
+  .modal-buttons #negarCancelar {
+    background-color: #3a3a3c; /* Cor cinza padrão para secundário */
+    color: #ccc;
+    border: 1px solid #555;
+    background-image: none; /* Garante que não pegue outro gradiente */
+  }
+  
+  .modal-buttons #negarCancelar:hover {
+    background-color: #4a4a4c;
+    border-color: #777;
+    color: #fff;
+  }  

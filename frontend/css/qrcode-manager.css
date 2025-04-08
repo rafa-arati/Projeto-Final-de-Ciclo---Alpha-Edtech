@@ -98,9 +98,6 @@
     margin-right: 6px;
   }
   
-  .promo-card-benefit {
-      /* Estilo específico para o benefício, se desejar */
-  }
   
   .promo-card-stats {
     font-size: 0.9em;
@@ -145,6 +142,57 @@
   .delete-item-btn svg {
       margin-bottom: -2px;
   }
+
+  #confirm-delete-qrcode {
+    background-image: none;
+    background-color: #1c1c1e;
+    height: 40px;
+    margin-top: 10px;
+    color: #ff6359;
+    border: 1px solid #3a3a3c;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    flex: 1; 
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Efeito Hover */
+#confirm-delete-qrcode:hover {
+    background-color: #2c2c2e;  /* Fundo levemente mais claro */
+    border-color: #ff6359;     /* Borda fica vermelha */
+    color: #ff827a;           /* Texto vermelho mais claro */
+}
+
+/* Estilo Desabilitado */
+#confirm-delete-qrcode:disabled {
+    background-color: #333 !important;
+    color: #666 !important;
+    border-color: #444 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Garante que o botão Cancelar no mesmo modal mantenha o estilo secundário */
+#cancel-delete-qrcode {
+    background-color: var(--details-bg-quaternary, #3a3a3c); 
+    color: var(--details-text-secondary, #ccc);
+    border: 1px solid #555; 
+    /* Copie padding, border-radius, etc. de #confirm-delete-qrcode se necessário */
+    padding: 10px 20px;       
+    border-radius: 6px;        
+    font-size: 0.95rem;       
+    font-weight: 500;         
+    flex: 1;                  
+}
+#cancel-delete-qrcode:hover {
+    background-color: #4a4a4c; 
+    color: #fff;
+    border-color: #777;
+}
+
   
   /* Estilos para a barra de rolagem */
   .admin-promotions-list::-webkit-scrollbar {

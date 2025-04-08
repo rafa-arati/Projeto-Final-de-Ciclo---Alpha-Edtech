@@ -12,7 +12,7 @@ const heartIconSvg = `<svg class="icon heart-icon" viewBox="0 0 24 24"><path fil
 const qrCodeIcon = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v9M7 3h9M3 3h4v4H3zM17 17h4v4h-4zM17 3h4v4h-4zM3 17h4v4H3zM17 8v9"></path></svg>`;
 const listQrIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>`;
 const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
-
+const scanIcon = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v9M7 3h9M3 3h4v4H3zM17 17h4v4h-4zM17 3h4v4h-4zM3 17h4v4H3zM17 8v9M7 17v-4M12 17v-4"></path></svg>`;
 // Adicionando a função setupEventHandlers da branch main
 let currentEventId;
 
@@ -152,7 +152,7 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
     return `
             <section class="creator-actions content-section">
                 <h2 class="section-title">Gerenciar Evento</h2>
-                <div class="creator-action-buttons">
+                <div class="creator-action-buttons grid-2x2">
                     <button class="btn-profile-action" id="create-qrcode-btn" title="Criar Promoção">
                         ${qrCodeIcon} Criar Promoção/QR Code
                     </button>
@@ -161,6 +161,9 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
                     </button>
                     <button class="btn-profile-action" id="edit-event-btn" data-event-id="${event.id}" title="Editar Evento">
                          ${editIcon} Editar Detalhes do Evento
+                     </button>
+                     <button class="btn-profile-action" id="open-scan-modal-btn" title="Escanear QR Code">
+                         ${scanIcon} Escanear QR Code
                      </button>
                 </div>
             </section>
@@ -229,7 +232,5 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
         <div class="modal" id="qrcode-modal"> <div class="modal-content"> <span class="close-modal" id="close-qrcode-modal">&times;</span> <h3>Criar Promoção/QR Code</h3> <form id="qrcode-form"> <div class="form-group"> <label for="qrcode-description">Descrição da Promoção*</label> <input type="text" id="qrcode-description" placeholder="Ex: 10% OFF na entrada" required> </div> <div class="form-group"> <label for="qrcode-benefit-type">Tipo de Benefício*</label> <select id="qrcode-benefit-type" required> <option value="">Selecione</option> <option value="discount">Desconto (%)</option> <option value="gift">Brinde</option> <option value="vip">Acesso VIP</option> <option value="other">Outro</option> </select> </div> <div class="form-group" id="discount-group"> <label for="qrcode-discount">Percentual de Desconto*</label> <input type="number" id="qrcode-discount" min="1" max="100" placeholder="Ex: 15"> </div> <div class="form-group"> <label for="qrcode-benefit-description">Descrição Detalhada do Benefício*</label> <textarea id="qrcode-benefit-description" placeholder="Ex: Ganhe uma bebida especial na compra do ingresso" required rows="3"></textarea> </div> <div class="form-group"> <label for="qrcode-max-codes">Limite de Códigos (Opcional)</label> <input type="number" id="qrcode-max-codes" min="1" placeholder="Deixe em branco para ilimitado"> </div> <div class="form-group"> <label for="qrcode-generation-deadline">Gerar Até (Opcional)</label> <input type="datetime-local" id="qrcode-generation-deadline"> </div> <div class="form-group"> <label for="qrcode-usage-deadline">Usar Até (Opcional)</label> <input type="datetime-local" id="qrcode-usage-deadline"> </div> <div class="modal-buttons"> <button type="submit" class="btn" style="background: linear-gradient(45deg, #439DFE, #8000FF);">Criar Promoção</button> </div> </form> </div> </div>
         <div class="modal" id="view-qrcodes-modal"> <div class="modal-content" style="max-width: 750px;"> <span class="close-modal" id="close-view-qrcodes-modal">&times;</span> <h3>Promoções Atuais</h3> <div id="qrcodes-list" class="qrcodes-list admin-promotions-list"> <p>Carregando...</p> </div> </div> </div>
         <div class="modal" id="delete-qrcode-modal"> <div class="modal-content"> <span class="close-modal" id="close-delete-qrcode-modal">&times;</span> <h3>Confirmar Exclusão</h3> <p id="delete-confirm-message">Tem certeza que deseja excluir? Esta ação não pode ser desfeita.</p> <div class="modal-buttons"> <button id="confirm-delete-qrcode" class="btn danger">Excluir</button> <button id="cancel-delete-qrcode" class="btn secondary">Cancelar</button> </div> </div> </div>
-
-      </div>
-    </div>`;
+        <div class="modal" id="scan-qrcode-modal"> <div class="modal-content"> <span class="close-modal" id="close-scan-modal">&times;</span> <h3>Validar QR Code</h3> <div id="scan-modal-content"> </div> </div> </div></div> </div>`;
 }

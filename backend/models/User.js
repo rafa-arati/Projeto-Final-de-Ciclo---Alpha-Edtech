@@ -221,29 +221,105 @@ class User {
   }
 
   // Atualiza perfil básico
-  static async updateProfile(userId, updates) {
-    const { name, phone } = updates;
-    const cleanPhone = phone?.replace(/\D/g, '') || null;
+  // Dentro da classe User em backend/models/User.js
 
-    if (cleanPhone && cleanPhone.length < 10) {
-      throw new Error('Número inválido');
+  static async updateProfile(userId, updates) {
+    // Log para ver o que chegou do frontend
+    console.log(`[BACKEND User.js] updateProfile - Recebido para User ID ${userId}:`, updates); 
+
+    // Lista de campos que permitimos atualizar por esta rota
+    const allowedFields = ['name', 'phone', 'birth_date']; 
+    const updateFields = []; // Array para guardar partes da query SET (ex: "name = $1")
+    const values = []; // Array para guardar os valores correspondentes aos placeholders ($1, $2...)
+    let paramCount = 0; // Contador para os placeholders ($1, $2...)
+
+    // Itera sobre os campos permitidos
+    for (const field of allowedFields) {
+        // Verifica se o campo foi enviado pelo frontend (updates.hasOwnProperty)
+        if (updates.hasOwnProperty(field)) { 
+            let value = updates[field]; // Pega o valor enviado
+            console.log(`[BACKEND User.js] Processando campo: '${field}', Valor recebido: '${value}'`);
+
+            // Limpa o telefone (remove não-dígitos)
+            if (field === 'phone') {
+                value = value?.replace(/\D/g, '') || null; // Define como null se vazio ou inválido
+                // Validação básica de tamanho (opcional, mas boa ideia)
+                if (value && (value.length < 10 || value.length > 11)) {
+                    console.warn(`[BACKEND User.js] Telefone inválido ('${updates[field]}') será ignorado.`);
+                    continue; // Pula este campo e vai para o próximo
+                }
+            }
+            
+            // Limpa a data de nascimento (define como null se vazia)
+            if (field === 'birth_date') {
+                 if (value === '' || value === null) {
+                     value = null; 
+                 } 
+                 // Validação opcional de formato (o DB pode rejeitar formato errado)
+                 else if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) { 
+                    console.warn(`[BACKEND User.js] Formato de data inválido ('${value}') para birth_date será ignorado.`);
+                    continue; // Pula este campo
+                 }
+            }
+
+            // Adiciona a parte da query SET e o valor correspondente
+            updateFields.push(`${field} = $${++paramCount}`); // ex: "name = $1", "birth_date = $2"
+            values.push(value); // ex: ["Novo Nome", "1990-01-01"]
+        }
     }
 
+    // Se nenhum campo válido foi enviado para atualização
+    if (updateFields.length === 0) {
+        console.log("[BACKEND User.js] Nenhum campo válido para atualização.");
+        const currentUser = await this.findById(userId); // Retorna dados atuais como fallback
+        return currentUser;
+    }
+
+    // Adiciona a atualização automática do campo updated_at
+    updateFields.push(`updated_at = NOW()`);
+
+    // Adiciona o userId ao final do array de valores para a cláusula WHERE
+    values.push(userId); 
+    const whereParamIndex = ++paramCount; // Guarda o índice do placeholder do ID (ex: $3)
+
+    // Campos que queremos que o banco de dados retorne após atualizar
+    const returningFields = 'id, name, email, username, gender, birth_date, phone, photo_url, onboarding_completed, role, subscription_expiry'; 
+
+    // Monta a query SQL final
     const query = `
-      UPDATE users 
-      SET name = $1, phone = $2, updated_at = NOW()
-      WHERE id = $3
-      RETURNING id, name, email, phone, created_at, updated_at, role, subscription_expiry
+        UPDATE users 
+        SET ${updateFields.join(', ')}  -- Junta os "campo = $X" com vírgulas
+        WHERE id = $${whereParamIndex}   -- Condição para atualizar o usuário correto
+        RETURNING ${returningFields}     -- Pede ao DB para retornar os dados atualizados
     `;
 
+    // Log da query final e dos valores (útil para debug)
+    console.log("[BACKEND User.js] Executando Query:", query); 
+    console.log("[BACKEND User.js] Valores:", values); 
+
     try {
-      const { rows } = await pool.query(query, [name, cleanPhone, userId]);
-      return rows[0];
+        // Executa a query
+        const { rows } = await pool.query(query, values);
+        
+        // Verifica se alguma linha foi atualizada (se o usuário existe)
+        if (rows.length === 0) {
+             console.warn("[BACKEND User.js] Nenhum usuário encontrado com ID:", userId);
+             return null; 
+        }
+
+        // Log de sucesso
+        console.log("[BACKEND User.js] Perfil atualizado com sucesso no DB:", rows[0]);
+        return rows[0]; // Retorna o objeto do usuário com os dados atualizados
+
     } catch (error) {
-      console.error('Erro ao atualizar perfil:', error.message);
-      throw error;
+        // Log do erro do banco de dados
+        console.error('[BACKEND User.js] Erro ao executar query UPDATE:', error); 
+        // Lança o erro para ser tratado pelo controller
+        throw new Error(`Erro no banco de dados ao atualizar perfil: ${error.message}`); 
     }
   }
+
+  // ... (resto da classe User, como findById, create, etc.) ...
 
   // Atualiza senha
   static async updatePassword(userId, newPassword) {

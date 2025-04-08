@@ -91,9 +91,6 @@ export default async function renderEditProfile(queryParams) {
                     </button>
                     `}
                     ${isAdminUser ? `
-                    <button id="gerenciar-eventos-btn" class="btn-profile-action">
-                        ${adminIcon} Gerenciar Todos Eventos
-                    </button>
                     <button id="metricas-btn" class="btn-profile-action">
                         ${barChartIcon} Métricas (em breve)
                     </button>
@@ -118,6 +115,10 @@ export default async function renderEditProfile(queryParams) {
                         <input type="tel" id="phone" value="${formatPhoneNumber(user.phone)}" placeholder="(XX) XXXXX-XXXX" maxlength="15">
                         <span class="input-hint">Formato: (DDD) 9xxxx-xxxx ou xxxx-xxxx</span>
                       </div>
+                       <div class="form-group">
+                        <label for="birthDate">Data de Nascimento</label>
+                        <input type="date" id="birthDate" value="${formatDateForInput(user.birth_date)}">
+                    </div>
                        <div class="form-buttons">
                             <button type="submit" class="btn btn-save">Salvar Alterações</button>
                             <button type="button" id="cancel-edit-btn" class="btn secondary">Cancelar</button>
@@ -129,10 +130,6 @@ export default async function renderEditProfile(queryParams) {
               <div class="nav-item" id="nav-home">
                 ${homeIconNav}
                 <span>Home</span>
-              </div>
-              <div class="nav-item" id="nav-search">
-                ${searchIconNav}
-                <span>Procurar</span>
               </div>
               <div class="nav-item" id="nav-agenda">
                 ${agendaIconNav}
@@ -171,6 +168,34 @@ export default async function renderEditProfile(queryParams) {
 }
 
 // --- Funções Auxiliares ---
+
+/**
+ * Formata uma string de data ou objeto Date para o formato YYYY-MM-DD.
+ * @param {string|Date|null} dateString - A data do usuário.
+ * @returns {string} Data formatada ou string vazia.
+ */
+function formatDateForInput(dateString) {
+  if (!dateString) return ''; // Retorna vazio se não houver data
+  try {
+    // Cria um objeto Date. Funciona com YYYY-MM-DD ou objetos Date.
+    const date = new Date(dateString);
+    
+    // Importante: Ajusta para o fuso horário local para evitar problemas de um dia a menos/mais
+    // ao converter para string ISO se a data original não tiver fuso específico.
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); 
+
+    if (isNaN(date.getTime())) return ''; // Retorna vazio se a data for inválida
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Mês é 0-11, adiciona 1
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  } catch (e) {
+    console.error("Erro ao formatar data para input:", e);
+    return ''; // Retorna vazio em caso de erro
+  }
+}
 
 // Formata número de telefone para exibição (Ex: (XX) XXXXX-XXXX)
 function formatPhoneNumber(phoneFromDB) {
@@ -327,57 +352,96 @@ function setupAccountHubEvents(user) {
      }
 
     // Formulário de Submit (edição de perfil)
-     const profileForm = document.getElementById('profileForm');
-     if (profileForm) {
-         const newProfileForm = profileForm.cloneNode(true);
-         profileForm.parentNode.replaceChild(newProfileForm, profileForm);
-         newProfileForm.addEventListener('submit', async (e) => {
-              e.preventDefault();
-             const nameInput = document.getElementById('name');
-             const phoneInputSubmit = document.getElementById('phone');
-             const name = nameInput ? nameInput.value.trim() : '';
-             const rawPhone = phoneInputSubmit ? phoneInputSubmit.value.replace(/\D/g, '') : ''; // Pega só os números
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        const newProfileForm = profileForm.cloneNode(true);
+        profileForm.parentNode.replaceChild(newProfileForm, profileForm);
+        // --- SUBSTITUA A PARTIR DAQUI ---
+        newProfileForm.addEventListener('submit', async (e) => {
+             e.preventDefault();
+            const nameInput = document.getElementById('name');
+            const phoneInputSubmit = document.getElementById('phone');
+            const birthDateInput = document.getElementById('birthDate');
 
-             if (!name) { showMessage('Nome é obrigatório'); return; }
-             // Validação do telefone (opcional, mas recomendada)
-             if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) {
-                 showMessage('Telefone inválido. Use DDD + número (10 ou 11 dígitos).'); return;
-             }
+            // Pega os valores dos inputs
+            const name = nameInput ? nameInput.value.trim() : '';
+            const rawPhone = phoneInputSubmit ? phoneInputSubmit.value.replace(/\D/g, '') : ''; 
+            const birthDateValue = birthDateInput ? birthDateInput.value : null; // Formato AAAA-MM-DD ou vazio
 
-             const submitButton = e.target.querySelector('button[type="submit"]');
-             const originalButtonText = submitButton.textContent;
-             submitButton.disabled = true;
-             submitButton.textContent = 'Salvando...';
+            // --- Validações ---
+            if (!name) {
+                showMessage('Nome é obrigatório'); 
+                return; 
+            }
+            if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) {
+                showMessage('Telefone inválido. Use DDD + número (10 ou 11 dígitos).'); 
+                return;
+            }
+            // Você pode adicionar validações para birthDateValue aqui se desejar
+            // (ex: verificar se não é uma data futura)
 
-             try {
-                 // Chama a API para atualizar o perfil
-                 const response = await fetch('/api/auth/profile', {
-                     method: 'PUT',
-                     headers: { 'Content-Type': 'application/json' },
-                     credentials: 'include', // Envia o cookie de autenticação
-                     body: JSON.stringify({ name: name, phone: rawPhone || null }) // Envia null se vazio
-                 });
-                 const data = await response.json();
+            // --- CORREÇÃO: Monta o objeto bodyData ANTES do fetch ---
+            const bodyData = {
+                name: name,
+                phone: rawPhone || null, // Envia null para o backend se o telefone estiver vazio
+                birth_date: birthDateValue || null // Envia null para o backend se a data estiver vazia
+            };
+            console.log("Dados que serão enviados para API:", bodyData); // Log para debug
+            // --- FIM DA CORREÇÃO ---
 
-                 if (!response.ok) throw new Error(data.message || 'Falha ao atualizar');
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
 
-                 showMessage('Perfil atualizado com sucesso!');
-                 // Atualiza dados do usuário no localStorage com a resposta
-                 const updatedUserData = { ...user, name: data.data.name, phone: data.data.phone };
-                 saveUser(updatedUserData);
-                 // Atualiza nome exibido na tela (se visível)
-                 const displayNameElement = document.querySelector('.user-display-name');
-                 if (displayNameElement) displayNameElement.textContent = updatedUserData.name || updatedUserData.username || 'Usuário';
-                 showActionList(); // Volta para a lista de ações
+            try {
+                // --- CORREÇÃO: Corrige o 'body' da chamada fetch ---
+                const response = await fetch('/api/auth/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', 
+                    body: JSON.stringify(bodyData) // <<< Envia o objeto bodyData corretamente formatado
+                });
+                // --- FIM DA CORREÇÃO ---
+                
+                const data = await response.json();
+                if (!response.ok) {
+                    // Tenta pegar a mensagem de erro específica do backend
+                    throw new Error(data.message || `Falha ao atualizar (Status: ${response.status})`);
+                }
 
-             } catch (error) {
-                 console.error('Erro na atualização do perfil:', error);
-                 showMessage(error.message || 'Erro ao atualizar perfil');
-             } finally {
-                 submitButton.disabled = false;
-                 submitButton.textContent = originalButtonText;
-             }
-         });
+                showMessage('Perfil atualizado com sucesso!');
+                
+                // Atualiza dados do usuário no localStorage com a resposta (incluindo birth_date)
+                // Certifique-se que o backend retorna 'birth_date' no objeto 'data.data'
+                const updatedUserData = { 
+                    ...user, 
+                    name: data.data.name, 
+                    phone: data.data.phone, 
+                    birth_date: data.data.birth_date // <<< Pega a data atualizada da resposta
+                };
+                saveUser(updatedUserData); // Salva no localStorage
+                console.log("LocalStorage atualizado:", updatedUserData);
+                
+                // Atualiza nome exibido na tela (se visível)
+                const displayNameElement = document.querySelector('.user-display-name');
+                if (displayNameElement) {
+                   displayNameElement.textContent = updatedUserData.name || updatedUserData.username || 'Usuário';
+                }
+
+                showActionList(); // Volta para a lista de ações
+
+            } catch (error) {
+                console.error('Erro na atualização do perfil:', error);
+                showMessage(error.message || 'Erro ao atualizar perfil. Tente novamente.');
+            } finally {
+                // Garante que o botão seja reabilitado
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
+            }
+        });
      }
 
     // --- Listeners para a Barra de Navegação Inferior ---

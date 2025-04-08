@@ -13,6 +13,7 @@ export default function renderHome(queryParams) {
             </div>
             
             <h1>Bem-vindo!</h1>
+            <p style="text-align: center; color: #bf7fff; margin-bottom: 30px; font-size: 16px;">Descubra e viva a cultura da sua cidade.</p>
             
             <button class="social-button" id="google-login">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">

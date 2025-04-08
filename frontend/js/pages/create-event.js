@@ -7,7 +7,7 @@ import { getEventById, saveEvent, fetchCategoriesWithSubcategories } from '../mo
 // --- Ícones ---
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
 const photoIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="white"/></svg>`;
-const addIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="white"/></svg>`;
+const addIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="#a050ff" xmlns="http://www.w3.org/2000/svg"><path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="white"/></svg>`;
 const videoIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-film" viewBox="0 0 16 16"><path d="M0 1a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm4 0v6h8V1zm8 8H4v6h8zM1 1v2h2V1zm2 3H1v2h2zm-2 3H1v2h2zm-2 3H1v2h2zm14-9v2h2V1zm-2 3h2v2h-2zm2 3h2v2h-2zm-2 3h2v2h-2z"/></svg>`;
 
 // Variáveis do módulo
@@ -164,7 +164,7 @@ async function setupEventForm(isEditing, eventId) {
     closeButtonId: 'fecharCancelarModal',
     confirmButtonId: 'confirmarCancelar',
     denyButtonId: 'negarCancelar',
-    onConfirm: () => navigateTo('edit-profile') // <-- VOLTA PARA O PERFIL
+    onConfirm: () =>  window.history.back() // <-- VOLTA PARA O PERFIL
   });
 
   // --- BOTÃO VOLTAR DO HEADER ---

@@ -13,33 +13,46 @@ const createPromotion = async (req, res) => {
       benefitType,
       benefitDescription,
       maxCodes,
-      generationDeadline,
-      usageDeadline
+      generationDeadline, // Vem como string ex: "2025-04-10T18:00"
+      usageDeadline       // Vem como string ex: "2025-04-09T23:59"
     } = req.body;
 
-    // Verificar se o usuário está autenticado
-    if (!req.user) {
-      return res.status(401).json({ message: 'Usuário não autenticado' });
-    }
-
-    // Verificar se o usuário é admin ou premium
-    if (req.user.role !== 'admin' && req.user.role !== 'premium') {
-      return res.status(403).json({
-        message: 'Apenas administradores e usuários premium podem criar promoções'
-      });
-    }
-
-    // Verificar se o evento existe
+    // --- Validações de permissão e existência do evento (iguais a antes) ---
+    if (!req.user) { return res.status(401).json({ message: 'Usuário não autenticado' }); }
+    if (req.user.role !== 'admin' && req.user.role !== 'premium') { return res.status(403).json({ message: 'Apenas administradores e usuários premium podem criar promoções' }); }
     const event = await Event.getEventById(eventId);
-    if (!event) {
-      return res.status(404).json({ message: 'Evento não encontrado' });
+    if (!event) { return res.status(404).json({ message: 'Evento não encontrado' }); }
+    if (req.user.role === 'premium' && event.creator_id !== req.user.id) { return res.status(403).json({ message: 'Você só pode criar promoções para seus próprios eventos' }); }
+    // --- Fim das validações ---
+
+    // ----- ADICIONAR VALIDAÇÃO DAS DATAS -----
+    let generationDate = null;
+    let usageDate = null;
+
+    if (generationDeadline) {
+      generationDate = new Date(generationDeadline);
+      // Verifica se a data é válida após a conversão
+      if (isNaN(generationDate.getTime())) {
+        return res.status(400).json({ message: 'Formato inválido para "Data limite para gerar". Use AAAA-MM-DDTHH:MM.' });
+      }
     }
 
-    // Se for usuário premium, verificar se o evento é dele
-    if (req.user.role === 'premium' && event.creator_id !== req.user.id) {
-      return res.status(403).json({
-        message: 'Você só pode criar promoções para seus próprios eventos'
-      });
+    if (usageDeadline) {
+      usageDate = new Date(usageDeadline);
+      // Verifica se a data é válida após a conversão
+      if (isNaN(usageDate.getTime())) {
+        return res.status(400).json({ message: 'Formato inválido para "Data limite para usar". Use AAAA-MM-DDTHH:MM.' });
+      }
+    }
+
+    // Compara as datas APENAS se ambas foram fornecidas e são válidas
+    if (generationDate && usageDate) {
+        // Comparação direta de objetos Date funciona
+        if (usageDate < generationDate) {
+            return res.status(400).json({ 
+                message: 'Erro: A data limite para usar o QR Code não pode ser anterior à data limite para gerá-lo.' 
+            });
+        }
     }
 
     // Criar a promoção
