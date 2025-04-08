@@ -85,7 +85,7 @@ export default async function renderEditProfile(queryParams) {
                     <button id="criar-evento-btn" class="btn-profile-action">
                         ${plusIcon} Criar Novo Evento
                     </button>
-                    ` : ``
+                    ` : `
                     `}
                     ${isAdminUser ? `
                     <button id="metricas-btn" class="btn-profile-action">
