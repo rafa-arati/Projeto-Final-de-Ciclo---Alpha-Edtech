@@ -4,69 +4,27 @@ info:
   version: 1.0.0
   description: API para gerenciamento de eventos culturais e interação de usuários.
 servers:
-  - url: http://localhost:3000/api
-    description: Servidor Local
+  - url: https://equipe01.alphaedtech.org.br
+    description: Produção
 
 components:
   schemas:
     UserBase:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          example: João Silva
-        email:
-          type: string
-          format: email
-          example: joao@example.com
-        username:
-          type: string
-          example: joao_silva
-        role:
-          type: string
-          enum: [user, admin, premium]
-          default: user
-        birth_date:
-          type: string
-          format: date
-          description: Data de nascimento (YYYY-MM-DD)
-          example: '1990-05-15'
-        gender:
-          type: string
-          enum: [Masculino, Feminino, Outro]
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-          example: '11999998888'
-        photo_url:
-          type: string
-          format: url
-          nullable: true
-        google_id:
-          type: string
-          nullable: true
-          readOnly: true
-        onboarding_completed:
-          type: boolean
-          default: false
-          readOnly: true
-        subscription_expiry:
-          type: string
-          format: date-time
-          nullable: true
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
+        id: { type: integer, readOnly: true }
+        name: { type: string, example: João Silva }
+        email: { type: string, format: email, example: joao@example.com }
+        username: { type: string, example: joao_silva }
+        role: { type: string, enum: [user, admin], default: user }
+        birth_date: { type: string, format: date, description: "Data de nascimento (Formato preferencial: YYYY-MM-DD)", example: '1990-05-15', nullable: true }
+        gender: { type: string, enum: [Masculino, Feminino, Outro], nullable: true }
+        phone: { type: string, nullable: true, example: '11999998888', description: "Armazenado sem formatação, apenas dígitos." }
+        photo_url: { type: string, format: url, nullable: true }
+        google_id: { type: string, nullable: true, readOnly: true }
+        onboarding_completed: { type: boolean, default: false, readOnly: true }
+        created_at: { type: string, format: date-time, readOnly: true }
+        updated_at: { type: string, format: date-time, readOnly: true }
 
     UserResponse:
       allOf:
@@ -76,395 +34,248 @@ components:
       type: object
       required: [name, email, password, birth_date, gender, username]
       properties:
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          format: password
-          minLength: 8
-        birth_date:
-          type: string
-          description: Data de nascimento (DD-MM-YYYY)
-          example: '15-05-1990'
-        gender:
-          type: string
-          enum: [Masculino, Feminino, Outro]
-        username:
-          type: string
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        birth_date: { type: string, description: "Data de nascimento (Formato DD-MM-YYYY)", example: '15-05-1990' } # Backend converterá
+        gender: { type: string, enum: [Masculino, Feminino, Outro] }
+        username: { type: string }
 
     UserLoginRequest:
       type: object
       required: [email, password]
       properties:
-        email:
-          type: string
-          example: joao@example.com
-        password:
-          type: string
-          format: password
+        email: { type: string, description: "Pode ser o email ou username", example: joao@example.com }
+        password: { type: string, format: password }
 
     UserProfileUpdateRequest:
       type: object
       properties:
-        name:
-          type: string
-        phone:
-          type: string
-          example: '11999998888'
+        name: { type: string }
+        phone: { type: string, example: '11999998888', description: "Enviar apenas dígitos ou formatado (backend limpará)" }
+        birth_date: { type: string, format: date, example: '1990-05-15', description: "Formato YYYY-MM-DD" } # Campo adicionado
 
     UserOnboardingRequest:
       type: object
       required: [userId, gender, birth_date]
       properties:
-        userId:
-          type: integer
-        gender:
-          type: string
-          enum: [Masculino, Feminino, Outro]
-        birth_date:
-          type: string
-          example: '15-05-1990'
+        userId: { type: integer }
+        gender: { type: string, enum: [Masculino, Feminino, Outro] }
+        birth_date: { type: string, example: '15-05-1990', description: "Data de nascimento (Formato DD-MM-YYYY)" } # Backend converterá
 
     EventBase:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        event_name:
-          type: string
-          example: Festival de Jazz
-        description:
-          type: string
-          nullable: true
-        event_date:
-          type: string
-          format: date
-          example: '2025-07-20'
-        event_time:
-          type: string
-          format: time
-          example: '20:00:00'
-        location:
-          type: string
-        event_link:
-          type: string
-          format: url
-          nullable: true
-        photo_url:
-          type: string
-          format: url
-          nullable: true
-        category_id:
-          type: integer
-          nullable: true
-        subcategory_id:
-          type: integer
-          nullable: true
-        creator_id:
-          type: integer
-          nullable: true
-          readOnly: true
-        video_urls:
-          type: array
-          items:
-            type: string
-            format: url
-          nullable: true
-        is_featured:
-          type: boolean
-          default: false
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
+        id: { type: integer, readOnly: true }
+        event_name: { type: string, example: Festival de Jazz }
+        description: { type: string, nullable: true }
+        event_date: { type: string, format: date, example: '2025-07-20' }
+        event_time: { type: string, format: time, example: '20:00', description: "Formato HH:MM ou HH:MM:SS", nullable: true }
+        location: { type: string }
+        event_link: { type: string, format: url, nullable: true }
+        photo_url: { type: string, format: url, nullable: true }
+        category_id: { type: integer, nullable: true }
+        subcategory_id: { type: integer, nullable: true }
+        creator_id: { type: integer, nullable: true, readOnly: true }
+        video_urls: { type: array, items: { type: string, format: url }, nullable: true, maxItems: 3 }
+        is_featured: { type: boolean, default: false }
+        created_at: { type: string, format: date-time, readOnly: true }
+        updated_at: { type: string, format: date-time, readOnly: true }
 
     EventResponse:
       allOf:
         - $ref: '#/components/schemas/EventBase'
         - type: object
           properties:
-            category_name:
-              type: string
-              nullable: true
-              readOnly: true
-            subcategory_name:
-              type: string
-              nullable: true
-              readOnly: true
-            creator_name:
-              type: string
-              nullable: true
-              readOnly: true
-            creator_username:
-              type: string
-              nullable: true
-              readOnly: true
-            creator_role:
-              type: string
-              nullable: true
-              readOnly: true
-            likeCount:
-              type: integer
-              readOnly: true
-            userHasLiked:
-              type: boolean
-              nullable: true
-              readOnly: true
+            category_name: { type: string, nullable: true, readOnly: true }
+            subcategory_name: { type: string, nullable: true, readOnly: true }
+            creator_name: { type: string, nullable: true, readOnly: true }
+            creator_username: { type: string, nullable: true, readOnly: true }
+            creator_role: { type: string, enum: [user, admin], nullable: true, readOnly: true }
+            likeCount: { type: integer, readOnly: true }
+            userHasLiked: { type: boolean, nullable: true, readOnly: true }
 
     EventCreateUpdateRequest:
       type: object
       properties:
-        title:
-          type: string
-        description:
-          type: string
-        start_date:
-          type: string
-          format: date
-        start_time:
-          type: string
-          format: time
-        location:
-          type: string
-        event_link:
-          type: string
-          format: url
-        category_id:
-          type: integer
-        subcategory_id:
-          type: integer
-        video_urls:
-          type: string
-        imagem:
-          type: string
-          format: binary
+        title: { type: string }
+        description: { type: string }
+        start_date: { type: string, format: date }
+        start_time: { type: string, format: time, nullable: true }
+        location: { type: string }
+        event_link: { type: string, format: url, nullable: true }
+        category_id: { type: integer }
+        subcategory_id: { type: integer, nullable: true }
+        video_urls: { type: string, description: "Array de URLs (YouTube/TikTok) em formato JSON string. Ex: '[\"url1\", \"url2\"]'", nullable: true }
+        imagem: { type: string, format: binary }
 
     LikeResponse:
       type: object
       properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        likeCount:
-          type: integer
-        userHasLiked:
-          type: boolean
+        success: { type: boolean }
+        message: { type: string }
+        likeCount: { type: integer }
+        userHasLiked: { type: boolean }
 
     Category:
       type: object
       properties:
-        id:
-          type: integer
-        name:
-          type: string
+        id: { type: integer, readOnly: true }
+        name: { type: string }
 
     Subcategory:
       type: object
       properties:
-        id:
-          type: integer
-        name:
-          type: string
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        # category_id: { type: integer } # Opcional adicionar para referência no GET /subcategories
+
+    SubcategoryResponse: # Schema para GET /subcategories
+      allOf:
+        - $ref: '#/components/schemas/Subcategory'
+        - type: object
+          properties:
+            category_name: { type: string } # Adiciona nome da categoria pai
 
     CategoryWithSubcategories:
       type: object
       properties:
-        id:
-          type: integer
-        name:
-          type: string
-        subcategories:
-          type: array
-          items:
-            $ref: '#/components/schemas/Subcategory'
+        id: { type: integer }
+        name: { type: string }
+        subcategories: { type: array, items: { $ref: '#/components/schemas/Subcategory' }}
 
     CategoryCreateRequest:
       type: object
       required: [name]
       properties:
-        name:
-          type: string
+        name: { type: string }
+
+    SubcategoryCreateRequest: # Schema para POST /subcategories
+      type: object
+      required: [name, category_id]
+      properties:
+        name: { type: string }
+        category_id: { type: integer }
 
     PasswordResetRequestRequest:
       type: object
       required: [email]
       properties:
-        email:
-          type: string
-          format: email
+        email: { type: string, format: email }
 
     PasswordResetRequestResponse:
       type: object
       properties:
-        message:
-          type: string
+        message: { type: string }
 
     PasswordValidateTokenResponse:
       type: object
       properties:
-        valid:
-          type: boolean
+        valid: { type: boolean }
+        message: { type: string, nullable: true } # Adiciona mensagem opcional
 
     PasswordResetRequest:
       type: object
       required: [token, newPassword]
       properties:
-        token:
-          type: string
-          format: uuid
-        newPassword:
-          type: string
-          format: password
-          minLength: 8
+        token: { type: string, format: uuid }
+        newPassword: { type: string, format: password, minLength: 8 }
 
-    PremiumStatusResponse:
+    PromotionBase:
       type: object
       properties:
-        isPremium:
-          type: boolean
-        subscription:
+        id: { type: integer, readOnly: true }
+        event_id: { type: integer, readOnly: true }
+        creator_id: { type: integer, readOnly: true }
+        description: { type: string }
+        discount_percentage: { type: integer, nullable: true }
+        benefit_type: { type: string, enum: [discount, gift, vip, other] }
+        benefit_description: { type: string }
+        promotion_id: { type: string, format: uuid, readOnly: true }
+        max_codes: { type: integer, nullable: true }
+        generation_deadline: { type: string, format: date-time, nullable: true }
+        usage_deadline: { type: string, format: date-time, nullable: true }
+        generated_codes: { type: integer, readOnly: true }
+        remaining_codes: { type: integer, readOnly: true, nullable: true } # Pode ser null se max_codes for null
+        status: { type: string, readOnly: true, description: "Status calculado: disponivel, esgotada, encerrada, expirada" }
+        created_at: { type: string, format: date-time, readOnly: true }
+
+    PromotionResponse: # Usado para listar promoções (Admin ou Usuário)
+      allOf:
+        - $ref: '#/components/schemas/PromotionBase'
+
+    PromotionCreateRequest:
+      type: object
+      required: [eventId, description, benefitType, benefitDescription]
+      properties:
+        eventId: { type: integer }
+        description: { type: string }
+        discountPercentage: { type: integer, minimum: 1, maximum: 100, description: "Obrigatório se benefitType for 'discount'", nullable: true }
+        benefitType: { type: string, enum: [discount, gift, vip, other] }
+        benefitDescription: { type: string }
+        maxCodes: { type: integer, nullable: true, minimum: 1 }
+        generationDeadline: { type: string, format: date-time, nullable: true, description: "Formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ) ou compatível" }
+        usageDeadline: { type: string, format: date-time, nullable: true, description: "Formato ISO 8601. Não pode ser anterior a generationDeadline." }
+
+    QRCodeGeneratedResponse:
+      type: object
+      properties:
+        message: { type: string }
+        qrCode:
           type: object
           properties:
-            status:
-              type: string
-              enum: [active, expired, none, admin]
-            expiryDate:
-              type: string
-              format: date-time
-              nullable: true
-
-    PremiumUpgradeResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        user:
-          $ref: '#/components/schemas/UserResponse'
-
-    QRCodeBase:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        event_id:
-          type: integer
-        creator_id:
-          type: integer
-          readOnly: true
-        description:
-          type: string
-          nullable: true
-        discount_percentage:
-          type: integer
-          nullable: true
-        benefit_type:
-          type: string
-          nullable: true
-        benefit_description:
-          type: string
-          nullable: true
-        qr_code_value:
-          type: string
-          format: uuid
-          readOnly: true
-        valid_until:
-          type: string
-          format: date-time
-          nullable: true
-        is_used:
-          type: boolean
-          readOnly: true
-        used_at:
-          type: string
-          format: date-time
-          nullable: true
-          readOnly: true
-        used_by:
-          type: integer
-          nullable: true
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-
-    QRCodeResponse:
-      allOf:
-        - $ref: '#/components/schemas/QRCodeBase'
-        - type: object
-          properties:
-            creator_name:
-              type: string
-              nullable: true
-            used_by_name:
-              type: string
-              nullable: true
-            event_name:
-              type: string
-            event_date:
-              type: string
-              format: date
-
-    QRCodeCreateRequest:
-      type: object
-      required: [eventId]
-      properties:
-        eventId:
-          type: integer
-        description:
-          type: string
-        discountPercentage:
-          type: integer
-          minimum: 0
-          maximum: 100
-        benefitType:
-          type: string
-        benefitDescription:
-          type: string
-        validUntil:
-          type: string
-          format: date-time
+            id: { type: integer }
+            event_id: { type: integer }
+            promotion_id: { type: string, format: uuid }
+            qr_code_value: { type: string, format: uuid }
+            description: { type: string }
+            benefit_type: { type: string }
+            benefit_description: { type: string }
+            discount_percentage: { type: integer, nullable: true }
+            usage_deadline: { type: string, format: date-time, nullable: true }
+            generation_time: { type: string, format: date-time }
+            status: { type: string, enum: [gerado] }
+            event_name: { type: string }
+            event_date: { type: string, format: date }
 
     QRCodeValidateResponse:
       type: object
       properties:
-        isValid:
-          type: boolean
-        eventName:
-          type: string
-        eventDate:
-          type: string
-          format: date
+        isValid: { type: boolean }
+        message: { type: string, nullable: true } # Mensagem em caso de inválido
+        eventName: { type: string, nullable: true }
+        eventDate: { type: string, format: date, nullable: true }
         benefit:
           type: object
           properties:
-            type:
-              type: string
-              nullable: true
-            description:
-              type: string
-              nullable: true
-            discountPercentage:
-              type: integer
-              nullable: true
+            type: { type: string, nullable: true }
+            description: { type: string, nullable: true }
+            discountPercentage: { type: integer, nullable: true }
+        user:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+            birthDate: { type: string, format: date, nullable: true }
+
+    QRCodeUseResponse:
+      type: object
+      properties:
+        message: { type: string }
+        qrCode:
+          type: object
+          properties:
+            id: { type: integer }
+            qr_code_value: { type: string, format: uuid }
+            status: { type: string, enum: [usado] }
+            used_at: { type: string, format: date-time }
+            used_by: { type: integer }
 
     Error:
       type: object
       properties:
-        message:
-          type: string
-        error:
-          type: string
+        message: { type: string }
+        error: { type: string, nullable: true }
 
   securitySchemes:
     JWT:
@@ -476,7 +287,7 @@ components:
       flows:
         authorizationCode:
           authorizationUrl: /api/auth/google
-          tokenUrl: /api/auth/google/callback
+          tokenUrl: /api/auth/google/callback # Informativo, o fluxo é tratado no backend
           scopes:
             profile: Acesso ao perfil básico do Google
             email: Acesso ao email principal do Google
@@ -488,29 +299,13 @@ paths:
       summary: Registrar novo usuário
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRegisterRequest'
+        content: { application/json: { schema: { $ref: '#/components/schemas/UserRegisterRequest' }}}
       responses:
         '201':
           description: Usuário registrado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-        '400':
-          description: Erro de validação ou usuário já existe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          content: { application/json: { schema: { $ref: '#/components/schemas/UserResponse' }}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /auth/login:
     post:
@@ -518,1042 +313,500 @@ paths:
       summary: Login de usuário
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserLoginRequest'
+        content: { application/json: { schema: { $ref: '#/components/schemas/UserLoginRequest' }}}
       responses:
         '200':
-          description: Login bem-sucedido
+          description: Login bem-sucedido (Token JWT enviado via Cookie HttpOnly)
           headers:
-            Set-Cookie:
-              schema:
-                type: string
-                example: token=abcde12345; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=3600
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  user:
-                    $ref: '#/components/schemas/UserResponse'
-        '400':
-          description: Credenciais inválidas
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+            Set-Cookie: { schema: { type: string, example: 'token=...; Path=/; HttpOnly; Secure; SameSite=Strict' }}
+          content: { application/json: { schema: { type: object, properties: { message: { type: string }, user: { $ref: '#/components/schemas/UserResponse' }}}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /auth/logout:
     post:
       tags: [Authentication]
-      summary: Logout do usuário
+      summary: Logout do usuário (limpa o cookie JWT)
       responses:
-        '200':
-          description: Logout bem-sucedido
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Logout bem-sucedido", content: { application/json: { schema: { type: object, properties: { message: { type: string }}}}} }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /auth/me:
     get:
       tags: [Authentication]
       summary: Obter dados do usuário autenticado
-      security:
-        - JWT: []
+      security: [ { JWT: [] } ]
       responses:
-        '200':
-          description: Dados do usuário atual
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Usuário não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Dados do usuário atual", content: { application/json: { schema: { $ref: '#/components/schemas/UserResponse' }}}}
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /auth/profile:
     put:
       tags: [Authentication]
-      summary: Atualizar perfil do usuário
-      security:
-        - JWT: []
+      summary: Atualizar perfil do usuário autenticado
+      description: Permite atualizar nome, telefone e data de nascimento.
+      security: [ { JWT: [] } ]
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserProfileUpdateRequest'
+        content: { application/json: { schema: { $ref: '#/components/schemas/UserProfileUpdateRequest' }}}
       responses:
         '200':
-          description: Perfil atualizado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  data:
-                    $ref: '#/components/schemas/UserResponse'
-                  message:
-                    type: string
-        '400':
-          description: Dados inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Perfil atualizado com sucesso
+          content: { application/json: { schema: { type: object, properties: { success: { type: boolean }, data: { $ref: '#/components/schemas/UserResponse' }, message: { type: string }}}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /auth/google:
     get:
       tags: [Authentication]
-      summary: Autenticação com Google
+      summary: Iniciar autenticação com Google
+      description: Redireciona o usuário para a página de login do Google.
       responses:
-        '302':
-          description: Redirecionamento para o Google
+        '302': { description: "Redirecionamento para o Google." }
 
   /auth/google/callback:
     get:
       tags: [Authentication]
-      summary: Callback do Google
+      summary: Callback da autenticação Google
+      description: Google redireciona para cá. O backend processa, cria/loga usuário, define cookie e redireciona para o frontend.
       responses:
-        '302':
-          description: Redirecionamento para o frontend
+        '302': { description: "Redirecionamento para o frontend (`/#events` ou `/#onboarding`)." }
 
   /auth/complete-onboarding:
     post:
       tags: [Authentication]
-      summary: Completar onboarding
+      summary: Completar informações de onboarding (pós-login social)
+      description: Usado após o primeiro login via Google para coletar dados adicionais.
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserOnboardingRequest'
+        content: { application/json: { schema: { $ref: '#/components/schemas/UserOnboardingRequest' }}}
       responses:
         '200':
           description: Onboarding completado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  user:
-                    $ref: '#/components/schemas/UserResponse'
-        '400':
-          description: Dados inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Usuário não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          content: { application/json: { schema: { type: object, properties: { message: { type: string }, user: { $ref: '#/components/schemas/UserResponse' }}}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /events:
     get:
       tags: [Events]
-      summary: Listar eventos
+      summary: Listar eventos com filtros
+      description: Retorna uma lista de eventos. Aberto para todos.
       parameters:
-        - name: category_id
-          in: query
-          schema:
-            type: integer
-        - name: subcategory_id
-          in: query
-          schema:
-            type: integer
-        - name: start_date
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: end_date
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: search
-          in: query
-          schema:
-            type: string
-        - name: creator_id
-          in: query
-          schema:
-            type: integer
+        - { name: category_id, in: query, schema: { type: integer }}
+        - { name: subcategory_id, in: query, schema: { type: integer }}
+        - { name: start_date, in: query, schema: { type: string, format: date }}
+        - { name: end_date, in: query, schema: { type: string, format: date }}
+        - { name: search, in: query, schema: { type: string }}
+        - { name: creator_id, in: query, schema: { type: integer }}
       responses:
-        '200':
-          description: Lista de eventos
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EventResponse'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Lista de eventos", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EventResponse' }}}}}
+        '500': { $ref: '#/components/responses/InternalServerError' }
     post:
       tags: [Events]
-      summary: Criar evento
-      security:
-        - JWT: []
+      summary: Criar um novo evento (Admin)
+      description: "Permite que **Administradores** criem novos eventos. Requer autenticação JWT e papel 'admin'. Usa `multipart/form-data`. `video_urls` deve ser um JSON string."
+      security: [ { JWT: [] } ]
       requestBody:
         required: true
         content:
           multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/EventCreateUpdateRequest'
-            encoding:
-              video_urls:
-                contentType: application/json
+            schema: { $ref: '#/components/schemas/EventCreateUpdateRequest' }
+            encoding: { video_urls: { contentType: application/json }}
       responses:
-        '201':
-          description: Evento criado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EventResponse'
-        '400':
-          description: Dados inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Acesso negado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '201': { description: "Evento criado", content: { application/json: { schema: { $ref: '#/components/schemas/EventResponse' }}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /events/{id}:
     get:
       tags: [Events]
-      summary: Detalhes do evento
+      summary: Obter detalhes de um evento específico
+      description: Retorna informações detalhadas, incluindo contagem de likes e se o usuário atual curtiu (se autenticado). Aberto para todos.
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
+        - { name: id, in: path, required: true, schema: { type: integer }}
       responses:
-        '200':
-          description: Detalhes do evento
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EventResponse'
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Detalhes do evento", content: { application/json: { schema: { $ref: '#/components/schemas/EventResponse' }}}}
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
     put:
       tags: [Events]
-      summary: Atualizar evento
-      security:
-        - JWT: []
+      summary: Atualizar um evento existente (Admin)
+      description: "Permite que **Administradores** atualizem eventos. Requer autenticação JWT e papel 'admin'. Usa `multipart/form-data`."
+      security: [ { JWT: [] } ]
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
+        - { name: id, in: path, required: true, schema: { type: integer }}
       requestBody:
         required: true
         content:
           multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/EventCreateUpdateRequest'
-            encoding:
-              video_urls:
-                contentType: application/json
+            schema: { $ref: '#/components/schemas/EventCreateUpdateRequest' }
+            encoding: { video_urls: { contentType: application/json }}
       responses:
-        '200':
-          description: Evento atualizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EventResponse'
-        '400':
-          description: Dados inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Acesso negado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Evento atualizado", content: { application/json: { schema: { $ref: '#/components/schemas/EventResponse' }}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
     delete:
       tags: [Events]
-      summary: Excluir evento
-      security:
-        - JWT: []
+      summary: Excluir um evento (Admin)
+      description: "Permite que **Administradores** excluam eventos. Requer autenticação JWT e papel 'admin'."
+      security: [ { JWT: [] } ]
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
+        - { name: id, in: path, required: true, schema: { type: integer }}
       responses:
-        '200':
-          description: Evento excluído
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Acesso negado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Evento excluído", content: { application/json: { schema: { type: object, properties: { message: { type: string }}}}} }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /my-events:
     get:
       tags: [Events]
-      summary: Meus eventos
-      security:
-        - JWT: []
+      summary: Listar eventos criados pelo usuário (Admin vê todos)
+      description: "Retorna eventos criados pelo usuário autenticado. **Admins** veem todos. Requer autenticação JWT."
+      security: [ { JWT: [] } ]
       parameters:
-        - name: category_id
-          in: query
-          schema:
-            type: integer
-        - name: subcategory_id
-          in: query
-          schema:
-            type: integer
+        - { name: category_id, in: query, schema: { type: integer }}
+        - { name: subcategory_id, in: query, schema: { type: integer }}
       responses:
-        '200':
-          description: Lista de eventos do usuário
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EventResponse'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Lista de eventos", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EventResponse' }}}}}
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /events/{eventId}/like:
     post:
       tags: [Events]
-      summary: Curtir evento
-      security:
-        - JWT: []
+      summary: Curtir ou descurtir um evento
+      description: Alterna o estado de 'curtida'. Requer autenticação JWT.
+      security: [ { JWT: [] } ]
       parameters:
-        - name: eventId
-          in: path
-          required: true
-          schema:
-            type: integer
+        - { name: eventId, in: path, required: true, schema: { type: integer }}
       responses:
-        '200':
-          description: Like/unlike realizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LikeResponse'
-        '400':
-          description: ID inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Ação realizada", content: { application/json: { schema: { $ref: '#/components/schemas/LikeResponse' }}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /categories:
     get:
       tags: [Categories]
-      summary: Listar categorias
+      summary: Listar todas as categorias
+      description: Aberto para todos.
       responses:
-        '200':
-          description: Lista de categorias
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Category'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Lista de categorias", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Category' }}}}}
+        '500': { $ref: '#/components/responses/InternalServerError' }
     post:
       tags: [Categories]
-      summary: Criar categoria
-      security:
-        - JWT: []
+      summary: Criar uma nova categoria (Admin)
+      description: "Permite que **Administradores** criem categorias. Requer autenticação JWT e papel 'admin'."
+      security: [ { JWT: [] } ]
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoryCreateRequest'
+        content: { application/json: { schema: { $ref: '#/components/schemas/CategoryCreateRequest' }}}
       responses:
-        '201':
-          description: Categoria criada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Category'
-        '400':
-          description: Nome obrigatório
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Acesso negado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '201': { description: "Categoria criada", content: { application/json: { schema: { $ref: '#/components/schemas/Category' }}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /categories-with-subcategories:
     get:
       tags: [Categories]
-      summary: Categorias com subcategorias
+      summary: Listar categorias com suas subcategorias
+      description: Retorna categorias e um array de suas subcategorias associadas. Aberto para todos.
+      responses:
+        '200': { description: "Lista de categorias com subcategorias", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CategoryWithSubcategories' }}}}}
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /subcategories: # Rota Adicionada
+    get:
+      tags: [Categories]
+      summary: Listar todas as subcategorias
+      description: Retorna a lista de todas as subcategorias existentes, opcionalmente com o nome da categoria pai. Aberto para todos.
       responses:
         '200':
-          description: Lista de categorias
+          description: Lista de subcategorias
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CategoryWithSubcategories'
-        '500':
-          description: Erro interno do servidor
+                  $ref: '#/components/schemas/SubcategoryResponse' # Schema que inclui category_name
+        '500': { $ref: '#/components/responses/InternalServerError' }
+    post:
+      tags: [Categories]
+      summary: Criar uma nova subcategoria (Admin)
+      description: "Permite que **Administradores** criem subcategorias. Requer autenticação JWT e papel 'admin'."
+      security: [ { JWT: [] } ]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/SubcategoryCreateRequest' }}}
+      responses:
+        '201': { description: "Subcategoria criada", content: { application/json: { schema: { $ref: '#/components/schemas/Subcategory' }}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /categories/{categoryId}/subcategories: # Rota Adicionada
+    get:
+      tags: [Categories]
+      summary: Listar subcategorias de uma categoria específica
+      description: Retorna a lista de subcategorias pertencentes a uma categoria. Aberto para todos.
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Lista de subcategorias da categoria
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subcategory'
+        '404': { $ref: '#/components/responses/NotFound' } # Categoria não encontrada
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /password/request-password-reset:
     post:
       tags: [Password Reset]
-      summary: Solicitar reset de senha
+      summary: Solicitar envio de email para reset de senha
+      description: Envia email com link de recuperação. Aberto, com rate limiting.
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PasswordResetRequestRequest'
+        content: { application/json: { schema: { $ref: '#/components/schemas/PasswordResetRequestRequest' }}}
       responses:
-        '200':
-          description: Solicitação recebida
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PasswordResetRequestResponse'
-        '400':
-          description: Email obrigatório
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '429':
-          description: Muitas requisições
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Solicitação recebida.", content: { application/json: { schema: { $ref: '#/components/schemas/PasswordResetRequestResponse' }}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /password/validate-reset-token/{token}:
     get:
       tags: [Password Reset]
-      summary: Validar token de reset
+      summary: Validar token de reset de senha
+      description: Verifica se um token é válido e não expirou. Aberto.
       parameters:
-        - name: token
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - { name: token, in: path, required: true, schema: { type: string, format: uuid }}
       responses:
-        '200':
-          description: Validação do token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PasswordValidateTokenResponse'
-        '400':
-          description: Token inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PasswordValidateTokenResponse'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Token válido", content: { application/json: { schema: { $ref: '#/components/schemas/PasswordValidateTokenResponse', example: { valid: true } }}}}
+        '400': { description: "Token inválido/expirado", content: { application/json: { schema: { $ref: '#/components/schemas/PasswordValidateTokenResponse', example: { valid: false, message: 'Token inválido ou expirado' } }}}}
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /password/reset-password:
     post:
       tags: [Password Reset]
-      summary: Resetar senha
+      summary: Definir nova senha usando token
+      description: Define nova senha com um token válido. Aberto.
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+        content: { application/json: { schema: { $ref: '#/components/schemas/PasswordResetRequest' }}}
       responses:
-        '200':
-          description: Senha redefinida
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '400':
-          description: Token ou senha inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Senha redefinida", content: { application/json: { schema: { type: object, properties: { message: { type: string }}}}} }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
-  /premium/status:
-    get:
-      tags: [Premium]
-      summary: Status premium
-      security:
-        - JWT: []
-      responses:
-        '200':
-          description: Status da assinatura
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PremiumStatusResponse'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Usuário não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /premium/upgrade:
+  /qrcode/promotion:
     post:
-      tags: [Premium]
-      summary: Upgrade para premium
-      security:
-        - JWT: []
-      responses:
-        '200':
-          description: Upgrade realizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PremiumUpgradeResponse'
-        '400':
-          description: Já é premium
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Usuário não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /premium/cancel:
-    post:
-      tags: [Premium]
-      summary: Cancelar premium
-      security:
-        - JWT: []
-      responses:
-        '200':
-          description: Assinatura cancelada
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  user:
-                    $ref: '#/components/schemas/UserResponse'
-        '400':
-          description: Não é premium
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Usuário não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /qrcode:
-    post:
-      tags: [QR Codes]
-      summary: Criar QR Code
-      security:
-        - JWT: []
+      tags: [QR Codes & Promotions]
+      summary: Criar uma nova promoção para um evento (Admin)
+      description: "Permite que **Administradores** criem promoções. Requer autenticação JWT e papel 'admin'."
+      security: [ { JWT: [] } ]
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QRCodeCreateRequest'
+        content: { application/json: { schema: { $ref: '#/components/schemas/PromotionCreateRequest' }}}
       responses:
         '201':
-          description: QR Code criado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  qrCode:
-                    $ref: '#/components/schemas/QRCodeResponse'
-        '400':
-          description: Dados inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Acesso negado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Promoção criada
+          content: { application/json: { schema: { type: object, properties: { message: { type: string }, promotion: { $ref: '#/components/schemas/PromotionResponse' }}}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /qrcode/promotions/{eventId}:
+    get:
+      tags: [QR Codes & Promotions]
+      summary: Listar promoções disponíveis para um evento
+      description: Retorna promoções ativas e disponíveis para geração de QR Code. Aberto para usuários logados.
+      parameters:
+        - { name: eventId, in: path, required: true, schema: { type: integer }}
+      responses:
+        '200': { description: "Lista de promoções disponíveis", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/PromotionResponse' }}}}}
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /qrcode/event/{eventId}:
-    get:
-      tags: [QR Codes]
-      summary: Listar QR Codes de evento
-      security:
-        - JWT: []
+      get:
+        tags: [QR Codes & Promotions]
+        summary: (Admin) Listar TODAS as promoções criadas para um evento
+        description: "Retorna a lista completa de promoções criadas para um evento. Requer autenticação JWT e papel 'admin'."
+        security: [ { JWT: [] } ]
+        parameters:
+          - { name: eventId, in: path, required: true, schema: { type: integer }}
+        responses:
+          '200': { description: "Lista de todas as promoções", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/PromotionResponse' }}}}}
+          '401': { $ref: '#/components/responses/Unauthorized' }
+          '403': { $ref: '#/components/responses/Forbidden' }
+          '404': { $ref: '#/components/responses/NotFound' }
+          '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /qrcode/generate/{promotionId}:
+    post:
+      tags: [QR Codes & Promotions]
+      summary: Gerar um QR Code pessoal para uma promoção
+      description: Usuário autenticado gera seu QR Code único. Requer autenticação JWT.
+      security: [ { JWT: [] } ]
       parameters:
-        - name: eventId
-          in: path
-          required: true
-          schema:
-            type: integer
+        - { name: promotionId, in: path, required: true, schema: { type: string, format: uuid }}
       responses:
-        '200':
-          description: Lista de QR Codes
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/QRCodeResponse'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Acesso negado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '201': { description: "QR Code gerado", content: { application/json: { schema: { $ref: '#/components/schemas/QRCodeGeneratedResponse' }}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /qrcode/my-qrcodes:
+    get:
+      tags: [QR Codes & Promotions]
+      summary: Listar QR Codes gerados pelo usuário autenticado
+      description: Retorna os QR Codes gerados pelo usuário logado. Requer autenticação JWT.
+      security: [ { JWT: [] } ]
+      responses:
+        '200': { description: "Lista de QR Codes", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/QRCodeGeneratedResponse' }}}}}
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /qrcode/validate/{qrCodeValue}:
     get:
-      tags: [QR Codes]
-      summary: Validar QR Code
+      tags: [QR Codes & Promotions]
+      summary: Validar um QR Code (Verificar status e dados)
+      description: "Verifica um QR Code e retorna seus dados e do usuário associado. A query param `?eventId=` é opcional para validação adicional. Aberto (considere restringir a admins se dados do usuário forem sensíveis)."
       parameters:
-        - name: qrCodeValue
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - { name: qrCodeValue, in: path, required: true, schema: { type: string, format: uuid }}
+        - { name: eventId, in: query, schema: { type: integer }}
       responses:
-        '200':
-          description: QR Code válido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QRCodeValidateResponse'
-        '400':
-          description: QR Code inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: QR Code não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Resultado da validação", content: { application/json: { schema: { $ref: '#/components/schemas/QRCodeValidateResponse' }}}}
+        '400': { description: "QR Code inválido/expirado/usado", content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}}
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /qrcode/use/{qrCodeValue}:
     post:
-      tags: [QR Codes]
-      summary: Usar QR Code
-      security:
-        - JWT: []
+      tags: [QR Codes & Promotions]
+      summary: Marcar um QR Code como utilizado (Admin)
+      description: "Marca um QR Code como 'usado'. Requer autenticação JWT e papel 'admin'."
+      security: [ { JWT: [] } ]
       parameters:
-        - name: qrCodeValue
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - { name: qrCodeValue, in: path, required: true, schema: { type: string, format: uuid }}
       responses:
-        '200':
-          description: QR Code utilizado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  qrCode:
-                    $ref: '#/components/schemas/QRCodeResponse'
-        '400':
-          description: QR Code inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: QR Code não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "QR Code utilizado", content: { application/json: { schema: { $ref: '#/components/schemas/QRCodeUseResponse' }}}}
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /qrcode/{qrCodeId}:
     delete:
-      tags: [QR Codes]
-      summary: Excluir QR Code
-      security:
-        - JWT: []
+      tags: [QR Codes & Promotions]
+      summary: Excluir uma promoção ou QR Code (Admin)
+      description: "Permite que **Administradores** excluam uma promoção (passando o ID da promoção) ou um QR Code individual. Excluir uma promoção remove todos os QR codes associados. Requer autenticação JWT e papel 'admin'."
+      security: [ { JWT: [] } ]
       parameters:
-        - name: qrCodeId
-          in: path
-          required: true
-          schema:
-            type: integer
+        - { name: qrCodeId, in: path, required: true, schema: { type: integer, description: "ID da promoção ou do QR Code a ser excluído" }}
       responses:
-        '200':
-          description: QR Code excluído
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '401':
-          description: Não autorizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Acesso negado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: QR Code não encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '200': { description: "Item excluído", content: { application/json: { schema: { type: object, properties: { message: { type: string }}}}} }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /highlighted-events:
+    get:
+      tags: [Events]
+      summary: Listar eventos em destaque (mais curtidos)
+      description: Aberto para todos.
+      responses:
+        '200': { description: "Lista de eventos", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EventResponse' }}}}}
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /personalized-events:
+    get:
+      tags: [Events]
+      summary: Listar eventos personalizados para o usuário
+      description: Requer autenticação JWT.
+      security: [ { JWT: [] } ]
+      responses:
+        '200': { description: "Lista de eventos", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EventResponse' }}}}}
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /today-events:
+    get:
+      tags: [Events]
+      summary: Listar eventos que acontecem hoje
+      description: Aberto para todos.
+      responses:
+        '200': { description: "Lista de eventos", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EventResponse' }}}}}
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /test:
     get:
       tags: [Test]
-      summary: Rota de teste
+      summary: Rota de teste básica
+      description: Verifica se o backend está respondendo.
       responses:
-        '200':
-          description: Sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Rota Cultural Backend is running!
+        '200': { description: "Sucesso", content: { application/json: { schema: { type: object, properties: { message: { type: string, example: 'Rota Cultural Backend is running!' }}}}} }
+
+# Definições de respostas comuns
+components:
+  responses:
+    BadRequest:
+      description: Requisição inválida (dados faltando, formato incorreto, etc.)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
+    Unauthorized:
+      description: Não autorizado (sem token JWT válido ou expirado)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
+    Forbidden:
+      description: Acesso negado (sem permissão necessária - ex: não é admin)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
+    NotFound:
+      description: Recurso não encontrado (ex: evento, usuário com ID especificado não existe)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
+    TooManyRequests:
+      description: Limite de requisições excedido
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
+    InternalServerError:
+      description: Erro interno inesperado no servidor
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
+
+tags:
+  - name: Authentication
+    description: Cadastro, login, perfil, Google OAuth.
+  - name: Events
+    description: Gerenciamento e listagem de eventos.
+  - name: Categories
+    description: Gerenciamento de categorias e subcategorias.
+  - name: Password Reset
+    description: Recuperação de senha.
+  - name: QR Codes & Promotions
+    description: Gerenciamento de promoções e QR codes.
+  - name: Test
+    description: Rotas de teste.
