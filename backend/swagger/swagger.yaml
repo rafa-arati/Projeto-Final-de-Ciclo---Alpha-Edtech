@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: API para gerenciamento de eventos culturais e interação de usuários.
 servers:
-  - url: https://equipe01.alphaedtech.org.br
-    description: Produção
+  - url: http://localhost:3000/api
+    description: Servidor local / Produção
 
 components:
   schemas:
@@ -774,28 +774,6 @@ paths:
       description: Verifica se o backend está respondendo.
       responses:
         '200': { description: "Sucesso", content: { application/json: { schema: { type: object, properties: { message: { type: string, example: 'Rota Cultural Backend is running!' }}}}} }
-
-# Definições de respostas comuns
-components:
-  responses:
-    BadRequest:
-      description: Requisição inválida (dados faltando, formato incorreto, etc.)
-      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
-    Unauthorized:
-      description: Não autorizado (sem token JWT válido ou expirado)
-      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
-    Forbidden:
-      description: Acesso negado (sem permissão necessária - ex: não é admin)
-      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
-    NotFound:
-      description: Recurso não encontrado (ex: evento, usuário com ID especificado não existe)
-      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
-    TooManyRequests:
-      description: Limite de requisições excedido
-      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
-    InternalServerError:
-      description: Erro interno inesperado no servidor
-      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}
 
 tags:
   - name: Authentication
