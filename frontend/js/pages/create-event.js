@@ -18,24 +18,24 @@ let isSubmitting = false; // Flag para evitar duplo submit
  * Renderiza o formulário de criação/edição de evento.
  */
 export default async function renderCreateEvent(queryParams) {
-    // 1. Verificar permissões
-    if (!isPremiumOrAdmin()) {
-        navigateTo('events');
-        showMessage('Acesso negado. Você precisa ser premium ou admin para criar eventos.');
-        return;
-    }
+  // 1. Verificar permissões
+  if (!isPremiumOrAdmin()) {
+    navigateTo('events');
+    showMessage('Acesso negado. Você precisa ser premium ou admin para criar eventos.');
+    return;
+  }
 
-    const appContainer = document.getElementById('app');
-    if (!appContainer) return;
+  const appContainer = document.getElementById('app');
+  if (!appContainer) return;
 
-    // 2. Determinar modo (Criação ou Edição)
-    const eventId = queryParams.get('edit');
-    const isEditing = !!eventId;
-    const pageTitle = isEditing ? 'Editar Evento' : 'Criar Novo Evento';
-    const submitButtonText = isEditing ? 'Salvar Alterações' : 'Adicionar Evento';
+  // 2. Determinar modo (Criação ou Edição)
+  const eventId = queryParams.get('edit');
+  const isEditing = !!eventId;
+  const pageTitle = isEditing ? 'Editar Evento' : 'Criar Novo Evento';
+  const submitButtonText = isEditing ? 'Salvar Alterações' : 'Adicionar Evento';
 
-    // 3. Definir HTML com o novo header padronizado
-    appContainer.innerHTML = `
+  // 3. Definir HTML com o novo header padronizado
+  appContainer.innerHTML = `
       <div class="app-wrapper create-event-page">
         <div class="app-container">
             <header class="page-header">
@@ -127,357 +127,357 @@ export default async function renderCreateEvent(queryParams) {
             </div> </div> </div> <div class="modal" id="cancelarModal"> <div class="modal-content"> <span class="close-modal" id="fecharCancelarModal">×</span> <h3>Descartar Alterações?</h3> <p>Tem certeza que deseja cancelar? ${isEditing ? 'As alterações não salvas' : 'Os dados inseridos'} serão perdidos.</p> <div class="modal-buttons"> <button id="confirmarCancelar" class="btn">Sim, descartar</button> <button id="negarCancelar" class="btn secondary">Não, continuar</button> </div> </div> </div>
       `;
 
-    // 4. Adicionar/Garantir Estilos CSS (opcional, se não estiverem globais)
-    addCreateEventStyles();
-    // 5. Configurar o formulário e seus eventos
-    await setupEventForm(isEditing, eventId);
+  // 4. Adicionar/Garantir Estilos CSS (opcional, se não estiverem globais)
+  addCreateEventStyles();
+  // 5. Configurar o formulário e seus eventos
+  await setupEventForm(isEditing, eventId);
 }
 
 /**
  * Configura o formulário de evento, carrega dados e adiciona listeners.
  */
 async function setupEventForm(isEditing, eventId) {
-    const form = document.getElementById('criarEventoForm');
-    if (!form) return;
+  const form = document.getElementById('criarEventoForm');
+  if (!form) return;
 
-    // Resetar flag de submit
-    isSubmitting = false;
+  // Resetar flag de submit
+  isSubmitting = false;
 
-    // Configurar preview de imagem
-    setupImagePreview('imagem', 'imagemPrevia', 'btnAdicionarFoto');
-    // Esconder placeholder se já houver imagem no preview
-    const imgPreview = document.getElementById('imagemPrevia');
-    const placeholder = document.getElementById('previewPlaceholder');
-    if (imgPreview && placeholder) {
-        const observer = new MutationObserver(() => {
-            placeholder.style.display = imgPreview.style.display === 'none' ? 'block' : 'none';
-        });
-        observer.observe(imgPreview, { attributes: true, attributeFilter: ['style', 'src'] });
-        // Estado inicial
-        placeholder.style.display = imgPreview.style.display === 'none' ? 'block' : 'none';
-    }
-
-
-    // Configurar modal de cancelamento (agora volta para o perfil)
-    setupCancelModal('cancelarModal', {
-        cancelButtonId: 'cancelarEvento',
-        closeButtonId: 'fecharCancelarModal',
-        confirmButtonId: 'confirmarCancelar',
-        denyButtonId: 'negarCancelar',
-        onConfirm: () => navigateTo('edit-profile') // <-- VOLTA PARA O PERFIL
+  // Configurar preview de imagem
+  setupImagePreview('imagem', 'imagemPrevia', 'btnAdicionarFoto');
+  // Esconder placeholder se já houver imagem no preview
+  const imgPreview = document.getElementById('imagemPrevia');
+  const placeholder = document.getElementById('previewPlaceholder');
+  if (imgPreview && placeholder) {
+    const observer = new MutationObserver(() => {
+      placeholder.style.display = imgPreview.style.display === 'none' ? 'block' : 'none';
     });
+    observer.observe(imgPreview, { attributes: true, attributeFilter: ['style', 'src'] });
+    // Estado inicial
+    placeholder.style.display = imgPreview.style.display === 'none' ? 'block' : 'none';
+  }
 
-    // --- BOTÃO VOLTAR DO HEADER ---
-    const backButton = document.getElementById('create-event-back-button');
-    if (backButton) {
-         // Limpa listener antigo
-        backButton.replaceWith(backButton.cloneNode(true));
-        document.getElementById('create-event-back-button').addEventListener('click', (e) => {
-            e.preventDefault();
-            // Mostra o mesmo modal de confirmação do botão "Cancelar"
-            const cancelModal = document.getElementById('cancelarModal');
-            if(cancelModal) cancelModal.classList.add('active');
-        });
+
+  // Configurar modal de cancelamento (agora volta para o perfil)
+  setupCancelModal('cancelarModal', {
+    cancelButtonId: 'cancelarEvento',
+    closeButtonId: 'fecharCancelarModal',
+    confirmButtonId: 'confirmarCancelar',
+    denyButtonId: 'negarCancelar',
+    onConfirm: () => navigateTo('edit-profile') // <-- VOLTA PARA O PERFIL
+  });
+
+  // --- BOTÃO VOLTAR DO HEADER ---
+  const backButton = document.getElementById('create-event-back-button');
+  if (backButton) {
+    // Limpa listener antigo
+    backButton.replaceWith(backButton.cloneNode(true));
+    document.getElementById('create-event-back-button').addEventListener('click', (e) => {
+      e.preventDefault();
+      // Mostra o mesmo modal de confirmação do botão "Cancelar"
+      const cancelModal = document.getElementById('cancelarModal');
+      if (cancelModal) cancelModal.classList.add('active');
+    });
+  }
+  // --- FIM BOTÃO VOLTAR ---
+
+
+  try {
+    setupVideoInputs(isEditing); // Passa isEditing
+    await loadCategoriesAndSubcategories(); // Carrega categorias
+    document.getElementById('categoria')?.addEventListener('change', updateSubcategories);
+
+    if (isEditing && eventId) {
+      await loadEventForEditing(eventId); // Carrega dados do evento se editando
     }
-    // --- FIM BOTÃO VOLTAR ---
 
+    // Configurar envio do formulário
+    form.addEventListener('submit', handleFormSubmit);
 
-    try {
-        setupVideoInputs(isEditing); // Passa isEditing
-        await loadCategoriesAndSubcategories(); // Carrega categorias
-        document.getElementById('categoria')?.addEventListener('change', updateSubcategories);
-
-        if (isEditing && eventId) {
-            await loadEventForEditing(eventId); // Carrega dados do evento se editando
-        }
-
-        // Configurar envio do formulário
-        form.addEventListener('submit', handleFormSubmit);
-
-    } catch (error) {
-        console.error('Erro ao configurar formulário:', error);
-        showMessage('Ocorreu um erro ao carregar o formulário. Tente novamente.');
-    }
+  } catch (error) {
+    console.error('Erro ao configurar formulário:', error);
+    showMessage('Ocorreu um erro ao carregar o formulário. Tente novamente.');
+  }
 }
 
 /**
  * Manipula a submissão do formulário.
  */
 async function handleFormSubmit(e) {
-    e.preventDefault();
-    if (isSubmitting) return; // Previne duplo clique
+  e.preventDefault();
+  if (isSubmitting) return; // Previne duplo clique
 
-    const form = e.target;
-    const eventId = form.querySelector('#eventoId').value;
-    const submitButton = form.querySelector('.submit-event-btn');
-    const originalButtonContent = submitButton.innerHTML; // Salva o conteúdo original
+  const form = e.target;
+  const eventId = form.querySelector('#eventoId').value;
+  const submitButton = form.querySelector('.submit-event-btn');
+  const originalButtonContent = submitButton.innerHTML; // Salva o conteúdo original
 
-    // Validar formulário
-    if (!validateForm(form)) return;
+  // Validar formulário
+  if (!validateForm(form)) return;
 
-    isSubmitting = true;
-    submitButton.disabled = true;
-    submitButton.innerHTML = `${addIcon} ${eventId ? 'Salvando...' : 'Adicionando...'}`; // Feedback visual
+  isSubmitting = true;
+  submitButton.disabled = true;
+  submitButton.innerHTML = `${addIcon} ${eventId ? 'Salvando...' : 'Adicionando...'}`; // Feedback visual
 
-    try {
-        const formData = new FormData(form);
+  try {
+    const formData = new FormData(form);
 
-        // Tratamento de Categoria/Subcategoria (só envia subcategoria se visível)
-        const subcatContainer = document.getElementById('subcategoria-container');
-        if(subcatContainer && subcatContainer.style.display === 'none') {
-            formData.delete('subcategory_id'); // Remove se não aplicável
-        }
-
-        // Coletar URLs de vídeo
-        const videoUrls = Array.from(form.querySelectorAll('.video-url'))
-            .map(input => input.value.trim())
-            .filter(url => url !== ''); // Filtra vazios
-
-        // Adicionar vídeos ao FormData como JSON stringificado
-        formData.append('video_urls', JSON.stringify(videoUrls));
-
-        // Log para depuração
-        console.log(`Enviando ${eventId ? 'atualização' : 'criação'} para evento ID: ${eventId || 'novo'}`);
-        // for (let [key, value] of formData.entries()) { console.log(`${key}:`, value); } // Descomente para ver todos os dados
-
-        // Enviar para API
-        const resultado = await saveEvent(formData, eventId);
-
-        showMessage(eventId ? 'Evento atualizado com sucesso!' : 'Evento criado com sucesso!', 'success');
-        navigateTo('edit-profile'); // Volta para o perfil após salvar
-
-    } catch (error) {
-        console.error('Erro ao salvar evento:', error);
-        showMessage(error.message || 'Ocorreu um erro ao salvar o evento', 'error');
-        submitButton.disabled = false; // Reabilita botão em caso de erro
-        submitButton.innerHTML = originalButtonContent; // Restaura texto
-        isSubmitting = false;
+    // Tratamento de Categoria/Subcategoria (só envia subcategoria se visível)
+    const subcatContainer = document.getElementById('subcategoria-container');
+    if (subcatContainer && subcatContainer.style.display === 'none') {
+      formData.delete('subcategory_id'); // Remove se não aplicável
     }
-    // O finally não é ideal aqui por causa do redirect no sucesso
+
+    // Coletar URLs de vídeo
+    const videoUrls = Array.from(form.querySelectorAll('.video-url'))
+      .map(input => input.value.trim())
+      .filter(url => url !== ''); // Filtra vazios
+
+    // Adicionar vídeos ao FormData como JSON stringificado
+    formData.append('video_urls', JSON.stringify(videoUrls));
+
+    // Log para depuração
+    console.log(`Enviando ${eventId ? 'atualização' : 'criação'} para evento ID: ${eventId || 'novo'}`);
+    // for (let [key, value] of formData.entries()) { console.log(`${key}:`, value); } // Descomente para ver todos os dados
+
+    // Enviar para API
+    const resultado = await saveEvent(formData, eventId);
+
+    showMessage(eventId ? 'Evento atualizado com sucesso!' : 'Evento criado com sucesso!', 'success');
+    navigateTo('events'); // Volta para o perfil após salvar
+
+  } catch (error) {
+    console.error('Erro ao salvar evento:', error);
+    showMessage(error.message || 'Ocorreu um erro ao salvar o evento', 'error');
+    submitButton.disabled = false; // Reabilita botão em caso de erro
+    submitButton.innerHTML = originalButtonContent; // Restaura texto
+    isSubmitting = false;
+  }
+  // O finally não é ideal aqui por causa do redirect no sucesso
 }
 
 /**
  * Adiciona inputs de vídeo dinamicamente.
  */
 function setupVideoInputs(isEditing) { // Recebe isEditing
-    const container = document.getElementById('video-input-container');
-    const addButton = document.getElementById('add-video-btn');
+  const container = document.getElementById('video-input-container');
+  const addButton = document.getElementById('add-video-btn');
 
-    if (!container || !addButton) return;
+  if (!container || !addButton) return;
 
-    // Se não estiver editando, adiciona o primeiro campo
-    if (!isEditing) {
-        addVideoInput(container);
+  // Se não estiver editando, adiciona o primeiro campo
+  if (!isEditing) {
+    addVideoInput(container);
+  }
+
+  addButton.addEventListener('click', () => {
+    if (container.querySelectorAll('.video-url').length < 3) {
+      addVideoInput(container);
     }
+    // Opcional: esconder botão se atingir o limite
+    addButton.style.display = container.querySelectorAll('.video-url').length >= 3 ? 'none' : 'flex';
+  });
 
-    addButton.addEventListener('click', () => {
-        if (container.querySelectorAll('.video-url').length < 3) {
-            addVideoInput(container);
-        }
-        // Opcional: esconder botão se atingir o limite
-        addButton.style.display = container.querySelectorAll('.video-url').length >= 3 ? 'none' : 'flex';
-    });
-
-     // Opcional: Esconder botão inicialmente se já tiver 3 campos (na edição)
-     addButton.style.display = container.querySelectorAll('.video-url').length >= 3 ? 'none' : 'flex';
+  // Opcional: Esconder botão inicialmente se já tiver 3 campos (na edição)
+  addButton.style.display = container.querySelectorAll('.video-url').length >= 3 ? 'none' : 'flex';
 }
 
 /**
  * Cria e adiciona um novo campo de input de vídeo.
  */
 function addVideoInput(container) {
-    const newInput = document.createElement('input');
-    newInput.type = 'url';
-    newInput.className = 'video-url';
-    newInput.placeholder = 'https://youtube.com/shorts/abc123... ou https://tiktok.com/...';
-    container.appendChild(newInput);
+  const newInput = document.createElement('input');
+  newInput.type = 'url';
+  newInput.className = 'video-url';
+  newInput.placeholder = 'https://youtube.com/shorts/abc123... ou https://tiktok.com/...';
+  container.appendChild(newInput);
 }
 
 /**
  * Carrega categorias e subcategorias para os dropdowns.
  */
 async function loadCategoriesAndSubcategories() {
-    try {
-        categorias = await fetchCategoriesWithSubcategories();
-        const categoriaSelect = document.getElementById('categoria');
-        if (!categoriaSelect) return;
+  try {
+    categorias = await fetchCategoriesWithSubcategories();
+    const categoriaSelect = document.getElementById('categoria');
+    if (!categoriaSelect) return;
 
-        categoriaSelect.innerHTML = '<option value="">Selecione...</option>'; // Reset
-        categorias.forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat.id;
-            option.textContent = cat.name;
-            categoriaSelect.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Erro ao carregar categorias:', error);
-        throw error; // Propaga o erro
-    }
+    categoriaSelect.innerHTML = '<option value="">Selecione...</option>'; // Reset
+    categorias.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat.id;
+      option.textContent = cat.name;
+      categoriaSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Erro ao carregar categorias:', error);
+    throw error; // Propaga o erro
+  }
 }
 
 /**
  * Atualiza o dropdown de subcategorias baseado na categoria selecionada.
  */
 function updateSubcategories() {
-    const categoriaId = document.getElementById('categoria').value;
-    const subcategoriaContainer = document.getElementById('subcategoria-container');
-    const subcategoriaSelect = document.getElementById('subcategoria');
-    if (!subcategoriaContainer || !subcategoriaSelect) return;
+  const categoriaId = document.getElementById('categoria').value;
+  const subcategoriaContainer = document.getElementById('subcategoria-container');
+  const subcategoriaSelect = document.getElementById('subcategoria');
+  if (!subcategoriaContainer || !subcategoriaSelect) return;
 
-    subcategoriaSelect.innerHTML = '<option value="">Selecione...</option>'; // Reset
+  subcategoriaSelect.innerHTML = '<option value="">Selecione...</option>'; // Reset
 
-    const selectedCategory = categorias.find(c => c.id.toString() === categoriaId);
+  const selectedCategory = categorias.find(c => c.id.toString() === categoriaId);
 
-    if (selectedCategory?.subcategories?.length > 0 && selectedCategory.name !== 'DIVERSOS') {
-        selectedCategory.subcategories.forEach(sub => {
-            if (sub.id) {
-                const option = document.createElement('option');
-                option.value = sub.id;
-                option.textContent = sub.name;
-                subcategoriaSelect.appendChild(option);
-            }
-        });
-        subcategoriaContainer.style.display = 'block';
-    } else {
-        subcategoriaContainer.style.display = 'none';
-        subcategoriaSelect.value = ""; // Garante que nenhum valor seja enviado
-    }
+  if (selectedCategory?.subcategories?.length > 0 && selectedCategory.name !== 'DIVERSOS') {
+    selectedCategory.subcategories.forEach(sub => {
+      if (sub.id) {
+        const option = document.createElement('option');
+        option.value = sub.id;
+        option.textContent = sub.name;
+        subcategoriaSelect.appendChild(option);
+      }
+    });
+    subcategoriaContainer.style.display = 'block';
+  } else {
+    subcategoriaContainer.style.display = 'none';
+    subcategoriaSelect.value = ""; // Garante que nenhum valor seja enviado
+  }
 }
 
 /**
  * Carrega os dados de um evento existente para o formulário (modo de edição).
  */
 async function loadEventForEditing(eventId) {
-    try {
-        console.log(`Carregando evento ID: ${eventId} para edição.`);
-        const evento = await getEventById(eventId);
-        if (!evento) throw new Error('Evento não encontrado para edição');
+  try {
+    console.log(`Carregando evento ID: ${eventId} para edição.`);
+    const evento = await getEventById(eventId);
+    if (!evento) throw new Error('Evento não encontrado para edição');
 
-        // Validação de permissão (usuário logado precisa ser o criador ou admin)
-        const user = getLoggedInUser();
-        if (!user || (user.role !== 'admin' && String(evento.creator_id) !== String(user.id))) {
-            showMessage('Você não tem permissão para editar este evento.');
-            navigateTo('events');
-            return;
-        }
-
-        // Preencher campos simples
-        document.getElementById('titulo').value = evento.event_name || '';
-        document.getElementById('localizacao').value = evento.location || '';
-        document.getElementById('link').value = evento.event_link || '';
-        document.getElementById('descricao').value = evento.description || '';
-
-        // Preencher data e hora
-        if (evento.event_date) {
-             // Formato YYYY-MM-DD é necessário para input type="date"
-             try {
-                const date = new Date(evento.event_date);
-                // Adiciona 1 dia por causa de problemas de fuso horário ao converter
-                date.setUTCDate(date.getUTCDate() + 1);
-                document.getElementById('data').value = date.toISOString().split('T')[0];
-             } catch (e) { console.error("Erro ao formatar data:", evento.event_date, e); }
-        }
-        if (evento.event_time) {
-             document.getElementById('horario').value = evento.event_time;
-        }
-
-
-        // Preencher imagem
-        const imgPreview = document.getElementById('imagemPrevia');
-        const placeholder = document.getElementById('previewPlaceholder');
-        if (evento.photo_url && imgPreview && placeholder) {
-            imgPreview.src = evento.photo_url;
-            imgPreview.style.display = 'block';
-            placeholder.style.display = 'none';
-        } else if (placeholder) {
-             placeholder.style.display = 'block';
-             if(imgPreview) imgPreview.style.display = 'none';
-        }
-
-
-        // Preencher Categoria e Subcategoria (APÓS categorias serem carregadas)
-        await loadCategoriesAndSubcategories(); // Garante que categorias estão carregadas
-        const categoriaSelect = document.getElementById('categoria');
-        if (evento.category_id && categoriaSelect) {
-            categoriaSelect.value = evento.category_id;
-            updateSubcategories(); // Atualiza subcategorias baseado na categoria carregada
-            // Seleciona a subcategoria APÓS o updateSubcategories
-            const subcategoriaSelect = document.getElementById('subcategoria');
-            if (evento.subcategory_id && subcategoriaSelect) {
-                 // Pequeno delay para garantir que o DOM atualizou as opções
-                 await new Promise(resolve => setTimeout(resolve, 50));
-                 subcategoriaSelect.value = evento.subcategory_id;
-                 console.log(`Subcategoria ${evento.subcategory_id} selecionada.`);
-            }
-        }
-
-         // Preencher Vídeos
-         const videoContainer = document.getElementById('video-input-container');
-         if (videoContainer && evento.video_urls && Array.isArray(evento.video_urls)) {
-             videoContainer.innerHTML = ''; // Limpa container
-             evento.video_urls.forEach(url => {
-                 if(url){ // Verifica se a URL não é nula/vazia
-                    const videoInput = document.createElement('input');
-                    videoInput.type = 'url';
-                    videoInput.className = 'video-url';
-                    videoInput.value = url;
-                    videoInput.placeholder = 'https://youtube.com/shorts/abc123... ou https://tiktok.com/...';
-                    videoContainer.appendChild(videoInput);
-                 }
-             });
-             // Adiciona um campo vazio se houver menos de 3 vídeos
-             if(evento.video_urls.length < 3) {
-                 addVideoInput(videoContainer);
-             }
-             // Atualiza visibilidade do botão "Adicionar"
-             const addButton = document.getElementById('add-video-btn');
-             if (addButton) {
-                  addButton.style.display = videoContainer.querySelectorAll('.video-url').length >= 3 ? 'none' : 'flex';
-             }
-         } else if (videoContainer) {
-             // Adiciona o primeiro input se não houver vídeos salvos
-             addVideoInput(videoContainer);
-         }
-
-
-        console.log("Formulário preenchido para edição.");
-
-    } catch (error) {
-        console.error('Erro ao carregar evento para edição:', error);
-        showMessage('Não foi possível carregar os dados do evento para edição.', 'error');
-        navigateTo('edit-profile'); // Volta para o perfil se der erro
+    // Validação de permissão (usuário logado precisa ser o criador ou admin)
+    const user = getLoggedInUser();
+    if (!user || (user.role !== 'admin' && String(evento.creator_id) !== String(user.id))) {
+      showMessage('Você não tem permissão para editar este evento.');
+      navigateTo('events');
+      return;
     }
+
+    // Preencher campos simples
+    document.getElementById('titulo').value = evento.event_name || '';
+    document.getElementById('localizacao').value = evento.location || '';
+    document.getElementById('link').value = evento.event_link || '';
+    document.getElementById('descricao').value = evento.description || '';
+
+    // Preencher data e hora
+    if (evento.event_date) {
+      // Formato YYYY-MM-DD é necessário para input type="date"
+      try {
+        const date = new Date(evento.event_date);
+        // Adiciona 1 dia por causa de problemas de fuso horário ao converter
+        date.setUTCDate(date.getUTCDate() + 1);
+        document.getElementById('data').value = date.toISOString().split('T')[0];
+      } catch (e) { console.error("Erro ao formatar data:", evento.event_date, e); }
+    }
+    if (evento.event_time) {
+      document.getElementById('horario').value = evento.event_time;
+    }
+
+
+    // Preencher imagem
+    const imgPreview = document.getElementById('imagemPrevia');
+    const placeholder = document.getElementById('previewPlaceholder');
+    if (evento.photo_url && imgPreview && placeholder) {
+      imgPreview.src = evento.photo_url;
+      imgPreview.style.display = 'block';
+      placeholder.style.display = 'none';
+    } else if (placeholder) {
+      placeholder.style.display = 'block';
+      if (imgPreview) imgPreview.style.display = 'none';
+    }
+
+
+    // Preencher Categoria e Subcategoria (APÓS categorias serem carregadas)
+    await loadCategoriesAndSubcategories(); // Garante que categorias estão carregadas
+    const categoriaSelect = document.getElementById('categoria');
+    if (evento.category_id && categoriaSelect) {
+      categoriaSelect.value = evento.category_id;
+      updateSubcategories(); // Atualiza subcategorias baseado na categoria carregada
+      // Seleciona a subcategoria APÓS o updateSubcategories
+      const subcategoriaSelect = document.getElementById('subcategoria');
+      if (evento.subcategory_id && subcategoriaSelect) {
+        // Pequeno delay para garantir que o DOM atualizou as opções
+        await new Promise(resolve => setTimeout(resolve, 50));
+        subcategoriaSelect.value = evento.subcategory_id;
+        console.log(`Subcategoria ${evento.subcategory_id} selecionada.`);
+      }
+    }
+
+    // Preencher Vídeos
+    const videoContainer = document.getElementById('video-input-container');
+    if (videoContainer && evento.video_urls && Array.isArray(evento.video_urls)) {
+      videoContainer.innerHTML = ''; // Limpa container
+      evento.video_urls.forEach(url => {
+        if (url) { // Verifica se a URL não é nula/vazia
+          const videoInput = document.createElement('input');
+          videoInput.type = 'url';
+          videoInput.className = 'video-url';
+          videoInput.value = url;
+          videoInput.placeholder = 'https://youtube.com/shorts/abc123... ou https://tiktok.com/...';
+          videoContainer.appendChild(videoInput);
+        }
+      });
+      // Adiciona um campo vazio se houver menos de 3 vídeos
+      if (evento.video_urls.length < 3) {
+        addVideoInput(videoContainer);
+      }
+      // Atualiza visibilidade do botão "Adicionar"
+      const addButton = document.getElementById('add-video-btn');
+      if (addButton) {
+        addButton.style.display = videoContainer.querySelectorAll('.video-url').length >= 3 ? 'none' : 'flex';
+      }
+    } else if (videoContainer) {
+      // Adiciona o primeiro input se não houver vídeos salvos
+      addVideoInput(videoContainer);
+    }
+
+
+    console.log("Formulário preenchido para edição.");
+
+  } catch (error) {
+    console.error('Erro ao carregar evento para edição:', error);
+    showMessage('Não foi possível carregar os dados do evento para edição.', 'error');
+    navigateTo('edit-profile'); // Volta para o perfil se der erro
+  }
 }
 
 /**
  * Valida o formulário antes do envio.
  */
 function validateForm(form) {
-    const titulo = form.querySelector('#titulo').value.trim();
-    const data = form.querySelector('#data').value;
-    const categoria = form.querySelector('#categoria').value;
-    const localizacao = form.querySelector('#localizacao').value.trim();
-    const imagemInput = form.querySelector('#imagem');
-    const isEditing = !!form.querySelector('#eventoId').value; // Verifica se está editando
+  const titulo = form.querySelector('#titulo').value.trim();
+  const data = form.querySelector('#data').value;
+  const categoria = form.querySelector('#categoria').value;
+  const localizacao = form.querySelector('#localizacao').value.trim();
+  const imagemInput = form.querySelector('#imagem');
+  const isEditing = !!form.querySelector('#eventoId').value; // Verifica se está editando
 
-    if (!titulo) { showMessage('O título do evento é obrigatório', 'error'); return false; }
-    if (!data) { showMessage('A data do evento é obrigatória', 'error'); return false; }
-    if (!categoria) { showMessage('A categoria do evento é obrigatória', 'error'); return false; }
-    if (!localizacao) { showMessage('A localização do evento é obrigatória', 'error'); return false; }
+  if (!titulo) { showMessage('O título do evento é obrigatório', 'error'); return false; }
+  if (!data) { showMessage('A data do evento é obrigatória', 'error'); return false; }
+  if (!categoria) { showMessage('A categoria do evento é obrigatória', 'error'); return false; }
+  if (!localizacao) { showMessage('A localização do evento é obrigatória', 'error'); return false; }
 
-    // Exige imagem apenas na criação, não na edição (a menos que queira obrigar sempre)
-    if (!isEditing && imagemInput && imagemInput.files.length === 0) {
-         // showMessage('Uma imagem para o evento é obrigatória na criação', 'error');
-         // return false; // DESCOMENTE se quiser obrigar imagem na criação
-    }
+  // Exige imagem apenas na criação, não na edição (a menos que queira obrigar sempre)
+  if (!isEditing && imagemInput && imagemInput.files.length === 0) {
+    // showMessage('Uma imagem para o evento é obrigatória na criação', 'error');
+    // return false; // DESCOMENTE se quiser obrigar imagem na criação
+  }
 
-    // Validação de URLs de vídeo (opcional, pode ser feita no backend também)
-    const videoUrls = Array.from(form.querySelectorAll('.video-url'))
-                         .map(input => input.value.trim())
-                         .filter(url => url !== '');
-    // Adicionar validação de formato se necessário aqui
+  // Validação de URLs de vídeo (opcional, pode ser feita no backend também)
+  const videoUrls = Array.from(form.querySelectorAll('.video-url'))
+    .map(input => input.value.trim())
+    .filter(url => url !== '');
+  // Adicionar validação de formato se necessário aqui
 
-    return true;
+  return true;
 }
 
 
@@ -485,13 +485,13 @@ function validateForm(form) {
  * Adiciona estilos CSS específicos para a página de criação de evento.
  */
 function addCreateEventStyles() {
-    const styleId = 'create-event-styles';
-    if (document.getElementById(styleId)) return; // Já existe
+  const styleId = 'create-event-styles';
+  if (document.getElementById(styleId)) return; // Já existe
 
-    console.log("Adding Create Event page styles...");
-    const styles = document.createElement('style');
-    styles.id = styleId;
-    styles.textContent = `
+  console.log("Adding Create Event page styles...");
+  const styles = document.createElement('style');
+  styles.id = styleId;
+  styles.textContent = `
       /* Estilos Gerais */
       .create-event-page .app-container { max-width: 1100px; margin: 0 auto; }
       .create-event-page .page-header { /* Reutiliza estilos de common.css */ }
@@ -587,6 +587,6 @@ function addCreateEventStyles() {
         .add-photo-button { margin-bottom: 20px; }
       }
     `;
-    document.head.appendChild(styles);
-    console.log("Create Event page styles added.");
+  document.head.appendChild(styles);
+  console.log("Create Event page styles added.");
 }
