@@ -23,4 +23,13 @@ router.delete('/events/:id', authenticate, eventController.deleteEvent);
 // Rota para curtir/descurtir um evento (requer autenticação)
 router.post('/events/:eventId/like', authenticate, likeController.toggleLike);
 
+// Rota para eventos em destaque (mais curtidos)
+router.get('/highlighted-events', eventController.getHighlightedEvents);
+
+// Rota para eventos personalizados (requer autenticação)
+router.get('/personalized-events', authenticate, eventController.getPersonalizedEvents);
+
+// Rota para eventos que acontecem hoje
+router.get('/today-events', eventController.getTodayEvents);
+
 module.exports = router;

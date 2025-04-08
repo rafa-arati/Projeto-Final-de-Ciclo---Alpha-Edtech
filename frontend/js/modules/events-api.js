@@ -455,3 +455,60 @@ export async function deleteQRCode(qrCodeId) {
     throw error;
   }
 }
+
+/**
+ * Busca eventos em destaque (mais curtidos)
+ * @returns {Promise} Promise com os eventos em destaque
+ */
+export async function fetchHighlightedEvents() {
+  try {
+    const response = await fetch(`${API_URL}/highlighted-events`, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Erro ao buscar eventos em destaque');
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao buscar eventos em destaque:', error);
+    return [];
+  }
+}
+
+/**
+ * Busca eventos personalizados para o usuário
+ * @returns {Promise} Promise com os eventos personalizados
+ */
+export async function fetchPersonalizedEvents() {
+  try {
+    const response = await fetch(`${API_URL}/personalized-events`, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Erro ao buscar eventos personalizados');
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao buscar eventos personalizados:', error);
+    return [];
+  }
+}
+
+/**
+ * Busca eventos que acontecem hoje
+ * @returns {Promise} Promise com os eventos de hoje
+ */
+export async function fetchTodayEvents() {
+  try {
+    const response = await fetch(`${API_URL}/today-events`, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Erro ao buscar eventos de hoje');
+
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao buscar eventos de hoje:', error);
+    return [];
+  }
+}

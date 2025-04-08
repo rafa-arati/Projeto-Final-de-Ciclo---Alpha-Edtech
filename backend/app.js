@@ -72,7 +72,7 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Rota Cultural Backend is running!' });
 });
 
-// 10. Arquivos estáticos
+//10. Arquivos estáticos
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // 11. Rota catch-all para SPA

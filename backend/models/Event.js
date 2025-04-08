@@ -247,11 +247,113 @@ const deleteEvent = async (id) => {
   }
 };
 
+// Buscar eventos em destaque (mais curtidos)
+const getHighlightedEvents = async () => {
+  try {
+    const query = `
+      SELECT e.*, c.name as category_name, s.name as subcategory_name, 
+             u.name as creator_name, u.username as creator_username,
+             COUNT(el.id) as like_count
+      FROM events e
+      LEFT JOIN categories c ON e.category_id = c.id
+      LEFT JOIN subcategories s ON e.subcategory_id = s.id
+      LEFT JOIN users u ON e.creator_id = u.id
+      LEFT JOIN event_likes el ON e.id = el.event_id
+      WHERE e.event_date >= CURRENT_DATE
+      GROUP BY e.id, c.name, s.name, u.name, u.username
+      ORDER BY like_count DESC, e.event_date ASC
+      LIMIT 10
+    `;
+
+    const result = await pool.query(query);
+    return result.rows;
+  } catch (error) {
+    console.error("Erro ao buscar eventos em destaque:", error);
+    throw error;
+  }
+};
+
+// Buscar eventos personalizados para o usuário (baseado nas preferências e curtidas)
+const getPersonalizedEvents = async (userId) => {
+  try {
+    const query = `
+      SELECT e.*, c.name as category_name, s.name as subcategory_name, 
+             u.name as creator_name, u.username as creator_username
+      FROM events e
+      LEFT JOIN categories c ON e.category_id = c.id
+      LEFT JOIN subcategories s ON e.subcategory_id = s.id
+      LEFT JOIN users u ON e.creator_id = u.id
+      WHERE e.event_date >= CURRENT_DATE
+      AND (
+        -- Eventos em categorias que o usuário prefere
+        e.category_id IN (
+          SELECT category_id FROM user_preferences
+          WHERE user_id = $1
+        )
+        OR
+        -- Eventos em subcategorias que o usuário prefere
+        e.subcategory_id IN (
+          SELECT subcategory_id FROM user_preferences
+          WHERE user_id = $1
+        )
+        OR
+        -- Categorias/subcategorias de eventos que o usuário curtiu
+        e.category_id IN (
+          SELECT e2.category_id
+          FROM events e2
+          JOIN event_likes el ON e2.id = el.event_id
+          WHERE el.user_id = $1
+        )
+        OR
+        e.subcategory_id IN (
+          SELECT e2.subcategory_id
+          FROM events e2
+          JOIN event_likes el ON e2.id = el.event_id
+          WHERE el.user_id = $1
+        )
+      )
+      ORDER BY e.event_date ASC
+      LIMIT 10
+    `;
+
+    const result = await pool.query(query, [userId]);
+    return result.rows;
+  } catch (error) {
+    console.error("Erro ao buscar eventos personalizados:", error);
+    throw error;
+  }
+};
+
+// Buscar eventos que acontecem hoje
+const getTodayEvents = async () => {
+  try {
+    const query = `
+      SELECT e.*, c.name as category_name, s.name as subcategory_name, 
+             u.name as creator_name, u.username as creator_username
+      FROM events e
+      LEFT JOIN categories c ON e.category_id = c.id
+      LEFT JOIN subcategories s ON e.subcategory_id = s.id
+      LEFT JOIN users u ON e.creator_id = u.id
+      WHERE e.event_date = CURRENT_DATE
+      ORDER BY e.event_time ASC
+    `;
+
+    const result = await pool.query(query);
+    return result.rows;
+  } catch (error) {
+    console.error("Erro ao buscar eventos de hoje:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   getAllEvents,
   getEventById,
   createEvent,
   updateEvent,
   deleteEvent,
-  validateVideoUrls
+  validateVideoUrls,
+  getHighlightedEvents,   // Nova função
+  getPersonalizedEvents,  // Nova função
+  getTodayEvents          // Nova função
 };

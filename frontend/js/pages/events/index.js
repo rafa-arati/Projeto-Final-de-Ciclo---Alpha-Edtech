@@ -12,6 +12,9 @@ import { fetchCompleteUserData } from '../../modules/auth.js';
 // Variáveis globais compartilhadas entre os módulos
 export let eventos = [];
 export let categorias = [];
+export let highlightedEvents = [];
+export let personalizedEvents = [];
+export let todayEvents = [];
 export let currentEventId = null;
 export let activeFilters = {};
 
@@ -79,6 +82,26 @@ export default async function renderEvents(queryParams) {
             <button class="carousel-arrow left" id="destaque-left">&#10094;</button>
             <div class="carousel" id="destaque-eventos"></div>
             <button class="carousel-arrow right" id="destaque-right">&#10095;</button>
+          </div>
+        </section>
+
+        <!-- Seção de eventos personalizados (PARA VOCÊ) -->
+        <section class="carousel-section" id="para-voce-section">
+          <h2 class="section-title">PARA VOCÊ</h2>
+          <div class="carousel-container">
+            <button class="carousel-arrow left" id="para-voce-left">&#10094;</button>
+            <div class="carousel" id="para-voce-eventos"></div>
+            <button class="carousel-arrow right" id="para-voce-right">&#10095;</button>
+          </div>
+        </section>
+
+        <!-- Seção de eventos de hoje -->
+        <section class="carousel-section">
+          <h2 class="section-title">ACONTECENDO HOJE</h2>
+          <div class="carousel-container">
+            <button class="carousel-arrow left" id="hoje-left">&#10094;</button>
+            <div class="carousel" id="hoje-eventos"></div>
+            <button class="carousel-arrow right" id="hoje-right">&#10095;</button>
           </div>
         </section>
 

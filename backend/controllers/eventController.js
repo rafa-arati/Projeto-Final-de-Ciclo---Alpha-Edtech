@@ -464,6 +464,56 @@ const deleteEventLegacy = async (req, res) => {
   }
 };
 
+
+
+// Buscar eventos em destaque (mais curtidos)
+const getHighlightedEvents = async (req, res) => {
+  try {
+    const events = await Event.getHighlightedEvents();
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('Erro ao buscar eventos em destaque:', error);
+    res.status(500).json({
+      message: 'Erro ao buscar eventos em destaque',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
+};
+
+// Buscar eventos personalizados para o usuário
+const getPersonalizedEvents = async (req, res) => {
+  try {
+    // Verificar se há um usuário logado
+    if (!req.user) {
+      return res.status(200).json([]); // Retorna array vazio se não houver usuário
+    }
+
+    const userId = req.user.id;
+    const events = await Event.getPersonalizedEvents(userId);
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('Erro ao buscar eventos personalizados:', error);
+    res.status(500).json({
+      message: 'Erro ao buscar eventos personalizados',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
+};
+
+// Buscar eventos que acontecem hoje
+const getTodayEvents = async (req, res) => {
+  try {
+    const events = await Event.getTodayEvents();
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('Erro ao buscar eventos de hoje:', error);
+    res.status(500).json({
+      message: 'Erro ao buscar eventos de hoje',
+      error: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
+};
+
 module.exports = {
   listEvents,
   listMyEvents,
@@ -474,5 +524,8 @@ module.exports = {
   updateEvent,
   updateEventLegacy,  // Versão antiga para compatibilidade
   deleteEvent,
-  deleteEventLegacy   // Versão antiga para compatibilidade
+  deleteEventLegacy,   // Versão antiga para compatibilidade
+  getHighlightedEvents,
+  getPersonalizedEvents,
+  getTodayEvents
 };
