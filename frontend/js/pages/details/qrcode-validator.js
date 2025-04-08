@@ -69,6 +69,11 @@ function loadJsQR() {
   });
 }
 
+/**
+ * Formata data de nascimento para exibição
+ * @param {string} dateString - Data no formato ISO
+ * @returns {string} Data formatada no padrão brasileiro
+ */
 function formatBirthDate(dateString) {
   if (!dateString) return 'Não informada';
 
@@ -89,9 +94,22 @@ function formatBirthDate(dateString) {
   }
 }
 
+/**
+ * Adiciona campo de entrada para teste manual (sem câmera)
+ */
 function addTestMode() {
+  console.log("Adicionando modo de teste manual...");
   const scanBtnContainer = document.querySelector('.scan-btn-container');
-  if (!scanBtnContainer) return;
+  if (!scanBtnContainer) {
+    console.error("Container de botão de scan não encontrado");
+    return;
+  }
+
+  // Remove qualquer container de teste existente para evitar duplicação
+  const existingTestContainer = document.querySelector('.test-input-container');
+  if (existingTestContainer) {
+    existingTestContainer.remove();
+  }
 
   const testModeHTML = `
     <div class="test-input-container" style="margin-top: 15px;">
@@ -104,12 +122,38 @@ function addTestMode() {
   div.innerHTML = testModeHTML;
   scanBtnContainer.appendChild(div);
 
-  document.getElementById('test-qrcode-btn').addEventListener('click', () => {
+  // Adicionar evento ao botão de teste
+  const testButton = document.getElementById('test-qrcode-btn');
+  if (testButton) {
+    // Remover listener anterior se existir
+    const newTestButton = testButton.cloneNode(true);
+    testButton.parentNode.replaceChild(newTestButton, testButton);
+
+    newTestButton.addEventListener('click', () => {
+      const testInput = document.getElementById('test-qrcode-input');
+      if (testInput && testInput.value.trim()) {
+        console.log("Testando código manualmente:", testInput.value.trim());
+        window.checkQRCode(testInput.value.trim());
+      } else {
+        alert("Por favor, digite um código para testar");
+      }
+    });
+
+    // Adicionar evento para enviar ao pressionar Enter no input
     const testInput = document.getElementById('test-qrcode-input');
-    if (testInput && testInput.value.trim()) {
-      window.checkQRCode(testInput.value.trim());
+    if (testInput) {
+      testInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && testInput.value.trim()) {
+          console.log("Testando código manualmente (via Enter):", testInput.value.trim());
+          window.checkQRCode(testInput.value.trim());
+        }
+      });
     }
-  });
+  } else {
+    console.error("Botão de teste não encontrado após adição ao DOM");
+  }
+
+  console.log("Modo de teste manual adicionado com sucesso");
 }
 
 /**
@@ -192,7 +236,7 @@ async function setupQRScanner() {
         if (code) {
           // QR Code encontrado!
           stopCamera();
-          checkQRCode(code.data);
+          window.checkQRCode(code.data);
           return;
         }
       }
@@ -216,9 +260,122 @@ async function setupQRScanner() {
 }
 
 /**
- * Configura os eventos da interface de validação
+ * Função global para validar um código QR (será chamada tanto pela câmera quanto pelo modo teste)
+ * @param {string} qrValue - O valor do código QR
  */
-export async function setupQRCodeValidator() {
+async function validateQRCode() {
+  const currentQRCode = window.currentQRCode;
+  if (!currentQRCode) {
+    console.error("Nenhum QR code para validar");
+    return;
+  }
+
+  const validateButton = document.getElementById('validate-qrcode-btn');
+  const resultContainer = document.getElementById('qrcode-validation-result');
+  const buttonsContainer = document.getElementById('qrcode-validation-buttons');
+
+  try {
+    validateButton.disabled = true;
+    validateButton.textContent = 'Validando...';
+
+    // Executar a validação no backend (marcar como usado)
+    const response = await fetch(`/api/qrcode/use/${encodeURIComponent(currentQRCode)}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      // QR Code validado com sucesso
+      resultContainer.innerHTML = `
+        <div class="validated-qrcode">
+          <div class="qrcode-validation-success">✓ Entrada Validada com Sucesso</div>
+          <div class="qrcode-detail-item">
+            <strong>Nome:</strong> ${data.userName || 'Usuário'}
+          </div>
+          <div class="qrcode-detail-item">
+            <strong>Benefício:</strong> ${data.benefitDescription || 'Benefício confirmado'}
+          </div>
+          <div class="qrcode-detail-item">
+            <strong>Data/Hora:</strong> ${new Date().toLocaleString('pt-BR')}
+          </div>
+        </div>
+      `;
+      resultContainer.className = 'qrcode-result qrcode-result-success';
+      buttonsContainer.classList.add('hidden');
+      window.currentQRCode = null;
+    } else {
+      throw new Error(data.message || 'Erro ao validar entrada');
+    }
+  } catch (error) {
+    console.error('Erro ao validar entrada:', error);
+    resultContainer.innerHTML = `
+      <div class="invalid-qrcode">
+        <div class="qrcode-verification-error">✗ Erro ao Validar Entrada</div>
+        <div class="qrcode-error-message">${error.message || 'Ocorreu um erro ao processar a validação.'}</div>
+      </div>
+    `;
+    resultContainer.className = 'qrcode-result qrcode-result-error';
+  } finally {
+    validateButton.disabled = false;
+    validateButton.textContent = 'Validar Entrada';
+  }
+}
+
+/**
+ * Função para obter o nome do evento atual da página
+ * Busca em diferentes elementos que podem conter o nome do evento
+ * @returns {string|null} Nome do evento ou null se não encontrado
+ */
+function getCurrentEventName() {
+  // Várias estratégias para encontrar o nome do evento na página
+
+  // 1. Tentar obter do título principal (h1)
+  const eventTitleElement = document.querySelector('h1.event-title, h1.details-title, h1');
+  if (eventTitleElement) {
+    console.log("Nome do evento encontrado no título principal:", eventTitleElement.textContent.trim());
+    return eventTitleElement.textContent.trim();
+  }
+
+  // 2. Tentar obter da meta tag (se existir)
+  const metaEventName = document.querySelector('meta[name="event-name"]');
+  if (metaEventName && metaEventName.getAttribute('content')) {
+    return metaEventName.getAttribute('content').trim();
+  }
+
+  // 3. Tentar obter do breadcrumb ou navegação
+  const breadcrumbEventName = document.querySelector('.breadcrumb .current, .event-nav .current');
+  if (breadcrumbEventName) {
+    return breadcrumbEventName.textContent.trim();
+  }
+
+  // 4. Buscar em elementos com classes específicas de evento
+  const eventNameElement = document.querySelector('.event-name, .event-header__title');
+  if (eventNameElement) {
+    return eventNameElement.textContent.trim();
+  }
+
+  // 5. Última tentativa: buscar em data attributes
+  const eventElement = document.querySelector('[data-event-name]');
+  if (eventElement) {
+    return eventElement.getAttribute('data-event-name');
+  }
+
+  console.warn("Não foi possível determinar o nome do evento na página atual");
+  return null;
+}
+
+/**
+ * Configura os eventos da interface de validação
+ * @param {string} eventId - ID do evento atual
+ */
+export async function setupQRCodeValidator(eventId) {
+  console.log("Configurando validador de QR Code para evento ID:", eventId);
+
   // Obter os elementos da interface
   const validateButton = document.getElementById('validate-qrcode-btn');
   const cancelButton = document.getElementById('cancel-qrcode-btn');
@@ -231,152 +388,8 @@ export async function setupQRCodeValidator() {
   }
 
   // Variável para armazenar o QR code atual sendo verificado
-  let currentQRCode = null;
-
-  // Função global para verificar QR Code (será chamada pelo scanner)
-  window.checkQRCode = async (qrValue) => {
-    if (!qrValue || qrValue.trim() === '') {
-      showResult('QR Code inválido ou vazio', 'warning');
-      return;
-    }
-
-    currentQRCode = qrValue;
-    document.getElementById('start-scan-btn').disabled = true;
-    document.getElementById('start-scan-btn').textContent = 'Verificando...';
-
-    try {
-      // Chamar o endpoint público de validação
-      const response = await fetch(`/api/qrcode/validate/${encodeURIComponent(qrValue)}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.isValid) {
-        // Formatar data de nascimento
-        const birthDate = data.user.birthDate || data.user.birth_date;
-        const formattedBirthDate = formatBirthDate(birthDate);
-
-        // QR Code válido - mostrar detalhes e botões de ação
-        showResult(`
-          <div class="valid-qrcode">
-            <div class="qrcode-verification-success">✓ QR Code Válido</div>
-            <div class="qrcode-detail-item">
-              <strong>Evento:</strong> ${data.eventName}
-            </div>
-            <div class="qrcode-detail-item">
-              <strong>Nome:</strong> ${data.user.name}
-            </div>
-            <div class="qrcode-detail-item">
-              <strong>Data de Nascimento:</strong> ${formattedBirthDate}
-            </div>
-            <div class="qrcode-detail-item">
-              <strong>Benefício:</strong> ${data.benefit.description || data.benefit.type}
-              ${data.benefit.discountPercentage ? ` (${data.benefit.discountPercentage}% desconto)` : ''}
-            </div>
-          </div>
-        `, 'success');
-
-        buttonsContainer.classList.remove('hidden');
-      } else {
-        // QR Code inválido
-        showResult(`
-          <div class="invalid-qrcode">
-            <div class="qrcode-verification-error">✗ QR Code Inválido</div>
-            <div class="qrcode-error-message">${data.message || 'Este QR code não é válido ou já foi utilizado.'}</div>
-          </div>
-        `, 'error');
-
-        buttonsContainer.classList.add('hidden');
-        currentQRCode = null;
-      }
-    } catch (error) {
-      console.error('Erro ao verificar QR Code:', error);
-      showResult(`
-        <div class="invalid-qrcode">
-          <div class="qrcode-verification-error">✗ Erro ao Verificar</div>
-          <div class="qrcode-error-message">Ocorreu um erro ao validar o QR Code. Tente novamente.</div>
-        </div>
-      `, 'error');
-
-      buttonsContainer.classList.add('hidden');
-      currentQRCode = null;
-    } finally {
-      document.getElementById('start-scan-btn').disabled = false;
-      document.getElementById('start-scan-btn').textContent = 'Escanear QR Code';
-    }
-  };
-
-  // Função para validar (usar) QR Code
-  const validateQRCode = async () => {
-    if (!currentQRCode) return;
-
-    validateButton.disabled = true;
-    validateButton.textContent = 'Validando...';
-
-    try {
-      // Chamar o endpoint autenticado para usar o QR Code
-      // O cookie será enviado automaticamente devido a 'credentials: include'
-      const response = await fetch(`/api/qrcode/use/${encodeURIComponent(currentQRCode)}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'include' // Isso garante que cookies sejam enviados
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // QR Code usado com sucesso
-        showResult(`
-        <div class="validated-qrcode">
-          <div class="qrcode-validation-success">✓ QR Code Validado com Sucesso</div>
-          <div class="qrcode-detail-item">QR Code marcado como utilizado.</div>
-        </div>
-      `, 'success');
-
-        // Limpar estado e interface
-        currentQRCode = null;
-        buttonsContainer.classList.add('hidden');
-
-        // Após 3 segundos, limpar o resultado e permitir novo escaneamento
-        setTimeout(() => {
-          resultContainer.classList.add('hidden');
-        }, 3000);
-      } else {
-        // Erro ao usar QR Code
-        showResult(`
-        <div class="invalid-qrcode">
-          <div class="qrcode-verification-error">✗ Erro ao Validar</div>
-          <div class="qrcode-error-message">${data.message || 'Não foi possível validar este QR Code.'}</div>
-        </div>
-      `, 'error');
-      }
-    } catch (error) {
-      console.error('Erro ao validar QR Code:', error);
-      showResult(`
-      <div class="invalid-qrcode">
-        <div class="qrcode-verification-error">✗ Erro ao Validar</div>
-        <div class="qrcode-error-message">${error.message || 'Ocorreu um erro ao validar o QR Code.'}</div>
-      </div>
-    `, 'error');
-    } finally {
-      validateButton.disabled = false;
-      validateButton.textContent = 'Validar Entrada';
-    }
-  };
-
-  // Função para cancelar validação
-  const cancelValidation = () => {
-    resultContainer.classList.add('hidden');
-    buttonsContainer.classList.add('hidden');
-    currentQRCode = null;
-  };
+  window.currentQRCode = null;
+  window.currentEventId = eventId; // Armazenar o ID do evento para uso na validação
 
   // Função para mostrar resultado
   const showResult = (html, type) => {
@@ -391,15 +404,149 @@ export async function setupQRCodeValidator() {
     }, 100);
   };
 
-  // Adicionar eventos aos elementos
-  validateButton.addEventListener('click', validateQRCode);
-  cancelButton.addEventListener('click', cancelValidation);
+  // Função global para verificar QR Code (será chamada pelo scanner e pelo modo teste)
+  window.checkQRCode = async (qrValue) => {
+    if (!qrValue || qrValue.trim() === '') {
+      showResult(`
+        <div class="invalid-qrcode">
+          <div class="qrcode-verification-error">✗ QR Code inválido</div>
+          <div class="qrcode-error-message">O código QR está vazio ou inválido.</div>
+        </div>
+      `, 'warning');
+      return;
+    }
+
+    window.currentQRCode = qrValue;
+    console.log("Verificando QR Code:", qrValue);
+
+    document.getElementById('start-scan-btn').disabled = true;
+    document.getElementById('start-scan-btn').textContent = 'Verificando...';
+
+    try {
+      // Chamar o endpoint público de validação
+      const response = await fetch(`/api/qrcode/validate/${encodeURIComponent(qrValue)}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      // Log para debug
+      console.log("Resposta da validação do QR code:", data);
+
+      if (response.ok && data.isValid) {
+        // VERIFICAÇÃO ADICIONAL: Verificar se o QR code pertence ao evento atual
+        // Vamos buscar o nome do evento atual
+        const currentEventName = getCurrentEventName();
+
+        console.log("Comparando nomes de eventos:", {
+          qrCodeEventName: data.eventName,
+          currentEventName: currentEventName
+        });
+
+        if (currentEventName && data.eventName &&
+          currentEventName !== data.eventName &&
+          !currentEventName.includes(data.eventName) &&
+          !data.eventName.includes(currentEventName)) {
+          // QR Code válido mas de outro evento
+          showResult(`
+          <div class="invalid-qrcode">
+            <div class="qrcode-verification-error">✗ QR Code de Outro Evento</div>
+            <div class="qrcode-error-message">
+              Este QR code é válido, mas pertence a outro evento: "${data.eventName}".
+              <br>Por favor, use apenas QR codes deste evento: "${currentEventName}".
+            </div>
+          </div>
+        `, 'warning');
+
+          buttonsContainer.classList.add('hidden');
+          window.currentQRCode = null;
+          return;
+        }
+
+        // Formatar data de nascimento
+        const birthDate = data.user.birthDate || data.user.birth_date;
+        const formattedBirthDate = formatBirthDate(birthDate);
+
+        // QR Code válido - mostrar detalhes e botões de ação
+        showResult(`
+        <div class="valid-qrcode">
+          <div class="qrcode-verification-success">✓ QR Code Válido</div>
+          <div class="qrcode-detail-item">
+            <strong>Evento:</strong> ${data.eventName}
+          </div>
+          <div class="qrcode-detail-item">
+            <strong>Nome:</strong> ${data.user.name}
+          </div>
+          <div class="qrcode-detail-item">
+            <strong>Data de Nascimento:</strong> ${formattedBirthDate}
+          </div>
+          <div class="qrcode-detail-item">
+            <strong>Benefício:</strong> ${data.benefit.description || data.benefit.type}
+            ${data.benefit.discountPercentage ? ` (${data.benefit.discountPercentage}% desconto)` : ''}
+          </div>
+        </div>
+      `, 'success');
+
+        buttonsContainer.classList.remove('hidden');
+      } else {
+        // QR Code inválido
+        showResult(`
+        <div class="invalid-qrcode">
+          <div class="qrcode-verification-error">✗ QR Code Inválido</div>
+          <div class="qrcode-error-message">${data.message || 'Este QR code não é válido ou já foi utilizado.'}</div>
+        </div>
+      `, 'error');
+
+        buttonsContainer.classList.add('hidden');
+        window.currentQRCode = null;
+      }
+    } catch (error) {
+      console.error('Erro ao verificar QR Code:', error);
+      showResult(`
+      <div class="invalid-qrcode">
+        <div class="qrcode-verification-error">✗ Erro ao Verificar</div>
+        <div class="qrcode-error-message">Ocorreu um erro ao validar o QR Code. Tente novamente.</div>
+      </div>
+    `, 'error');
+
+      buttonsContainer.classList.add('hidden');
+      window.currentQRCode = null;
+    } finally {
+      document.getElementById('start-scan-btn').disabled = false;
+      document.getElementById('start-scan-btn').textContent = 'Escanear QR Code';
+    }
+  };
+
+  // Função para cancelar validação
+  const cancelValidation = () => {
+    resultContainer.classList.add('hidden');
+    buttonsContainer.classList.add('hidden');
+    window.currentQRCode = null;
+  };
+
+  // Limpar e adicionar eventos aos elementos
+  // Usando a técnica de clonar para garantir que não haja listeners duplicados
+
+  // Botão Validar
+  const newValidateButton = validateButton.cloneNode(true);
+  validateButton.parentNode.replaceChild(newValidateButton, validateButton);
+  newValidateButton.addEventListener('click', validateQRCode);
+
+  // Botão Cancelar
+  const newCancelButton = cancelButton.cloneNode(true);
+  cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+  newCancelButton.addEventListener('click', cancelValidation);
 
   // Configurar o scanner de QR Code
   await setupQRScanner();
 
-  // Adicionar modo de teste (temporário, para desenvolvimento)
+  // Adicionar modo de teste manual
   addTestMode();
+
+  console.log("Validador de QR Code configurado com sucesso");
 }
 
 /**
@@ -426,7 +573,8 @@ export function addQRCodeValidatorStyles() {
       
       .scan-btn-container {
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
       }
       
       #start-scan-btn {
@@ -597,6 +745,63 @@ export function addQRCodeValidatorStyles() {
       
       .hidden {
         display: none;
+      }
+      
+      /* Estilos específicos para a entrada de teste manual */
+      .test-input-container {
+        margin-top: 15px;
+        padding: 15px;
+        background-color: #1a1a1a;
+        border-radius: 8px;
+        border: 1px dashed #666;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        max-width: 500px;
+      }
+      
+      .test-input-container label {
+        font-size: 14px;
+        color: #ccc;
+        margin-bottom: -5px;
+      }
+      
+      #test-qrcode-input {
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #444;
+        background-color: #333;
+        color: white;
+        width: 100%;
+        font-family: monospace;
+      }
+      
+      #test-qrcode-btn {
+        align-self: flex-end;
+        background-color: #6c757d;
+        padding: 8px 20px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+      
+      #test-qrcode-btn:hover {
+        background-color: #5a6268;
+      }
+      
+      @media (min-width: 768px) {
+        .test-input-container {
+          flex-direction: row;
+          align-items: flex-end;
+        }
+        
+        .test-input-container > div {
+          flex: 1;
+        }
+        
+        #test-qrcode-btn {
+          align-self: center;
+        }
       }
     `;
     document.head.appendChild(styles);
