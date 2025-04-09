@@ -120,6 +120,8 @@ const createEvent = async (eventData) => {
     photo_url,
     event_link,
     creator_id,
+    coordinates,
+    address,
     video_urls = [] // Adicionado suporte para URLs de vídeo
   } = eventData;
 
@@ -128,15 +130,40 @@ const createEvent = async (eventData) => {
     const query = `
       INSERT INTO events (
         event_name, description, event_date, event_time, 
-        location, category_id, subcategory_id, photo_url, event_link, creator_id, video_urls
+        location, category_id, subcategory_id, photo_url, event_link, creator_id, 
+        coordinates, address, video_urls
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `;
 
     // Tratar valores vazios ou nulos para IDs
     const parsedCategoryId = category_id === "" || category_id === undefined ? null : parseInt(category_id, 10);
     const parsedSubcategoryId = subcategory_id === "" || subcategory_id === undefined ? null : parseInt(subcategory_id, 10);
+
+    // Processar coordenadas para o formato POINT do PostgreSQL se fornecidas
+    let coordsPoint = null;
+    if (coordinates) {
+      // Verificar se as coordenadas estão em formato de string JSON ou objeto
+      let coords;
+      if (typeof coordinates === 'string') {
+        try {
+          coords = JSON.parse(coordinates);
+        } catch (e) {
+          // Se não for JSON válido, tenta usar como está
+          coords = coordinates;
+        }
+      } else {
+        coords = coordinates;
+      }
+
+      // Se as coordenadas são um objeto com lat/lng ou latitude/longitude
+      if (coords && (coords.lat !== undefined || coords.latitude !== undefined)) {
+        const lat = coords.lat !== undefined ? coords.lat : coords.latitude;
+        const lng = coords.lng !== undefined ? coords.lng : coords.longitude;
+        coordsPoint = `(${lng},${lat})`;
+      }
+    }
 
     // Validar URLs de vídeo
     if (video_urls.length > 0 && !validateVideoUrls(video_urls)) {
@@ -154,6 +181,8 @@ const createEvent = async (eventData) => {
       photo_url,
       event_link,
       creator_id,
+      coordsPoint,
+      address || "",
       video_urls
     ];
 
@@ -179,6 +208,8 @@ const updateEvent = async (id, eventData) => {
     subcategory_id,
     photo_url,
     event_link,
+    coordinates,
+    address,
     video_urls = [] // Adicionado suporte para URLs de vídeo
   } = eventData;
 
@@ -186,6 +217,30 @@ const updateEvent = async (id, eventData) => {
     // Tratar valores vazios ou nulos para IDs
     const parsedCategoryId = category_id === "" || category_id === undefined ? null : parseInt(category_id, 10);
     const parsedSubcategoryId = subcategory_id === "" || subcategory_id === undefined ? null : parseInt(subcategory_id, 10);
+
+    // Processar coordenadas para o formato POINT do PostgreSQL se fornecidas
+    let coordsPoint = null;
+    if (coordinates) {
+      // Verificar se as coordenadas estão em formato de string JSON ou objeto
+      let coords;
+      if (typeof coordinates === 'string') {
+        try {
+          coords = JSON.parse(coordinates);
+        } catch (e) {
+          // Se não for JSON válido, tenta usar como está
+          coords = coordinates;
+        }
+      } else {
+        coords = coordinates;
+      }
+
+      // Se as coordenadas são um objeto com lat/lng ou latitude/longitude
+      if (coords && (coords.lat !== undefined || coords.latitude !== undefined)) {
+        const lat = coords.lat !== undefined ? coords.lat : coords.latitude;
+        const lng = coords.lng !== undefined ? coords.lng : coords.longitude;
+        coordsPoint = `(${lng},${lat})`;
+      }
+    }
 
     // Validar URLs de vídeo
     if (video_urls.length > 0 && !validateVideoUrls(video_urls)) {
@@ -203,9 +258,11 @@ const updateEvent = async (id, eventData) => {
           subcategory_id = $7,
           photo_url = $8,
           event_link = $9,
-          video_urls = $10,
+          coordinates = $10,
+          address = $11,
+          video_urls = $12,
           updated_at = NOW()
-      WHERE id = $11
+      WHERE id = $13
       RETURNING *
     `;
 
@@ -219,6 +276,8 @@ const updateEvent = async (id, eventData) => {
       parsedSubcategoryId,
       photo_url,
       event_link,
+      coordsPoint,
+      address || "",
       video_urls,
       id
     ];

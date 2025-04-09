@@ -3,18 +3,18 @@ const router = express.Router();
 const eventController = require('../controllers/eventController');
 const likeController = require('../controllers/likeController');
 // --- Certifique-se de importar o authenticate ---
-const { authenticate, isAdmin } = require('../middleware/authMiddleware'); 
+const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 const multer = require('multer');
-
+const mapConfig = require('../config/mapConfig');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // --- Rotas Públicas --- 
 // (Estas rotas NÃO precisam do authenticate, qualquer um pode ver)
-router.get('/events', eventController.listEvents); 
+router.get('/events', eventController.listEvents);
 router.get('/highlighted-events', eventController.getHighlightedEvents);
 router.get('/today-events', eventController.getTodayEvents);
-router.get('/events/:id', authenticate, eventController.getEventById); 
+router.get('/events/:id', authenticate, eventController.getEventById);
 
 // --- Rotas que JÁ REQUEREM autenticação ---
 router.get('/my-events', authenticate, eventController.listMyEvents);

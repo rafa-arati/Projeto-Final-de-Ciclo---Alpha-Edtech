@@ -200,8 +200,13 @@ const createEvent = async (req, res) => {
       });
     }
 
-    const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id } = req.body;
+    const { nome, data, horario, categoria, localizacao, link, descricao, category_id, subcategory_id, coordinates, address } = req.body;
     const imagem = req.file;
+
+    // Log para depuração
+    console.log("Dados recebidos para criação:", req.body);
+    console.log("Coordenadas recebidas:", coordinates);
+    console.log("Endereço recebido:", address);
 
     // Processar URLs de vídeo (integrado da outra versão)
     const rawUrls = Array.isArray(req.body.video_urls)
@@ -234,7 +239,9 @@ const createEvent = async (req, res) => {
       subcategory_id: subcategory_id,
       photo_url: photoUrl,
       creator_id: req.user.id, // Registramos o criador do evento
-      video_urls: sanitizedUrls // Adicionado suporte para vídeos
+      video_urls: sanitizedUrls, // Adicionado suporte para vídeos
+      coordinates: coordinates, // Novo campo para coordenadas do mapa
+      address: address // Novo campo para endereço completo
     };
 
     // Validar campos obrigatórios
@@ -280,6 +287,8 @@ const updateEvent = async (req, res) => {
     // Log para depuração
     console.log("Dados recebidos para atualização:", req.body);
     console.log("Arquivo recebido:", req.file);
+    console.log("Coordenadas recebidas:", req.body.coordinates);
+    console.log("Endereço recebido:", req.body.address);
 
     // Construir dados do evento para atualização
     const eventData = {
@@ -291,7 +300,9 @@ const updateEvent = async (req, res) => {
       category_id: req.body.category_id || existingEvent.category_id,
       subcategory_id: req.body.subcategory_id || existingEvent.subcategory_id,
       event_link: req.body.event_link || req.body.link || existingEvent.event_link,
-      photo_url: existingEvent.photo_url // Valor padrão
+      photo_url: existingEvent.photo_url, // Valor padrão
+      coordinates: req.body.coordinates || existingEvent.coordinates, // Preserva as coordenadas existentes
+      address: req.body.address || existingEvent.address // Preserva o endereço existente
     };
 
     // Processar URLs de vídeo se presentes

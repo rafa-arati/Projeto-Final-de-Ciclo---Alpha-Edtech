@@ -18,6 +18,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const passwordRoutes = require('./routes/passwordRoutes');
 const premiumRoutes = require('./routes/premiumRoutes');
 const qrCodeRoutes = require('./routes/qrCodeRoutes');
+const configRoutes = require('./routes/configRoutes');
 
 // 1. Carregar variáveis de ambiente PRIMEIRO
 dotenv.config();
@@ -58,7 +59,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// 8. Configurar rotas
+// 8. MIME Types para JavaScript
+app.use((req, res, next) => {
+  if (req.url.endsWith('.js')) {
+    res.type('application/javascript');
+  }
+  next();
+});
+
+// 9. Configurar rotas API
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);
 app.use('/api', eventRoutes);
@@ -66,21 +75,22 @@ app.use('/api', categoryRoutes);
 app.use('/api/password', passwordRoutes);
 app.use('/api/premium', premiumRoutes);
 app.use('/api/qrcode', qrCodeRoutes);
+app.use('/api/config/maps', configRoutes); // MOVIDO PARA AQUI
 
-// 9. Rota de teste
+// 10. Rota de teste
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Rota Cultural Backend is running!' });
 });
 
-//10. Arquivos estáticos
+// 11. Arquivos estáticos
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// 11. Rota catch-all para SPA
+// 12. Rota catch-all para SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// 12. Middleware de erro (DEVE ser o último)
+// 13. Middleware de erro (DEVE ser o último)
 app.use((err, req, res, next) => {
   console.error('Application error:', err.stack);
   res.status(500).json({
@@ -89,5 +99,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 13. Iniciar servidor (no server.js)
+// 14. Iniciar servidor (no server.js)
 module.exports = app;

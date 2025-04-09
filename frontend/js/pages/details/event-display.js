@@ -1,5 +1,7 @@
 // Importar renderUserQRCodes - mantendo a importação da branch main
 //import { renderUserQRCodes as renderUserQRCodesHTML } from './qrcode-manager.js';
+// Importar o módulo do Google Maps
+import { loadGoogleMapsAPI } from '../modules/google-maps.js';
 
 // Ícones (mantidos como antes)
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
@@ -115,6 +117,26 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
   const eventCategory = `${event.category_name || ''}${event.subcategory_name ? ` / ${event.subcategory_name}` : ''}`.trim();
   const eventLinkDisplay = event.event_link ? `<a href="${event.event_link}" target="_blank" rel="noopener noreferrer" class="event-detail-link">${event.event_link}</a>` : 'Não informado';
 
+  // Verificar se o evento tem coordenadas para exibir o mapa
+  const hasCoordinates = event.coordinates && event.coordinates.match(/\([^)]+\)/);
+
+  // Criar a seção do mapa
+  const mapSection = hasCoordinates ? `
+    <section class="event-location-map content-section">
+      <h2 class="section-title">Localização</h2>
+      <div id="event-map" class="event-map"></div>
+      <div class="map-actions">
+        <button id="get-directions" class="btn-directions">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M9.5 2A1.5 1.5 0 0 0 8 3.5V9h4.5A1.5 1.5 0 0 0 14 7.5v-3A1.5 1.5 0 0 0 12.5 3h-3z"/>
+            <path d="M7 3.5v5H3a.5.5 0 0 0-.5.5v2.5a.5.5 0 0 0 .5.5h4.293L5.646 14.146a.5.5 0 1 0 .708.708l2.5-2.5a.5.5 0 0 0 0-.708l-2.5-2.5a.5.5 0 1 0-.708.708L7.293 12H3a.5.5 0 0 1-.5-.5V9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 0 .5-.5v-5A.5.5 0 0 0 8 3H5.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5H7v-1z"/>
+          </svg>
+          Como chegar
+        </button>
+      </div>
+    </section>
+  ` : '';
+
   // Renderiza promoções disponíveis
   const renderAvailablePromotions = () => {
     if (!user || !availablePromotions || availablePromotions.length === 0) return '';
@@ -201,6 +223,8 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
              </div>
           </section>
 
+          ${mapSection}
+
           ${event.description ? `
           <section class="event-description content-section">
             <h2 class="section-title">Sobre o Evento</h2>
@@ -233,4 +257,137 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
         <div class="modal" id="view-qrcodes-modal"> <div class="modal-content" style="max-width: 750px;"> <span class="close-modal" id="close-view-qrcodes-modal">&times;</span> <h3>Promoções Atuais</h3> <div id="qrcodes-list" class="qrcodes-list admin-promotions-list"> <p>Carregando...</p> </div> </div> </div>
         <div class="modal" id="delete-qrcode-modal"> <div class="modal-content"> <span class="close-modal" id="close-delete-qrcode-modal">&times;</span> <h3>Confirmar Exclusão</h3> <p id="delete-confirm-message">Tem certeza que deseja excluir? Esta ação não pode ser desfeita.</p> <div class="modal-buttons"> <button id="confirm-delete-qrcode" class="btn danger">Excluir</button> <button id="cancel-delete-qrcode" class="btn secondary">Cancelar</button> </div> </div> </div>
         <div class="modal" id="scan-qrcode-modal"> <div class="modal-content"> <span class="close-modal" id="close-scan-modal">&times;</span> <h3>Validar QR Code</h3> <div id="scan-modal-content"> </div> </div> </div></div> </div>`;
+}
+
+/**
+ * Inicializa o mapa na página de detalhes do evento
+ * @param {Object} event - Dados do evento
+ */
+export async function initializeEventMap(event) {
+  // Verifica se o evento tem coordenadas
+  if (!event.coordinates) return;
+
+  // Extrair coordenadas do formato "(lat,lng)"
+  const coordsMatch = event.coordinates.match(/\(([^,]+),([^)]+)\)/);
+  if (!coordsMatch || coordsMatch.length !== 3) return;
+
+  const lat = parseFloat(coordsMatch[1]);
+  const lng = parseFloat(coordsMatch[2]);
+  if (isNaN(lat) || isNaN(lng)) return;
+
+  try {
+    // Carregar a API do Google Maps
+    await loadGoogleMapsAPI();
+
+    // Obter elemento do mapa
+    const mapElement = document.getElementById('event-map');
+    if (!mapElement) return;
+
+    // Criar mapa
+    const position = { lat, lng };
+    const map = new google.maps.Map(mapElement, {
+      center: position,
+      zoom: 15,
+      mapTypeControl: false,
+      streetViewControl: true,
+      fullscreenControl: true,
+      styles: [
+        // Estilos para mapa escuro, compatível com seu tema
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+        // ...mais estilos podem ser adicionados aqui
+      ]
+    });
+
+    // Adicionar marcador
+    const marker = new google.maps.Marker({
+      position: position,
+      map: map,
+      animation: google.maps.Animation.DROP,
+      title: event.event_name
+    });
+
+    // Adicionar infowindow com endereço
+    const infowindow = new google.maps.InfoWindow({
+      content: `<div style="color: #333; padding: 5px;">${event.address || event.location}</div>`
+    });
+
+    marker.addListener('click', () => {
+      infowindow.open(map, marker);
+    });
+
+    // Configurar botão "Como chegar"
+    const directionsButton = document.getElementById('get-directions');
+    if (directionsButton) {
+      directionsButton.addEventListener('click', () => {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+      });
+    }
+
+    // Adicionar estilos ao mapa
+    addEventMapStyles();
+
+  } catch (error) {
+    console.error("Erro ao inicializar mapa de evento:", error);
+    const mapElement = document.getElementById('event-map');
+    if (mapElement) {
+      mapElement.innerHTML = '<div class="map-error">Não foi possível carregar o mapa. Verifique sua conexão.</div>';
+    }
+  }
+}
+
+/**
+ * Adiciona estilos específicos para o mapa da página de detalhes
+ */
+function addEventMapStyles() {
+  const styleId = 'event-map-styles';
+  if (document.getElementById(styleId)) return;
+
+  const styles = document.createElement('style');
+  styles.id = styleId;
+  styles.textContent = `
+    .event-map {
+      height: 300px;
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      border: 1px solid #3a3a3c;
+      background-color: #1d1d1d;
+    }
+    
+    .map-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+    
+    .btn-directions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #3a3a3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .btn-directions:hover {
+      background: #4a4a4c;
+    }
+    
+    .map-error {
+      padding: 15px;
+      text-align: center;
+      color: #e57373;
+      font-style: italic;
+    }
+  `;
+
+  document.head.appendChild(styles);
 }

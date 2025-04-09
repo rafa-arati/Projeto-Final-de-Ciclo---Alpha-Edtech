@@ -3,6 +3,8 @@ import { showMessage } from '../modules/utils.js';
 import { getLoggedInUser, isPremiumOrAdmin } from '../modules/store.js';
 import { setupImagePreview, setupCancelModal } from '../modules/form-utils.js'; // setupCancelModal é importante aqui
 import { getEventById, saveEvent, fetchCategoriesWithSubcategories } from '../modules/events-api.js';
+// Importar o módulo do Google Maps
+import { loadGoogleMapsAPI, initializeMap, initializeAutocomplete, reverseGeocode, formatCoordinates } from '../modules/google-maps.js';
 
 // --- Ícones ---
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
@@ -13,6 +15,22 @@ const videoIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16
 // Variáveis do módulo
 let categorias = [];
 let isSubmitting = false; // Flag para evitar duplo submit
+// Variáveis para o mapa e componentes
+let map, marker, autocomplete;
+
+// HTML para o campo de localização com mapa
+const locationFieldHTML = `
+  <div class="form-group map-container">
+    <label for="localizacao">Localização*</label>
+    <div class="location-input-group">
+      <input type="text" id="localizacao" name="location" placeholder="Digite um endereço ou selecione no mapa" required>
+      <button type="button" id="buscarNoMapa" class="map-search-btn">Buscar</button>
+    </div>
+    <div id="map-container" class="map-container"></div>
+    <input type="hidden" id="coordinates" name="coordinates">
+    <input type="hidden" id="full_address" name="address">
+  </div>
+`;
 
 /**
  * Renderiza o formulário de criação/edição de evento.
@@ -79,6 +97,7 @@ export default async function renderCreateEvent(queryParams) {
                             </div>
                         </div>
 
+                        <!-- O campo de localização será substituído dinamicamente pelo setupMapField -->
                         <div class="form-group">
                             <label for="localizacao">Localização*</label>
                             <input type="text" id="localizacao" name="location" required>
@@ -157,14 +176,13 @@ async function setupEventForm(isEditing, eventId) {
     placeholder.style.display = imgPreview.style.display === 'none' ? 'block' : 'none';
   }
 
-
   // Configurar modal de cancelamento (agora volta para o perfil)
   setupCancelModal('cancelarModal', {
     cancelButtonId: 'cancelarEvento',
     closeButtonId: 'fecharCancelarModal',
     confirmButtonId: 'confirmarCancelar',
     denyButtonId: 'negarCancelar',
-    onConfirm: () =>  window.history.back() // <-- VOLTA PARA O PERFIL
+    onConfirm: () => window.history.back() // <-- VOLTA PARA O PERFIL
   });
 
   // --- BOTÃO VOLTAR DO HEADER ---
@@ -181,6 +199,8 @@ async function setupEventForm(isEditing, eventId) {
   }
   // --- FIM BOTÃO VOLTAR ---
 
+  // Configurar o campo de mapa (NOVA FUNCIONALIDADE)
+  await setupMapField();
 
   try {
     setupVideoInputs(isEditing); // Passa isEditing
@@ -198,6 +218,196 @@ async function setupEventForm(isEditing, eventId) {
     console.error('Erro ao configurar formulário:', error);
     showMessage('Ocorreu um erro ao carregar o formulário. Tente novamente.');
   }
+}
+
+/**
+ * Configura o campo de localização com mapa do Google
+ */
+async function setupMapField() {
+  try {
+    // Substitui o campo de localização original pelo novo com mapa
+    const locationField = document.querySelector('.form-group:has(#localizacao)');
+    if (!locationField) {
+      console.error('Campo de localização não encontrado');
+      return;
+    }
+
+    // Criar elemento temporário para inserir o HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = locationFieldHTML;
+
+    // Substituir o elemento antigo pelo novo
+    locationField.replaceWith(tempDiv.firstElementChild);
+
+    // Adicionar estilos para o mapa
+    addMapStyles();
+
+    // Inicializar o mapa
+    const mapContainer = document.getElementById('map-container');
+    if (!mapContainer) {
+      console.error('Container do mapa não encontrado');
+      return;
+    }
+
+    // Carrega a API e inicializa o mapa
+    await loadGoogleMapsAPI();
+
+    // Coordenadas iniciais (centro do Brasil)
+    const defaultLocation = { lat: -15.77972, lng: -47.92972 };
+
+    // Inicializar o mapa
+    const result = await initializeMap(mapContainer, {
+      center: defaultLocation,
+      zoom: 13
+    });
+
+    map = result.map;
+    marker = result.marker;
+
+    // Configurar eventos para atualizar coordenadas
+    marker.addListener("dragend", updateLocationInfo);
+    map.addListener("click", (e) => {
+      marker.setPosition(e.latLng);
+      updateLocationInfo();
+    });
+
+    // Inicializar autocomplete
+    const input = document.getElementById("localizacao");
+    autocomplete = initializeAutocomplete(input, map, marker);
+
+    // Adicionar evento ao input para atualizar as coordenadas quando o local for selecionado
+    input.addEventListener('location-updated', (e) => {
+      const { coords, address } = e.detail;
+      document.getElementById("coordinates").value = formatCoordinates(coords);
+      document.getElementById("full_address").value = address;
+    });
+
+    // Configurar botão de busca
+    const searchButton = document.getElementById("buscarNoMapa");
+    if (searchButton) {
+      searchButton.addEventListener("click", searchAddress);
+    }
+
+  } catch (error) {
+    console.error('Erro ao configurar campo de mapa:', error);
+    const mapContainer = document.getElementById('map-container');
+    if (mapContainer) {
+      mapContainer.innerHTML = '<div class="map-error">Não foi possível carregar o mapa. Verifique sua conexão.</div>';
+    }
+  }
+}
+
+/**
+ * Função para buscar endereço no mapa
+ */
+async function searchAddress() {
+  const address = document.getElementById("localizacao").value;
+
+  if (!address) {
+    showMessage("Digite um endereço para buscar", "error");
+    return;
+  }
+
+  try {
+    const result = await geocodeAddress(address);
+    const { coords, formattedAddress } = result;
+
+    // Atualiza mapa e marcador
+    map.setCenter(coords);
+    marker.setPosition(coords);
+
+    // Atualiza campos ocultos
+    document.getElementById("coordinates").value = formatCoordinates(coords);
+    document.getElementById("full_address").value = formattedAddress;
+
+    // Atualiza o campo de entrada para mostrar o endereço formatado
+    document.getElementById("localizacao").value = formattedAddress;
+
+  } catch (error) {
+    console.error('Erro ao buscar endereço:', error);
+    showMessage("Endereço não encontrado. Tente ser mais específico.", "error");
+  }
+}
+
+/**
+ * Atualiza as informações de localização quando o marcador é movido
+ */
+async function updateLocationInfo() {
+  if (!marker) return;
+
+  const position = marker.getPosition();
+  const coords = {
+    lat: position.lat(),
+    lng: position.lng()
+  };
+
+  // Atualiza input escondido com coordenadas
+  document.getElementById("coordinates").value = formatCoordinates(position);
+
+  try {
+    // Faz geocodificação reversa para obter endereço
+    const address = await reverseGeocode(coords);
+    document.getElementById("localizacao").value = address;
+    document.getElementById("full_address").value = address;
+  } catch (error) {
+    console.error('Erro ao obter endereço:', error);
+    // Não mostra mensagem de erro para não interromper o fluxo
+  }
+}
+
+/**
+ * Adiciona estilos CSS para o mapa
+ */
+function addMapStyles() {
+  const mapStyleId = 'google-maps-styles';
+  if (document.getElementById(mapStyleId)) return;
+
+  const styles = document.createElement('style');
+  styles.id = mapStyleId;
+  styles.textContent = `
+    #map-container {
+      height: 250px;
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #1d1d1d;
+      border: 1px solid #3a3a3c;
+    }
+    
+    .location-input-group {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .location-input-group input {
+      flex: 1;
+    }
+    
+    .map-search-btn {
+      background-color: #3a3a3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0 15px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .map-search-btn:hover {
+      background-color: #4a4a4c;
+    }
+    
+    .map-error {
+      padding: 15px;
+      text-align: center;
+      color: #e57373;
+      font-style: italic;
+    }
+  `;
+
+  document.head.appendChild(styles);
 }
 
 /**
@@ -381,7 +591,6 @@ async function loadEventForEditing(eventId) {
       document.getElementById('horario').value = evento.event_time;
     }
 
-
     // Preencher imagem
     const imgPreview = document.getElementById('imagemPrevia');
     const placeholder = document.getElementById('previewPlaceholder');
@@ -393,7 +602,6 @@ async function loadEventForEditing(eventId) {
       placeholder.style.display = 'block';
       if (imgPreview) imgPreview.style.display = 'none';
     }
-
 
     // Preencher Categoria e Subcategoria (APÓS categorias serem carregadas)
     await loadCategoriesAndSubcategories(); // Garante que categorias estão carregadas
@@ -408,6 +616,34 @@ async function loadEventForEditing(eventId) {
         await new Promise(resolve => setTimeout(resolve, 50));
         subcategoriaSelect.value = evento.subcategory_id;
         console.log(`Subcategoria ${evento.subcategory_id} selecionada.`);
+      }
+    }
+
+    // Configurar o mapa com as coordenadas do evento (NOVA FUNCIONALIDADE)
+    if (map && marker && evento.coordinates) {
+      try {
+        // Extrair coordenadas do formato "(lat,lng)"
+        const coordsMatch = evento.coordinates.match(/\(([^,]+),([^)]+)\)/);
+        if (coordsMatch && coordsMatch.length === 3) {
+          const lat = parseFloat(coordsMatch[1]);
+          const lng = parseFloat(coordsMatch[2]);
+
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const position = new google.maps.LatLng(lat, lng);
+            map.setCenter(position);
+            marker.setPosition(position);
+
+            // Certifica-se de atualizar o campo hidden
+            document.getElementById("coordinates").value = evento.coordinates;
+
+            // Se tiver endereço completo, use-o
+            if (evento.address) {
+              document.getElementById("full_address").value = evento.address;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao processar coordenadas do evento:", e);
       }
     }
 
