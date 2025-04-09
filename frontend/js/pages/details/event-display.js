@@ -1,7 +1,5 @@
-// Importar renderUserQRCodes - mantendo a importação da branch main
-//import { renderUserQRCodes as renderUserQRCodesHTML } from './qrcode-manager.js';
 // Importar o módulo do Google Maps
-import { loadGoogleMapsAPI } from '../modules/google-maps.js';
+import { loadGoogleMapsAPI } from '../../modules/google-maps.js';
 
 // Ícones (mantidos como antes)
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
@@ -15,26 +13,121 @@ const qrCodeIcon = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="cu
 const listQrIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>`;
 const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 const scanIcon = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v9M7 3h9M3 3h4v4H3zM17 17h4v4h-4zM17 3h4v4h-4zM3 17h4v4H3zM17 8v9M7 17v-4M12 17v-4"></path></svg>`;
+
 // Adicionando a função setupEventHandlers da branch main
 let currentEventId;
 
+/**
+ * Configura manipuladores de eventos para a página de detalhes
+ * @param {string|number} eventIdParam - ID do evento atual
+ */
 export function setupEventHandlers(eventIdParam) {
   currentEventId = eventIdParam;
+  console.log(`Configurando Handlers para Evento ID: ${currentEventId}`);
 
   // Configura o botão de edição
   setupEventEditButton(currentEventId);
 
-  // Restante da configuração original
+  // Verifica se os elementos necessários existem
   if (!document.getElementById('qrcode-modal') ||
     !document.getElementById('view-qrcodes-modal') ||
     !document.getElementById('delete-qrcode-modal')) {
+    console.log('Elementos modais não encontrados. Alguns handlers não serão configurados.');
     return;
   }
 
-  console.log(`Configurando Handlers para Evento ID: ${currentEventId}`);
+  // Configurar modais
   setupCreateModal();
   setupViewModal();
   setupDeleteConfirmationModal();
+}
+
+/**
+ * Configura o botão de edição do evento
+ * @param {string|number} eventId - ID do evento
+ */
+function setupEventEditButton(eventId) {
+  const editButton = document.getElementById('edit-event-btn');
+  if (!editButton) {
+    console.log('Botão de edição não encontrado');
+    return;
+  }
+
+  editButton.addEventListener('click', function () {
+    console.log(`Redirecionando para edição do evento ID: ${eventId}`);
+    // Usar window.location.hash para navegação com hash router
+    window.location.hash = `create-event?edit=${eventId}`;
+  });
+}
+
+/**
+ * Configura o modal de criação de QR Code/Promoção
+ */
+function setupCreateModal() {
+  // Esta é apenas uma implementação de placeholder. 
+  // A implementação real dependerá de como seus modais funcionam.
+  console.log('Configurando modal de criação de QR Code');
+  const modal = document.getElementById('qrcode-modal');
+  const closeBtn = document.getElementById('close-qrcode-modal');
+  const openBtn = document.getElementById('create-qrcode-btn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', () => {
+      if (modal) modal.classList.add('active');
+    });
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+  }
+}
+
+/**
+ * Configura o modal de visualização de QR Codes/Promoções
+ */
+function setupViewModal() {
+  // Esta é apenas uma implementação de placeholder.
+  console.log('Configurando modal de visualização de QR Codes');
+  const modal = document.getElementById('view-qrcodes-modal');
+  const closeBtn = document.getElementById('close-view-qrcodes-modal');
+  const openBtn = document.getElementById('view-qrcodes-btn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', () => {
+      if (modal) modal.classList.add('active');
+    });
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+  }
+}
+
+/**
+ * Configura o modal de confirmação de exclusão
+ */
+function setupDeleteConfirmationModal() {
+  // Esta é apenas uma implementação de placeholder.
+  console.log('Configurando modal de confirmação de exclusão');
+  const modal = document.getElementById('delete-qrcode-modal');
+  const closeBtn = document.getElementById('close-delete-qrcode-modal');
+  const cancelBtn = document.getElementById('cancel-delete-qrcode');
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+  }
+
+  if (cancelBtn && modal) {
+    cancelBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+  }
 }
 
 /**
@@ -154,19 +247,6 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
         `;
   };
 
-  // Placeholder para renderizar QR Codes do usuário
-  const renderUserQRCodesSection = () => {
-    if (!user || !userQRCodes || userQRCodes.length === 0) return '';
-    const qrCodeCardsHTML = renderUserQRCodesHTML(userQRCodes); // Usa a função importada
-    return `
-            <section class="user-qrcodes-section content-section">
-                <h2 class="section-title">Seu QR Code Gerado</h2>
-                <div class="qr-codes-grid">
-                    ${qrCodeCardsHTML || '<p>Erro ao renderizar QR Codes.</p>'}
-                </div>
-            </section>
-        `;
-  };
 
   // Renderiza ações do criador/admin
   const renderCreatorActions = () => {
@@ -211,7 +291,17 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
 
             ${event.event_time ? `<div class="info-item"> ${clockIcon} <span>Início às ${event.event_time}</span> </div>` : ''}
 
-             <div class="info-item"> ${locationIcon} <address>${event.location || 'Local não informado'}</address> </div>
+             <div class="info-item">
+              ${locationIcon} 
+              <address>
+                ${event.location ?
+      `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}" target="_blank" rel="noopener noreferrer">
+                    ${event.location}
+                  </a>` :
+      'Local não informado'
+    }
+              </address>
+            </div>
              ${eventCategory ? `<div class="info-item"> ${categoryIcon} <span>${eventCategory}</span> </div>` : ''}
              ${event.creator_name ? `<div class="info-item"> ${userIcon} <span>Organizado por: ${event.creator_name}</span> </div>` : ''}
              <div class="info-item like-container">
@@ -265,23 +355,38 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
  */
 export async function initializeEventMap(event) {
   // Verifica se o evento tem coordenadas
-  if (!event.coordinates) return;
+  if (!event || !event.coordinates) {
+    console.log('Evento sem coordenadas válidas. Mapa não será mostrado.');
+    return;
+  }
 
   // Extrair coordenadas do formato "(lat,lng)"
   const coordsMatch = event.coordinates.match(/\(([^,]+),([^)]+)\)/);
-  if (!coordsMatch || coordsMatch.length !== 3) return;
+  if (!coordsMatch || coordsMatch.length !== 3) {
+    console.log('Formato de coordenadas inválido:', event.coordinates);
+    return;
+  }
 
   const lat = parseFloat(coordsMatch[1]);
   const lng = parseFloat(coordsMatch[2]);
-  if (isNaN(lat) || isNaN(lng)) return;
+  if (isNaN(lat) || isNaN(lng)) {
+    console.log('Coordenadas não são números válidos:', lat, lng);
+    return;
+  }
 
   try {
+    console.log('Inicializando mapa para coordenadas:', lat, lng);
+
     // Carregar a API do Google Maps
     await loadGoogleMapsAPI();
+    console.log('API do Google Maps carregada com sucesso');
 
     // Obter elemento do mapa
     const mapElement = document.getElementById('event-map');
-    if (!mapElement) return;
+    if (!mapElement) {
+      console.error('Elemento do mapa não encontrado no DOM');
+      return;
+    }
 
     // Criar mapa
     const position = { lat, lng };
@@ -305,12 +410,12 @@ export async function initializeEventMap(event) {
       position: position,
       map: map,
       animation: google.maps.Animation.DROP,
-      title: event.event_name
+      title: event.event_name || 'Evento'
     });
 
     // Adicionar infowindow com endereço
     const infowindow = new google.maps.InfoWindow({
-      content: `<div style="color: #333; padding: 5px;">${event.address || event.location}</div>`
+      content: `<div style="color: #333; padding: 5px;">${event.address || event.location || 'Localização do evento'}</div>`
     });
 
     marker.addListener('click', () => {
@@ -327,6 +432,7 @@ export async function initializeEventMap(event) {
 
     // Adicionar estilos ao mapa
     addEventMapStyles();
+    console.log('Mapa inicializado com sucesso');
 
   } catch (error) {
     console.error("Erro ao inicializar mapa de evento:", error);
@@ -390,4 +496,4 @@ function addEventMapStyles() {
   `;
 
   document.head.appendChild(styles);
-}
+}// Importar o módulo do Google Maps

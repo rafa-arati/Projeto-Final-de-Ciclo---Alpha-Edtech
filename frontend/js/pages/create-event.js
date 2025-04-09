@@ -4,7 +4,7 @@ import { getLoggedInUser, isPremiumOrAdmin } from '../modules/store.js';
 import { setupImagePreview, setupCancelModal } from '../modules/form-utils.js'; // setupCancelModal é importante aqui
 import { getEventById, saveEvent, fetchCategoriesWithSubcategories } from '../modules/events-api.js';
 // Importar o módulo do Google Maps
-import { loadGoogleMapsAPI, initializeMap, initializeAutocomplete, reverseGeocode, formatCoordinates } from '../modules/google-maps.js';
+import { loadGoogleMapsAPI, initializeMap, initializeAutocomplete, reverseGeocode, formatCoordinates, geocodeAddress } from '../modules/google-maps.js';
 
 // --- Ícones ---
 const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
@@ -223,6 +223,9 @@ async function setupEventForm(isEditing, eventId) {
 /**
  * Configura o campo de localização com mapa do Google
  */
+/**
+ * Configura o campo de localização com mapa do Google
+ */
 async function setupMapField() {
   try {
     // Substitui o campo de localização original pelo novo com mapa
@@ -278,8 +281,13 @@ async function setupMapField() {
     // Adicionar evento ao input para atualizar as coordenadas quando o local for selecionado
     input.addEventListener('location-updated', (e) => {
       const { coords, address } = e.detail;
-      document.getElementById("coordinates").value = formatCoordinates(coords);
-      document.getElementById("full_address").value = address;
+      // Verificar se as coordenadas são válidas
+      if (coords && !isNaN(coords.lat) && !isNaN(coords.lng)) {
+        document.getElementById("coordinates").value = formatCoordinates(coords);
+        document.getElementById("full_address").value = address || '';
+      } else {
+        console.warn('Coordenadas inválidas recebidas do evento location-updated:', coords);
+      }
     });
 
     // Configurar botão de busca
@@ -288,6 +296,9 @@ async function setupMapField() {
       searchButton.addEventListener("click", searchAddress);
     }
 
+    // Garantir que os campos hidden existam
+    ensureHiddenFields();
+
   } catch (error) {
     console.error('Erro ao configurar campo de mapa:', error);
     const mapContainer = document.getElementById('map-container');
@@ -295,6 +306,52 @@ async function setupMapField() {
       mapContainer.innerHTML = '<div class="map-error">Não foi possível carregar o mapa. Verifique sua conexão.</div>';
     }
   }
+}
+
+/**
+ * Garante que os campos escondidos existam no formulário
+ */
+function ensureHiddenFields() {
+  const form = document.getElementById("criarEventoForm");
+  if (!form) return;
+
+  // Verifica e cria campo de coordenadas se não existir
+  if (!document.getElementById("coordinates")) {
+    const coordField = document.createElement("input");
+    coordField.type = "hidden";
+    coordField.id = "coordinates";
+    coordField.name = "coordinates";
+    form.appendChild(coordField);
+  }
+
+  // Verifica e cria campo de endereço completo se não existir
+  if (!document.getElementById("full_address")) {
+    const addrField = document.createElement("input");
+    addrField.type = "hidden";
+    addrField.id = "full_address";
+    addrField.name = "address";
+    form.appendChild(addrField);
+  }
+}
+
+/**
+ * Valida as coordenadas fornecidas
+ * @param {string} coordStr - String de coordenadas no formato "(lat,lng)"
+ * @returns {boolean} True se as coordenadas são válidas
+ */
+function validateCoordinates(coordStr) {
+  // Verifica se é uma string vazia
+  if (!coordStr || coordStr.trim() === '') return false;
+
+  // Verifica o formato (lat,lng)
+  const match = coordStr.match(/\(([-\d.]+),([-\d.]+)\)/);
+  if (!match) return false;
+
+  // Extrai lat e lng e verifica se são números válidos
+  const lat = parseFloat(match[1]);
+  const lng = parseFloat(match[2]);
+
+  return !isNaN(lat) && !isNaN(lng);
 }
 
 /**
@@ -312,16 +369,28 @@ async function searchAddress() {
     const result = await geocodeAddress(address);
     const { coords, formattedAddress } = result;
 
+    // Verificar se as coordenadas são válidas
+    if (!coords || isNaN(coords.lat) || isNaN(coords.lng)) {
+      console.error('Coordenadas inválidas recebidas da geocodificação:', coords);
+      showMessage("Não foi possível obter coordenadas válidas para este endereço.", "error");
+      return;
+    }
+
     // Atualiza mapa e marcador
     map.setCenter(coords);
     marker.setPosition(coords);
 
-    // Atualiza campos ocultos
-    document.getElementById("coordinates").value = formatCoordinates(coords);
-    document.getElementById("full_address").value = formattedAddress;
+    // Atualiza campos ocultos com verificação de segurança
+    const formattedCoords = formatCoordinates(coords);
+    if (formattedCoords && validateCoordinates(formattedCoords)) {
+      document.getElementById("coordinates").value = formattedCoords;
+      document.getElementById("full_address").value = formattedAddress || address;
+    } else {
+      console.warn('Falha ao formatar coordenadas:', coords);
+    }
 
     // Atualiza o campo de entrada para mostrar o endereço formatado
-    document.getElementById("localizacao").value = formattedAddress;
+    document.getElementById("localizacao").value = formattedAddress || address;
 
   } catch (error) {
     console.error('Erro ao buscar endereço:', error);
@@ -335,23 +404,45 @@ async function searchAddress() {
 async function updateLocationInfo() {
   if (!marker) return;
 
-  const position = marker.getPosition();
-  const coords = {
-    lat: position.lat(),
-    lng: position.lng()
-  };
-
-  // Atualiza input escondido com coordenadas
-  document.getElementById("coordinates").value = formatCoordinates(position);
-
   try {
-    // Faz geocodificação reversa para obter endereço
-    const address = await reverseGeocode(coords);
-    document.getElementById("localizacao").value = address;
-    document.getElementById("full_address").value = address;
+    const position = marker.getPosition();
+    if (!position || typeof position.lat !== 'function' || typeof position.lng !== 'function') {
+      console.error('Posição do marcador inválida:', position);
+      return;
+    }
+
+    const coords = {
+      lat: position.lat(),
+      lng: position.lng()
+    };
+
+    // Verificar se as coordenadas são válidas
+    if (isNaN(coords.lat) || isNaN(coords.lng)) {
+      console.error('Coordenadas inválidas do marcador:', coords);
+      return;
+    }
+
+    // Atualiza input escondido com coordenadas
+    const formattedCoords = formatCoordinates(position);
+    if (formattedCoords && validateCoordinates(formattedCoords)) {
+      document.getElementById("coordinates").value = formattedCoords;
+    } else {
+      console.warn('Falha ao formatar coordenadas do marcador');
+    }
+
+    try {
+      // Faz geocodificação reversa para obter endereço
+      const address = await reverseGeocode(coords);
+      if (address) {
+        document.getElementById("localizacao").value = address;
+        document.getElementById("full_address").value = address;
+      }
+    } catch (error) {
+      console.error('Erro ao obter endereço:', error);
+      // Não atualiza os campos se falhar a geocodificação reversa
+    }
   } catch (error) {
-    console.error('Erro ao obter endereço:', error);
-    // Não mostra mensagem de erro para não interromper o fluxo
+    console.error('Erro ao atualizar informações de localização:', error);
   }
 }
 
@@ -436,6 +527,37 @@ async function handleFormSubmit(e) {
     const subcatContainer = document.getElementById('subcategoria-container');
     if (subcatContainer && subcatContainer.style.display === 'none') {
       formData.delete('subcategory_id'); // Remove se não aplicável
+    } else {
+      // ADICIONE ISSO: Verifica se subcategory_id é um número válido
+      const subcategoryId = formData.get('subcategory_id');
+      if (subcategoryId === "" || subcategoryId === "NaN" || isNaN(parseInt(subcategoryId, 10))) {
+        console.warn("subcategory_id inválido, removendo:", subcategoryId);
+        formData.delete('subcategory_id');
+      }
+    }
+
+    // Também verificar category_id
+    const categoryId = formData.get('category_id');
+    if (categoryId === "" || categoryId === "NaN" || isNaN(parseInt(categoryId, 10))) {
+      console.warn("category_id inválido, removendo:", categoryId);
+      formData.delete('category_id');
+    }
+
+    // NOVO: Validação de coordenadas antes de enviar
+    const coordinatesValue = formData.get('coordinates');
+    if (!coordinatesValue || coordinatesValue === "NaN" || coordinatesValue === "(NaN,NaN)" || !validateCoordinates(coordinatesValue)) {
+      console.warn("Coordenadas inválidas detectadas:", coordinatesValue);
+      formData.delete('coordinates'); // Remove as coordenadas inválidas
+
+      // Se estiver editando, podemos continuar sem coordenadas
+      // Caso contrário, exibir erro e interromper
+      if (!eventId) {
+        showMessage("Por favor, selecione uma localização válida no mapa", "error");
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonContent;
+        isSubmitting = false;
+        return;
+      }
     }
 
     // Coletar URLs de vídeo
@@ -448,7 +570,10 @@ async function handleFormSubmit(e) {
 
     // Log para depuração
     console.log(`Enviando ${eventId ? 'atualização' : 'criação'} para evento ID: ${eventId || 'novo'}`);
-    // for (let [key, value] of formData.entries()) { console.log(`${key}:`, value); } // Descomente para ver todos os dados
+    // Logs detalhados para verificar todos os campos antes de enviar
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
 
     // Enviar para API
     const resultado = await saveEvent(formData, eventId);
