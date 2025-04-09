@@ -277,7 +277,7 @@ export function renderEventDisplay(event, user, canManageQrCodes, userQRCodes = 
     <div class="app-wrapper event-details-page">
       <div class="app-container">
         <header class="page-header">
-          <a href="#events" class="back-button" id="back-button" title="Voltar">${backIcon}</a>
+          <button class="back-button" id="details-back-button" title="Voltar">${backIcon}</button>
           <h1>${event.event_name || 'Detalhes do Evento'}</h1>
         </header>
 

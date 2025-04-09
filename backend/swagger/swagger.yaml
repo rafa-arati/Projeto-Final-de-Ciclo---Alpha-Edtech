@@ -271,6 +271,25 @@ components:
             used_at: { type: string, format: date-time }
             used_by: { type: integer }
 
+    BadRequest:
+      description: Requisição inválida...
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Não autorizado...
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Erro interno inesperado...
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
     Error:
       type: object
       properties:

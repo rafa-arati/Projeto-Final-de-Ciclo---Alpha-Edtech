@@ -114,7 +114,7 @@ export default async function renderCreateEvent(queryParams) {
                         </div>
 
                          <div class="form-group video-input-section">
-                          <label>${videoIcon} Links de Vídeo (YouTube/TikTok - Máx. 3)</label>
+                          <label>${videoIcon} Links de Vídeo (YouTube - Máx. 3)</label>
                           <div id="video-input-container">
                               </div>
                           <button type="button" id="add-video-btn" class="btn small add-video">
@@ -624,7 +624,7 @@ function addVideoInput(container) {
   const newInput = document.createElement('input');
   newInput.type = 'url';
   newInput.className = 'video-url';
-  newInput.placeholder = 'https://youtube.com/shorts/abc123... ou https://tiktok.com/...';
+  newInput.placeholder = 'https://youtube.com/shorts/abc123...';
   container.appendChild(newInput);
 }
 
@@ -782,7 +782,7 @@ async function loadEventForEditing(eventId) {
           videoInput.type = 'url';
           videoInput.className = 'video-url';
           videoInput.value = url;
-          videoInput.placeholder = 'https://youtube.com/shorts/abc123... ou https://tiktok.com/...';
+          videoInput.placeholder = 'https://youtube.com/shorts/abc123...';
           videoContainer.appendChild(videoInput);
         }
       });
