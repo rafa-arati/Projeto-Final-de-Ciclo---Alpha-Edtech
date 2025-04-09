@@ -109,7 +109,7 @@ export default async function renderAgenda(queryParams) {
             </div>
             <div class="modal-buttons">
               <button id="view-event-btn" class="btn">Ver Detalhes</button>
-              <button id="add-to-gcal-btn" class="btn secondary">Adicionar ao Google Agenda</button>
+              <button id="add-to-gcal-btn" class="btn secondary"><svg width="18" height="18" viewBox="0 0 24 24" focusable="false" class="gcal-icon" aria-hidden="true"> <path fill="#34A853" d="M12 24H5c-1.7 0-3-1.3-3-3V7h10v17z"></path> <path fill="#4285F4" d="M19 24h-7V7h10v14c0 1.7-1.3 3-3 3z"></path> <path fill="#EA4335" d="M19 2H5C3.3 2 2 3.3 2 5v2h20V5c0-1.7-1.3-3-3-3z"></path> <path fill="#FBBC05" d="M12 0H7v7h10V5c0-1.7-1.3-3-3-3H12z"></path><path fill="#FFF" d="M12.5 15.5h-1V12h1v3.5zm2-1.5h-5v-1h5v1z"></path> </svg>Adicionar ao Google Agenda</button>
             </div>
           </div>
         </div>
@@ -444,7 +444,7 @@ function showEventDetailsModal(event) {
     ${eventTime ? `<p><strong>Horário:</strong> ${eventTime}</p>` : ''}
     ${location ? `<p><strong>Local:</strong> ${location}</p>` : ''}
     ${category ? `<p><strong>Categoria:</strong> ${category}${subcategory ? ` / ${subcategory}` : ''}</p>` : ''}
-    ${description ? `<p><strong>Descrição:</strong> ${description}</p>` : ''}
+    ${description ? `<p class="modal-event-description-scrollable"><strong>Descrição:</strong> ${description}</p>` : ''}
   `;
 
   // Configurar botão para ver detalhes completos

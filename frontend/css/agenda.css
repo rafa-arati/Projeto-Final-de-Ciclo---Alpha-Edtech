@@ -203,6 +203,42 @@
     font-size: 12px;
 }
 
+#event-details-modal .modal-event-description-scrollable {
+    max-height: 150px; /* <<< ALTURA MÁXIMA - Ajuste este valor conforme necessário */
+    overflow-y: auto;  /* Adiciona scroll vertical APENAS se necessário */
+    text-align: left;  /* Garante que o texto fique alinhado à esquerda */
+    padding: 8px;     /* Espaçamento interno */
+    margin-top: 10px; /* Espaço acima da descrição */
+    margin-bottom: 10px; /* Espaço abaixo da descrição */
+    background-color: --var(--details-bg-secondary); /* Fundo sutil opcional */
+    border-radius: 4px; /* Cantos arredondados opcionais */
+    padding-left: 10px; /* Espaçamento após a borda esquerda */
+    white-space: pre-wrap; /* Mantém quebras de linha do texto original */
+    word-wrap: break-word; /* Quebra palavras longas */
+    line-height: 1.5; /* Melhora legibilidade */
+    color: #fffdfd; /* Cor do texto da descrição */
+  }
+  
+  /* Estilização da barra de rolagem (para navegadores WebKit - Chrome, Safari, Edge) */
+  #event-details-modal .modal-event-description-scrollable::-webkit-scrollbar {
+    width: 8px; /* Largura da barra */
+  }
+  
+  #event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05); /* Cor do trilho */
+    border-radius: 4px;
+  }
+  
+  #event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-thumb {
+    background-color: #555; /* Cor da barra */
+    border-radius: 4px;
+    border: 1px solid #333; /* Borda sutil na barra */
+  }
+  
+  #event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-thumb:hover {
+    background-color: #777; /* Cor ao passar o mouse */
+  } 
+
 .event-card-time,
 .event-card-category {
     display: flex;
@@ -239,7 +275,7 @@
 
 #modal-event-details p {
     margin: 10px 0;
-    color: #ccc;
+    color: white;
 }
 
 .modal-buttons {
@@ -249,6 +285,8 @@
 
 .modal-buttons .btn {
     flex: 1;
+    height: 60px;
+    margin-top: 10px;
     padding: 12px;
     border: none;
     border-radius: 8px;
@@ -343,31 +381,112 @@
     margin-left: 15px;
 }
 
-.multiple-event-actions button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    transition: opacity 0.2s;
-    white-space: nowrap;
-}
+/* --- Estilos Botão Google Agenda --- */
 
-.multiple-event-actions .btn-view {
-    background: linear-gradient(45deg, #439DFE, #8000FF);
-    color: white;
-}
-
+/* Estilo base para ambos os botões (modal único e múltiplo) */
+#add-to-gcal-btn,
 .multiple-event-actions .btn-gcal {
-    background-color: #444;
-    color: white;
+  /* Aparência Google */
+  background-color: #FFFFFF; /* Fundo branco */
+  color: #3c4043; /* Texto cinza escuro */
+  border: 1px solid #dadce0; /* Borda cinza clara */
+  font-weight: 500;
+  border-radius: 4px; /* Cantos levemente arredondados */
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  display: inline-flex; /* Para alinhar ícone e texto */
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Espaço entre ícone e texto */
+  text-align: center;
+  white-space: nowrap; /* Evita quebra de linha */
+
+  /* Reset/Override de outros estilos .btn ou .secondary se necessário */
+  background-image: none; /* Remove gradientes anteriores */
+  opacity: 1; /* Garante opacidade total */
 }
 
-.multiple-event-actions button:hover {
-    opacity: 0.9;
+/* Estilo específico para o botão no modal de detalhes (maior) */
+#add-to-gcal-btn {
+  padding: 10px 18px;
+  font-size: 14px;
+  flex: 1; /* Ocupa espaço no flex container */
 }
 
+/* Estilo específico para o botão no modal de múltiplos eventos (menor) */
+.multiple-event-actions .btn-gcal {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Estilos do Ícone SVG */
+#add-to-gcal-btn svg.gcal-icon,
+.multiple-event-actions .btn-gcal svg.gcal-icon {
+  width: 18px; /* Tamanho do ícone */
+  height: 18px;
+  vertical-align: middle; /* Melhor alinhamento vertical */
+}
+
+.multiple-event-actions .btn-gcal svg.gcal-icon {
+   width: 14px; /* Ícone menor no modal de múltiplos eventos */
+   height: 14px;
+}
+
+
+#add-to-gcal-btn:hover,
+.multiple-event-actions .btn-gcal:hover {
+  background-color: #f8f9fa; /* Fundo levemente cinza no hover */
+  box-shadow: 0 1px 1px 0 rgba(0,0,0,0.1); /* Sombra sutil no hover */
+  border-radius: 8px;
+  /* Aplica a borda com gradiente de 4 cores */
+  border-width: 2px; /* Deixa a borda um pouco mais grossa para o efeito */
+  border-style: solid;
+  border-color: transparent; /* A cor sólida é ignorada quando border-image é ativa */
+  border-image-source: linear-gradient(
+    to right, /* Gradiente da esquerda para a direita */
+    #4285F4 25%,   /* Azul */
+    #EA4335 25%,   /* Vermelho */
+    #EA4335 50%,
+    #FBBC05 50%,   /* Amarelo */
+    #FBBC05 75%,
+    #34A853 75%    /* Verde */
+  );
+  border-image-slice: 1; /* Usa a imagem inteira como borda */
+}
+
+/* Estilo de Foco (mantém um anel azul simples para acessibilidade) */
+#add-to-gcal-btn:focus,
+.multiple-event-actions .btn-gcal:focus {
+  outline: none;
+  border-radius: 8px;
+  /* Se não estiver no hover, mostra a borda azul de foco */
+  border-color: #4285F4;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
+  /* Garante que border-image não aplique no foco sem hover */
+  border-image: none;
+}
+
+/* Garante que o hover tenha precedência sobre o foco para a borda */
+#add-to-gcal-btn:hover:focus,
+.multiple-event-actions .btn-gcal:hover:focus {
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 8px;
+    border-color: transparent;
+    border-image-source: linear-gradient(to right, #4285F4 25%, #EA4335 25%, #EA4335 50%, #FBBC05 50%, #FBBC05 75%, #34A853 75%);
+    border-image-slice: 1;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,0.1); /* Mantém sombra do hover */
+}
+/* Estado Desabilitado (se aplicável) */
+#add-to-gcal-btn:disabled,
+.multiple-event-actions .btn-gcal:disabled {
+    background-color: #f5f5f5;
+    border-color: #e0e0e0;
+    color: #bdbdbd;
+    cursor: not-allowed;
+    border-radius: 8px;
+    box-shadow: none;
+}
 /* Estilos responsivos */
 @media (max-width: 480px) {
     .calendar-days .day {
