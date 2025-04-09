@@ -82,7 +82,7 @@ export default function renderForgotPassword(queryParams) {
   const backButton = document.getElementById('backToLoginBtn');
   if (backButton) {
     backButton.addEventListener('click', (e) => {
-      e.preventDefault();
+      window.history.back() ;
       // Use a classe do container para a transição
       transitionToPage('forgot-password-page', 'login');
     });

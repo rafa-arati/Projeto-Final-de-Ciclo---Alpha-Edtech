@@ -1,0 +1,133 @@
+/* frontend/css/modal.css - TEMA ESCURO (Permite login.css estilizar conteúdo) */
+
+:root {
+    --modal-dark-bg: #282828;
+    --modal-dark-text-primary: #E0E0E0;
+    --modal-dark-text-secondary: #A0A0A0;
+    --modal-dark-border: #555;
+    --modal-dark-input-bg: #333;
+    --modal-dark-divider: #444;
+    --primary-accent-color: #8A2BE2; /* Ajuste para sua cor primária */
+    --primary-accent-darker: #7324bf;
+    --button-disabled-bg-dark: #555;
+}
+
+/* --- Estilos para o FRAME do Modal (Overlay, Container, Botão Fechar) --- */
+#login-modal, /* Compatibilidade se ID antigo for usado */
+#login-modal-dynamic { /* ID para modal dinâmico */
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.75); display: flex;
+    justify-content: center; align-items: center;
+    z-index: 99999; /* MUITO ALTO */
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+    padding: 15px; box-sizing: border-box;
+}
+#login-modal.visible,
+#login-modal-dynamic.visible {
+    opacity: 1; visibility: visible;
+    transition: opacity 0.3s ease;
+}
+#login-modal-container { /* ID do container interno */
+    background-color: var(--modal-dark-bg, #282828);
+    color: var(--modal-dark-text-primary, #E0E0E0); /* Cor de texto padrão */
+    padding: 30px 35px; border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    position: relative; max-width: 460px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    transform: scale(0.95); transition: transform 0.3s ease;
+    box-sizing: border-box; border: 1px solid var(--modal-dark-divider, #444);
+}
+#login-modal.visible #login-modal-container,
+#login-modal-dynamic.visible #login-modal-container {
+    transform: scale(1);
+}
+#close-login-modal, /* Compatibilidade */
+#close-login-modal-dynamic { /* ID do botão fechar */
+    position: absolute; top: 12px; right: 12px; background: transparent;
+    border: none; font-size: 2.3rem; color: var(--modal-dark-text-secondary, #A0A0A0);
+    cursor: pointer; line-height: 1; padding: 5px; transition: color 0.2s ease;
+}
+#close-login-modal:hover,
+#close-login-modal-dynamic:hover {
+    color: var(--primary-accent-color, #8A2BE2);
+}
+
+/* --- Ajustes de COR para Conteúdo (vindo de login.css) no Tema Escuro --- */
+/* Garante legibilidade sem mudar o layout do login.css */
+
+/* ID da área onde o HTML do login.js é injetado */
+#login-modal-content-dynamic .login-container {
+    color: var(--modal-dark-text-primary, #E0E0E0); /* Cor texto geral */
+    /* Remove estilos que podem vir do login.css e conflitar com o modal */
+    box-shadow: none;
+    border: none;
+    background: none;
+    padding: 0; /* Reseta padding se login.css adicionar */
+    margin: 0;  /* Reseta margin se login.css adicionar */
+}
+#login-modal-content-dynamic .welcome { /* Adapta cor do 'Bem-vindo' */
+     color: var(--modal-dark-text-primary, #E0E0E0);
+}
+#login-modal-content-dynamic .input-group label { /* Se login.css tiver label */
+    color: var(--modal-dark-text-secondary, #A0A0A0);
+}
+#login-modal-content-dynamic .input-group input {
+    background-color: var(--modal-dark-input-bg, #333);
+    border: 1px solid var(--modal-dark-border, #555); /* Aplica borda escura */
+    color: var(--modal-dark-text-primary, #E0E0E0);
+    /* Mantém layout (padding, etc) do login.css se houver */
+}
+#login-modal-content-dynamic .input-group input::placeholder {
+    color: var(--modal-dark-text-secondary, #A0A0A0);
+    opacity: 0.7;
+}
+#login-modal-content-dynamic .input-group input:focus {
+    border-color: var(--primary-accent-color, #8A2BE2);
+    box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.3);
+    background-color: #383838;
+}
+/* Adapta cor dos ícones SVG dentro do input-icon para tema escuro */
+#login-modal-content-dynamic .input-icon svg {
+    stroke: var(--primary-accent-color, #8A2BE2); /* Cor do stroke do SVG */
+    /* fill: none; (geralmente já é none nos seus SVGs) */
+}
+
+#login-modal-content-dynamic .forgot-password { /* Link 'Esqueceu senha' */
+    color: var(--primary-accent-color, #8A2BE2);
+}
+#login-modal-content-dynamic .divider { /* Texto 'Ou entre com' */
+    color: var(--modal-dark-text-secondary, #A0A0A0);
+    border-top-color: var(--modal-dark-divider, #444); /* Adapta cor da linha */
+}
+#login-modal-content-dynamic .social-btn.google { /* Botão Google */
+    background-color: #fff;
+    color: #444;
+    border: 1px solid var(--modal-dark-border, #555);
+}
+#login-modal-content-dynamic .social-btn.google:hover {
+    background-color: #f1f1f1;
+}
+#login-modal-content-dynamic .bottom-text { /* Texto 'Não tem conta...' */
+     color: var(--modal-dark-text-secondary, #A0A0A0);
+}
+#login-modal-content-dynamic .bottom-text a { /* Link 'Cadastre-se' */
+    color: var(--primary-accent-color, #8A2BE2);
+}
+
+/* Botão LOGIN Principal (Verifica se login.css já define bem) */
+/* Se o botão já estiver com a aparência certa vinda do login.css, */
+/* talvez só precise ajustar cor de texto/fundo desabilitado aqui. */
+#login-modal-content-dynamic .btn.login-btn {
+    /* Se login.css já tem o gradiente/cor certa, não precisa mexer */
+    /* background: linear-gradient(45deg, #439DFE, #8000FF); */
+    color: white; /* Garante texto branco */
+    /* Mantenha padding/border-radius/etc do login.css */
+}
+#login-modal-content-dynamic .btn.login-btn:disabled {
+   background: var(--button-disabled-bg-dark, #555) !important; /* Garante fundo cinza */
+   color: #999 !important; /* Garante texto cinza */
+   cursor: not-allowed;
+   /* Remove gradiente se houver */
+   background-image: none !important;
+}

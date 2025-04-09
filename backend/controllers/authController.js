@@ -136,15 +136,17 @@ const login = async (req, res) => {
 
     // Resposta de sucesso
     res.status(200).json({
+      success: true,                
       message: 'Login bem-sucedido',
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        username: user.username,
-        role: user.role || 'user'
+      user: {                      
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          username: user.username,
+          role: user.role || 'user',
+          onboarding_completed: user.onboarding_completed 
       }
-    });
+  });
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     res.status(500).json({ message: 'Erro ao fazer login' });

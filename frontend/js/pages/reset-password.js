@@ -121,7 +121,7 @@ export default function renderResetPassword(queryParams) {
   const backButton = document.getElementById('backToLoginBtn');
   if (backButton) {
       backButton.addEventListener('click', (e) => {
-          e.preventDefault();
+        window.history.back() ;
           // Navega de volta para a tela de login
           navigateTo('login'); 
       });
