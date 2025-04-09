@@ -19,8 +19,6 @@ body {
 .app-wrapper {
     width: 100%;
     height: 100vh;
-    overflow-y: auto;
-    /* Barra de rolagem aqui */
 }
 
 /* Personalização da barra de rolagem */
