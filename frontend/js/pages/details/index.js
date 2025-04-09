@@ -51,6 +51,7 @@ export default async function renderEventDetails(queryParams) {
         const userId = user ? parseInt(user.id, 10) : null;
         const canManageQrCodes = (user?.role === 'admin') || (user?.role === 'premium' && userId === creatorId);
         console.log(`Pode gerenciar QR Codes: ${canManageQrCodes}`);
+        
 
         // Carregar promoções e QR Codes do usuário (APENAS SE LOGADO)
         let availablePromotions = [];
@@ -126,6 +127,8 @@ export default async function renderEventDetails(queryParams) {
         setupLikeButton(eventId, event); // Configura botão de like
         processVideos(event); // Processa e exibe vídeos
 
+        
+
         // --- NOVA LÓGICA PARA O BOTÃO DE ABRIR O SCANNER ---
         const openScanButton = document.getElementById('open-scan-modal-btn');
         const scanModal = document.getElementById('scan-qrcode-modal');
@@ -187,6 +190,27 @@ export default async function renderEventDetails(queryParams) {
                 closeScanModalButton: !!closeScanModalButton
             });
         }
+
+        const backButton = document.getElementById('details-back-button');
+        if (backButton) {
+            // Limpa listeners antigos (boa prática)
+            const newBackButton = backButton.cloneNode(true);
+            backButton.parentNode.replaceChild(newBackButton, backButton);
+
+            // Adiciona o listener correto
+            newBackButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.history.back();
+            });
+            console.log("Botão Voltar da página de detalhes configurado.");
+        } else {
+             // Verifica se o ID antigo ainda está sendo usado e avisa
+             if(document.getElementById('back-button')) {
+                  console.warn("Atenção: Botão Voltar encontrado com ID 'back-button', mas esperado 'details-back-button'. Verifique o HTML em event-display.js.");
+              } else {
+                  console.warn("Botão Voltar (#details-back-button) não encontrado na página de detalhes.");
+              }
+         }
         // --- FIM DA NOVA LÓGICA ---
 
         // Renderizar promoções para usuário comum (se aplicável)
