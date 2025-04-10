@@ -96,14 +96,14 @@ function openDynamicLoginModal() {
       </div>
     `;
   } catch (error) {
-      console.error("[welcome] Erro ao gerar HTML do formulário:", error);
-      // Verifica se o erro é porque login.js não tem getLoginFormHTML
-      if (error instanceof TypeError && error.message.includes('getLoginFormHTML is not a function')) {
-         showMessage("Erro: Arquivo login.js não está configurado corretamente.", "error");
-      } else {
-         showMessage("Erro ao carregar o formulário de login.", "error");
-      }
-      return;
+    console.error("[welcome] Erro ao gerar HTML do formulário:", error);
+    // Verifica se o erro é porque login.js não tem getLoginFormHTML
+    if (error instanceof TypeError && error.message.includes('getLoginFormHTML is not a function')) {
+      showMessage("Erro: Arquivo login.js não está configurado corretamente.", "error");
+    } else {
+      showMessage("Erro ao carregar o formulário de login.", "error");
+    }
+    return;
   }
 
   document.body.appendChild(dynamicLoginModal); // Adiciona ao final do body
@@ -115,47 +115,47 @@ function openDynamicLoginModal() {
 
   // Truque para garantir que a transição CSS funcione corretamente
   requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-          dynamicLoginModal.style.display = 'flex'; // Ou 'block'
-           dynamicLoginModal.classList.add('visible'); // Ativa a visibilidade via CSS
-           document.body.style.overflow = 'hidden'; // Trava scroll
-           console.log("[welcome] Modal tornado visível.");
-      });
+    requestAnimationFrame(() => {
+      dynamicLoginModal.style.display = 'flex'; // Ou 'block'
+      dynamicLoginModal.classList.add('visible'); // Ativa a visibilidade via CSS
+      document.body.style.overflow = 'hidden'; // Trava scroll
+      console.log("[welcome] Modal tornado visível.");
+    });
   });
 }
 
 // Adiciona listeners específicos para FECHAR o modal
 function addModalCloseListeners() {
-    const closeBtn = document.getElementById('close-login-modal-dynamic');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeDynamicLoginModal);
-    } else { console.error("[welcome] Botão fechar dinâmico não encontrado."); }
-    dynamicLoginModal.addEventListener('click', handleDynamicOverlayClick);
+  const closeBtn = document.getElementById('close-login-modal-dynamic');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeDynamicLoginModal);
+  } else { console.error("[welcome] Botão fechar dinâmico não encontrado."); }
+  dynamicLoginModal.addEventListener('click', handleDynamicOverlayClick);
 }
 
 // Adiciona listeners PARA O FORMULÁRIO dentro do modal
 function addInternalLoginFormListeners() {
-    console.log("[welcome] Adicionando listeners INTERNOS do formulário...");
-    // Usa os IDs únicos definidos em getLoginFormHTML
-    const loginForm = document.getElementById('loginFormModal');
-    const googleLoginBtn = document.getElementById('loginGoogleBtnModal');
-    const forgotPasswordLink = document.getElementById('loginForgotPasswordModal');
-    const registerLink = document.getElementById('loginRegisterLinkModal');
+  console.log("[welcome] Adicionando listeners INTERNOS do formulário...");
+  // Usa os IDs únicos definidos em getLoginFormHTML
+  const loginForm = document.getElementById('loginFormModal');
+  const googleLoginBtn = document.getElementById('loginGoogleBtnModal');
+  const forgotPasswordLink = document.getElementById('loginForgotPasswordModal');
+  const registerLink = document.getElementById('loginRegisterLinkModal');
 
-    // Adiciona listeners chamando os handlers LOCAIS deste arquivo
-    if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
-    else console.warn("[welcome] Formulário #loginFormModal não encontrado.");
+  // Adiciona listeners chamando os handlers LOCAIS deste arquivo
+  if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
+  else console.warn("[welcome] Formulário #loginFormModal não encontrado.");
 
-    if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleLogin);
-    else console.warn("[welcome] Botão #loginGoogleBtnModal não encontrado.");
+  if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleLogin);
+  else console.warn("[welcome] Botão #loginGoogleBtnModal não encontrado.");
 
-    if (forgotPasswordLink) forgotPasswordLink.addEventListener('click', handleForgotPassword);
-    else console.warn("[welcome] Link #loginForgotPasswordModal não encontrado.");
+  if (forgotPasswordLink) forgotPasswordLink.addEventListener('click', handleForgotPassword);
+  else console.warn("[welcome] Link #loginForgotPasswordModal não encontrado.");
 
-    if (registerLink) registerLink.addEventListener('click', handleRegister);
-    else console.warn("[welcome] Link #loginRegisterLinkModal não encontrado.");
+  if (registerLink) registerLink.addEventListener('click', handleRegister);
+  else console.warn("[welcome] Link #loginRegisterLinkModal não encontrado.");
 
-    console.log("[welcome] Listeners INTERNOS adicionados.");
+  console.log("[welcome] Listeners INTERNOS adicionados.");
 }
 
 // Função para FECHAR e REMOVER o modal
@@ -167,7 +167,7 @@ function closeDynamicLoginModal() {
   const closeBtn = document.getElementById('close-login-modal-dynamic');
   if (closeBtn) closeBtn.removeEventListener('click', closeDynamicLoginModal);
   // Remove o listener do overlay APENAS se ele ainda existir
-  if(dynamicLoginModal) dynamicLoginModal.removeEventListener('click', handleDynamicOverlayClick);
+  if (dynamicLoginModal) dynamicLoginModal.removeEventListener('click', handleDynamicOverlayClick);
 
   dynamicLoginModal.classList.remove('visible'); // Inicia animação CSS de saída
   document.body.style.overflow = ''; // Libera scroll do fundo
@@ -175,9 +175,9 @@ function closeDynamicLoginModal() {
   // Define uma função para remover o modal do DOM
   const removeModalElement = () => {
     if (dynamicLoginModal) { // Verifica se ainda existe antes de remover
-        console.log("[welcome] Removendo modal do DOM.");
-        dynamicLoginModal.remove();
-        dynamicLoginModal = null; // Limpa a referência global
+      console.log("[welcome] Removendo modal do DOM.");
+      dynamicLoginModal.remove();
+      dynamicLoginModal = null; // Limpa a referência global
     }
   };
 
@@ -195,11 +195,11 @@ function closeDynamicLoginModal() {
 
 // Fecha ao clicar no fundo (overlay)
 function handleDynamicOverlayClick(event) {
-    // Garante que o clique foi no overlay e não em conteúdo dentro dele
-    if (event.target.id === 'login-modal-dynamic') {
-        console.log("[welcome] Clique no overlay.");
-        closeDynamicLoginModal();
-    }
+  // Garante que o clique foi no overlay e não em conteúdo dentro dele
+  if (event.target.id === 'login-modal-dynamic') {
+    console.log("[welcome] Clique no overlay.");
+    closeDynamicLoginModal();
+  }
 }
 
 // --- Handlers para ações DENTRO do modal (Funções Corrigidas) ---
@@ -219,24 +219,24 @@ async function handleLoginSubmit(event) {
 
   // Validação básica e verificação dos elementos
   if (!identifierInput || !passwordInput || !loginButton || !errorMessageDiv) { // <<< Verifica se achou o div de erro
-      console.error("[welcome modal] Elementos essenciais do formulário ou div de erro não encontrados.");
-      if (errorMessageDiv) {
-           errorMessageDiv.textContent = "Erro interno no formulário. Recarregue a página.";
-           errorMessageDiv.style.display = 'block';
-      } else {
-          showMessage("Erro interno. Recarregue a página.", "error"); // Fallback se o div não existir
-      }
-      // Reabilita o botão se possível
-      if(loginButton) {
-         loginButton.disabled = false;
-         loginButton.textContent = 'LOGIN';
-      }
-      return;
+    console.error("[welcome modal] Elementos essenciais do formulário ou div de erro não encontrados.");
+    if (errorMessageDiv) {
+      errorMessageDiv.textContent = "Erro interno no formulário. Recarregue a página.";
+      errorMessageDiv.style.display = 'block';
+    } else {
+      showMessage("Erro interno. Recarregue a página.", "error"); // Fallback se o div não existir
+    }
+    // Reabilita o botão se possível
+    if (loginButton) {
+      loginButton.disabled = false;
+      loginButton.textContent = 'LOGIN';
+    }
+    return;
   }
   if (!identifierInput.value || !passwordInput.value) {
-      errorMessageDiv.textContent = "Por favor, preencha email/usuário e senha."; // <<< Exibe erro localmente
-      errorMessageDiv.style.display = 'block'; // <<< Mostra o div de erro
-      return; // Interrompe se campos vazios
+    errorMessageDiv.textContent = "Por favor, preencha email/usuário e senha."; // <<< Exibe erro localmente
+    errorMessageDiv.style.display = 'block'; // <<< Mostra o div de erro
+    return; // Interrompe se campos vazios
   }
 
   const identifier = identifierInput.value;
@@ -250,60 +250,60 @@ async function handleLoginSubmit(event) {
   console.log("[welcome modal] Chamando API loginUser...");
 
   try {
-      const result = await loginUser(identifier, password); // Chama a API
-      console.log("[welcome modal] Resposta da API loginUser:", result);
+    const result = await loginUser(identifier, password); // Chama a API
+    console.log("[welcome modal] Resposta da API loginUser:", result);
 
-      if (result && result.success === true) {
-          // --- SUCESSO: Fecha o modal e redireciona (como antes) ---
-          console.log("[welcome modal] Login API SUCESSO.");
-          closeDynamicLoginModal();
-          console.log("[welcome modal] Modal fechado após sucesso.");
-          setTimeout(() => {
-              if (result.user && result.user.onboarding_completed === false) {
-                  navigateTo('onboarding');
-              } else {
-                  navigateTo('events');
-              }
-          }, 150);
+    if (result && result.success === true) {
+      // --- SUCESSO: Fecha o modal e redireciona (como antes) ---
+      console.log("[welcome modal] Login API SUCESSO.");
+      closeDynamicLoginModal();
+      console.log("[welcome modal] Modal fechado após sucesso.");
+      setTimeout(() => {
+        if (result.user && result.user.onboarding_completed === false) {
+          navigateTo('onboarding');
+        } else {
+          navigateTo('events');
+        }
+      }, 150);
 
-      } else {
-          // --- FALHA (Senha/Usuário Incorreto): Exibe erro NO MODAL ---
-          console.warn("[welcome modal] Login API FALHA:", result?.message);
-          errorMessageDiv.textContent = result?.message || 'Falha no login. Verifique suas credenciais.'; // <<< Coloca msg no div
-          errorMessageDiv.style.display = 'block'; // <<< Mostra o div
-          // <<< NÃO FECHA O MODAL >>>
-          loginButton.disabled = false; // <<< Reabilita o botão
-          loginButton.textContent = 'LOGIN'; // <<< Restaura texto do botão
-      }
-  } catch (error) {
-      // --- ERRO DE COMUNICAÇÃO: Exibe erro NO MODAL ---
-      console.error('[welcome modal] Erro CATCH na chamada loginUser:', error);
-      errorMessageDiv.textContent = error?.message || 'Erro de comunicação. Tente novamente.'; // <<< Coloca msg no div
+    } else {
+      // --- FALHA (Senha/Usuário Incorreto): Exibe erro NO MODAL ---
+      console.warn("[welcome modal] Login API FALHA:", result?.message);
+      errorMessageDiv.textContent = result?.message || 'Falha no login. Verifique suas credenciais.'; // <<< Coloca msg no div
       errorMessageDiv.style.display = 'block'; // <<< Mostra o div
       // <<< NÃO FECHA O MODAL >>>
       loginButton.disabled = false; // <<< Reabilita o botão
       loginButton.textContent = 'LOGIN'; // <<< Restaura texto do botão
+    }
+  } catch (error) {
+    // --- ERRO DE COMUNICAÇÃO: Exibe erro NO MODAL ---
+    console.error('[welcome modal] Erro CATCH na chamada loginUser:', error);
+    errorMessageDiv.textContent = error?.message || 'Erro de comunicação. Tente novamente.'; // <<< Coloca msg no div
+    errorMessageDiv.style.display = 'block'; // <<< Mostra o div
+    // <<< NÃO FECHA O MODAL >>>
+    loginButton.disabled = false; // <<< Reabilita o botão
+    loginButton.textContent = 'LOGIN'; // <<< Restaura texto do botão
   }
 }
 
 // Handler para o botão Google
 function handleGoogleLogin() {
-    console.log("[welcome modal] Clicado em Login Google.");
-    window.location.href = '/api/auth/google'; // Redireciona para rota do backend
+  console.log("[welcome modal] Clicado em Login Google.");
+  window.location.href = '/api/auth/google'; // Redireciona para rota do backend
 }
 
 // Handler para o link "Esqueci Senha"
 function handleForgotPassword(event) {
-    event.preventDefault();
-    console.log("[welcome modal] Clicado em Esqueci Senha.");
-    closeDynamicLoginModal(); // Fecha modal
-    setTimeout(() => navigateTo('forgot-password'), 150); // Navega após delay
+  event.preventDefault();
+  console.log("[welcome modal] Clicado em Esqueci Senha.");
+  closeDynamicLoginModal(); // Fecha modal
+  setTimeout(() => navigateTo('forgot-password'), 150); // Navega após delay
 }
 
 // Handler para o link "Cadastre-se"
 function handleRegister(event) {
-    event.preventDefault();
-    console.log("[welcome modal] Clicado em Cadastre-se.");
-    closeDynamicLoginModal(); // Fecha modal
-    setTimeout(() => navigateTo('register'), 150); // Navega após delay
+  event.preventDefault();
+  console.log("[welcome modal] Clicado em Cadastre-se.");
+  closeDynamicLoginModal(); // Fecha modal
+  setTimeout(() => navigateTo('register'), 150); // Navega após delay
 }

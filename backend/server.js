@@ -1,7 +1,7 @@
 const app = require('./app');
 const http = require('http'); // Importa o módulo HTTP
-const { Server } = require("socket.io"); 
-const jwt = require('jsonwebtoken'); 
+const { Server } = require("socket.io");
+const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 require('dotenv').config();
 
@@ -13,45 +13,45 @@ const server = http.createServer(app);
 
 // 2. Inicializa o Socket.IO anexado ao servidor HTTP
 const io = new Server(server, {
-    cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:3000", // Permite conexão do seu frontend
-        methods: ["GET", "POST"]
-    }
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:3000", // Permite conexão do seu frontend
+    methods: ["GET", "POST"]
+  }
 });
 
 // 3. *** Lógica do Socket.IO (AGORA io está definido) ***
 const userSockets = new Map(); // Mapeia userId para socketId
 
 io.on('connection', (socket) => {
-    console.log('Um usuário conectou via WebSocket:', socket.id);
+  console.log('Um usuário conectou via WebSocket:', socket.id);
 
-    // Opcional: Autenticação do usuário no WebSocket
-    socket.on('authenticate', (token) => {
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET); // Usa o jwt importado
-            const userId = decoded.id;
-            userSockets.set(userId.toString(), socket.id); // Armazena a associação
-            console.log(`Socket ${socket.id} autenticado para usuário ${userId}`);
-            // Opcional: Colocar o socket em uma "sala" específica do usuário
-            socket.join(userId.toString());
-        } catch (error) {
-            console.error('Falha na autenticação WebSocket:', error.message);
-            socket.disconnect(); // Desconecta se o token for inválido
-        }
-    });
+  // Opcional: Autenticação do usuário no WebSocket
+  socket.on('authenticate', (token) => {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET); // Usa o jwt importado
+      const userId = decoded.id;
+      userSockets.set(userId.toString(), socket.id); // Armazena a associação
+      console.log(`Socket ${socket.id} autenticado para usuário ${userId}`);
+      // Opcional: Colocar o socket em uma "sala" específica do usuário
+      socket.join(userId.toString());
+    } catch (error) {
+      console.error('Falha na autenticação WebSocket:', error.message);
+      socket.disconnect(); // Desconecta se o token for inválido
+    }
+  });
 
 
-    socket.on('disconnect', () => {
-        console.log('Usuário desconectou:', socket.id);
-        // Remove o usuário do mapeamento ao desconectar
-        for (let [userId, socketId] of userSockets.entries()) {
-            if (socketId === socket.id) {
-                userSockets.delete(userId);
-                console.log(`Removido mapeamento para usuário ${userId}`);
-                break;
-            }
-        }
-    });
+  socket.on('disconnect', () => {
+    console.log('Usuário desconectou:', socket.id);
+    // Remove o usuário do mapeamento ao desconectar
+    for (let [userId, socketId] of userSockets.entries()) {
+      if (socketId === socket.id) {
+        userSockets.delete(userId);
+        console.log(`Removido mapeamento para usuário ${userId}`);
+        break;
+      }
+    }
+  });
 });
 
 // 4. Disponibiliza instâncias para os controllers (via app)
@@ -60,11 +60,4 @@ app.set('userSockets', userSockets);
 
 // 5. Inicia o servidor HTTP (que agora inclui o WebSocket)
 server.listen(PORT, () => { // <<< IMPORTANTE: Usar server.listen, não app.listen
-    console.log(`Servidor rodando na porta ${PORT}`);
-    // No início do seu arquivo server.js ou app.js (logs opcionais)
-    console.log('Variáveis de ambiente AWS:');
-    console.log('AWS_REGION:', process.env.AWS_REGION);
-    console.log('AWS_S3_BUCKET_NAME:', process.env.AWS_S3_BUCKET_NAME);
-    console.log('AWS_ACCESS_KEY_ID:', process.env.AWS_ACCESS_KEY_ID ? 'Definido' : 'Não definido');
-    console.log('AWS_SECRET_ACCESS_KEY:', process.env.AWS_SECRET_ACCESS_KEY ? 'Definido' : 'Não definido');
 });
