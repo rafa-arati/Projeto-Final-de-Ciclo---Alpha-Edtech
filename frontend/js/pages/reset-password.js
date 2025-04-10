@@ -12,7 +12,7 @@ export default function renderResetPassword(queryParams) {
     // setTimeout(() => navigateTo('login'), 50); // <-- Linha antiga
     setTimeout(() => navigateTo('welcome-screen'), 50); // <-- Linha nova
     return;
-}
+  }
 
   const appContainer = document.getElementById('app');
   if (!appContainer) return;
@@ -50,13 +50,13 @@ export default function renderResetPassword(queryParams) {
               >
               
               <div class="password-requirements">
-                  • Mínimo de 8 caracteres<br>
-                  • Pelo menos uma letra<br>
-                  • Pelo menos um número<br>
-                  • Pelo menos um caractere especial
+                <div id="req-length" class="requirement not-met">• Mínimo de 8 caracteres</div>
+                <div id="req-letter" class="requirement not-met">• Pelo menos uma letra</div>
+                <div id="req-number" class="requirement not-met">• Pelo menos um número</div>
+                <div id="req-special" class="requirement not-met">• Pelo menos um caractere especial</div>
               </div>
               
-              <button type="submit" class="send-button">
+              <button type="submit" class="send-button" id="reset-submit-btn">
                   Redefinir Senha
               </button>
             </form>
@@ -86,14 +86,17 @@ export default function renderResetPassword(queryParams) {
         showMessage('As senhas não coincidem!');
         return;
       }
-      // Adicionar validação de força da senha se desejar (ex: min 8 chars)
-      if (newPass.length < 8) {
-         showMessage('A senha deve ter pelo menos 8 caracteres.');
-         return;
+      
+      // Validações completas de força da senha
+      const hasMinLength = newPass.replace(/\s/g, '').length >= 8;
+      const hasLetter = /[a-zA-Z]/.test(newPass);
+      const hasNumber = /[0-9]/.test(newPass);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPass);
+      
+      if (!hasMinLength || !hasLetter || !hasNumber || !hasSpecialChar) {
+        showMessage('A senha não atende a todos os requisitos de segurança.');
+        return;
       }
-      // Validações mais complexas (letras, números, especiais) podem ser adicionadas aqui
-      // Exemplo: if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(newPass)) { ... }
-
 
       // Desabilitar botão
       const submitButton = resetForm.querySelector('.send-button');
@@ -119,9 +122,73 @@ export default function renderResetPassword(queryParams) {
   const backButton = document.getElementById('backToLoginBtn');
   if (backButton) {
       backButton.addEventListener('click', (e) => {
-        window.history.back() ;
+        window.history.back();
           // Navega de volta para a tela de login
           navigateTo('login'); 
       });
+  }
+  
+  // Adiciona o código para validação visual dos requisitos da senha
+  const passwordInput = document.getElementById('newPassword');
+  const confirmInput = document.getElementById('confirmPassword');
+  const reqLength = document.getElementById('req-length');
+  const reqLetter = document.getElementById('req-letter');
+  const reqNumber = document.getElementById('req-number');
+  const reqSpecial = document.getElementById('req-special');
+  
+  // Função para validar a senha em tempo real
+  function validatePassword() {
+    const password = passwordInput.value;
+    
+    // Validar comprimento
+    if (password.replace(/\s/g, '').length >= 8) {
+      reqLength.classList.remove('not-met');
+      reqLength.classList.add('met');
+    } else {
+      reqLength.classList.remove('met');
+      reqLength.classList.add('not-met');
+    }
+    
+    // Validar letra
+    if (/[a-zA-Z]/.test(password)) {
+      reqLetter.classList.remove('not-met');
+      reqLetter.classList.add('met');
+    } else {
+      reqLetter.classList.remove('met');
+      reqLetter.classList.add('not-met');
+    }
+    
+    // Validar número
+    if (/[0-9]/.test(password)) {
+      reqNumber.classList.remove('not-met');
+      reqNumber.classList.add('met');
+    } else {
+      reqNumber.classList.remove('met');
+      reqNumber.classList.add('not-met');
+    }
+    
+    // Validar caractere especial
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      reqSpecial.classList.remove('not-met');
+      reqSpecial.classList.add('met');
+    } else {
+      reqSpecial.classList.remove('met');
+      reqSpecial.classList.add('not-met');
+    }
+  }
+  
+  // Adicionar listeners de evento para os campos de senha
+  if (passwordInput) {
+    passwordInput.addEventListener('input', validatePassword);
+  }
+  if (confirmInput) {
+    confirmInput.addEventListener('input', () => {
+      // Podemos adicionar validação visual de confirmação aqui se necessário
+    });
+  }
+  
+  // Executar a validação inicial para caso o campo já tenha algum valor
+  if (passwordInput) {
+    validatePassword();
   }
 }
