@@ -39,3 +39,18 @@
 .forgot-password:hover {
     text-decoration: underline;
 }
+
+#loginErrorMessageModal {
+    color: var(--error-color, #FF5252);
+    text-align: center;             
+
+    background-color: var(--error-bg, rgba(255, 82, 82, 0.1)); 
+    border: 1px solid var(--error-border, rgba(255, 82, 82, 0.4)); 
+    border-radius: 6px;             
+    padding: 10px 15px;            
+    margin-top: 15px;               
+    margin-bottom: 15px; 
+    font-size: 14px;            
+    font-weight: 500;               
+    display: none;                  
+  }

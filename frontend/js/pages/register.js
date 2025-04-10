@@ -5,6 +5,8 @@ import { navigateTo } from '../modules/router.js';
 // Exporta a função principal da página
 export default function renderRegisterForm(queryParams) {
   const appContainer = document.getElementById('app');
+  if (!appContainer) return; // Adiciona verificação
+
   appContainer.innerHTML = `
         <div class="container register-container">
             <div class="logo"><span>R</span>OTA<span>CULTURAL</span></div>
@@ -87,7 +89,7 @@ export default function renderRegisterForm(queryParams) {
                     <input type="password" id="password" placeholder="Senha" required>
                 </div>
 
-                <div class="password-requirements">
+                <div class="password-requirements hidden">
                     A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.
                 </div>
 
@@ -117,7 +119,7 @@ export default function renderRegisterForm(queryParams) {
 function setupRegisterEvents() {
   setupRegisterForm();
   setupLoginLink();
-  setupPasswordValidation();
+  setupPasswordValidation(); // <-- ATUALIZADO: Configura os listeners para mostrar/esconder/validar a senha
   setupBirthDateInput();
 }
 
@@ -132,12 +134,12 @@ function setupRegisterForm() {
 
 // Helper: Link para login
 function setupLoginLink() {
-  // Busca o link pelo ID
   const loginLink = document.getElementById('goToLogin');
-
-  // Adiciona o listener apenas se o link existir
   if (loginLink) {
-    loginLink.addEventListener('click', (e) => {
+    // Limpa listener antigo para segurança
+    const newLoginLink = loginLink.cloneNode(true);
+    loginLink.parentNode.replaceChild(newLoginLink, loginLink);
+    newLoginLink.addEventListener('click', (e) => {
       e.preventDefault();
       transitionToPage('register', 'welcome-screen');
     });
@@ -146,48 +148,148 @@ function setupLoginLink() {
   }
 }
 
-// Helper: Validação de senha em tempo real
+// Helper: Configura listeners para o campo de senha e a mensagem de requisitos
 function setupPasswordValidation() {
-  document.getElementById('password')?.addEventListener('input', validatePassword);
+    const passwordInput = document.getElementById('password');
+    const requirementsDiv = document.querySelector('.password-requirements');
+
+    if (passwordInput && requirementsDiv) {
+        // Mostrar ao focar no campo
+        passwordInput.addEventListener('focus', () => {
+            requirementsDiv.classList.remove('hidden');
+        });
+
+        // Esconder ao perder o foco SOMENTE se o campo estiver vazio
+        passwordInput.addEventListener('blur', () => {
+            if (passwordInput.value === '') {
+                requirementsDiv.classList.add('hidden');
+                // Resetar texto e cor ao esconder
+                requirementsDiv.textContent = 'A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.';
+                // Use a cor padrão definida no CSS ou uma cor neutra aqui
+                requirementsDiv.style.color = 'var(--text-tertiary, #888)';
+            }
+        });
+
+        // Validar e garantir visibilidade enquanto digita
+        passwordInput.addEventListener('input', () => {
+            requirementsDiv.classList.remove('hidden'); // Garante visibilidade
+            validatePasswordRealtime(); // Chama a lógica de validação
+        });
+    } else {
+        console.warn("Input de senha (#password) ou div de requisitos (.password-requirements) não encontrados.");
+    }
+}
+
+
+// Helper: Validação da senha em tempo real (chamada pelo listener 'input')
+function validatePasswordRealtime() {
+    const passwordInput = document.getElementById('password');
+    const requirementsDiv = document.querySelector('.password-requirements');
+    if (!passwordInput || !requirementsDiv) return; // Segurança
+
+    const password = passwordInput.value;
+
+    // Requisitos
+    const hasMinLength = password.length >= 8;
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    // Se o campo está vazio (após apagar tudo), reseta a mensagem e cor
+    if (!password) {
+        requirementsDiv.textContent = 'A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.';
+        requirementsDiv.style.color = 'var(--text-tertiary, #888)'; // Cor padrão cinza
+        return;
+    }
+
+    // Monta a mensagem de feedback
+    const missing = [];
+    if (!hasMinLength) missing.push('pelo menos 8 caracteres');
+    if (!hasLetter) missing.push('letras');
+    if (!hasNumber) missing.push('números');
+    if (!hasSpecialChar) missing.push('caracteres especiais');
+
+    if (missing.length === 0) {
+        requirementsDiv.textContent = 'Senha forte!';
+        requirementsDiv.style.color = 'var(--success-color, #4CAF50)'; // Verde
+    } else {
+        requirementsDiv.textContent = `A senha precisa ter: ${missing.join(', ')}.`;
+        // Usa a cor de aviso/fraco definida no CSS se existir, senão um laranja padrão
+        requirementsDiv.style.color = 'var(--warning-color, #FFA500)';
+    }
 }
 
 // Helper: Formatação de data de nascimento
 function setupBirthDateInput() {
-  document.getElementById('birthDate')?.addEventListener('input', formatBirthDate);
+  const birthDateInput = document.getElementById('birthDate');
+  if (birthDateInput) {
+    // Limpa listener antigo
+    const newBirthDateInput = birthDateInput.cloneNode(true);
+    birthDateInput.parentNode.replaceChild(newBirthDateInput, birthDateInput);
+    newBirthDateInput.addEventListener('input', formatBirthDate);
+  }
 }
 
 // Manipula o envio do formulário
 async function handleRegistration() {
   const userData = collectFormData();
 
-  if (!validateForm(userData)) return;
+  if (!validateForm(userData)) return; // Valida os dados gerais
+
+  // Validação específica de força da senha antes de enviar
+  const password = userData.password;
+  const requirementsDiv = document.querySelector('.password-requirements');
+  const isPasswordStrong = password.length >= 8 &&
+                           /[a-zA-Z]/.test(password) &&
+                           /\d/.test(password) &&
+                           /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  if (!isPasswordStrong) {
+      showMessage('A senha não atende a todos os requisitos de segurança.');
+      if (requirementsDiv) requirementsDiv.style.color = 'var(--error-color, #FF5252)'; // Destaca em vermelho
+      return; // Não envia se a senha for fraca
+  }
+
+  // Desabilitar botão (exemplo)
+   const submitButton = document.querySelector('#registerForm button[type="submit"]');
+   if (submitButton) {
+       submitButton.disabled = true;
+       submitButton.textContent = 'CADASTRANDO...';
+   }
 
   try {
     await registerUser(userData);
     showMessage('Cadastro realizado com sucesso! Redirecionando para login...');
-    transitionToPage('register', 'login')
+    // Aguarda um pouco antes de transicionar para o usuário ver a mensagem
+    setTimeout(() => transitionToPage('register', 'welcome-screen'), 2000);
   } catch (error) {
     showMessage(error.message || 'Erro ao cadastrar. Tente novamente.');
+    // Reabilitar botão em caso de erro
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'CADASTRAR';
+    }
   }
 }
 
 // Coleta dados do formulário
 function collectFormData() {
+  // Usa optional chaining (?) para evitar erros se um elemento não for encontrado
   return {
-    name: document.getElementById('name').value,
-    username: document.getElementById('username').value,
-    email: document.getElementById('email').value,
-    birth_date: document.getElementById('birthDate').value,
-    gender: document.getElementById('gender').value,
-    password: document.getElementById('password').value,
-    confirmPassword: document.getElementById('confirmPassword').value
+    name: document.getElementById('name')?.value || '',
+    username: document.getElementById('username')?.value || '',
+    email: document.getElementById('email')?.value || '',
+    birth_date: document.getElementById('birthDate')?.value || '',
+    gender: document.getElementById('gender')?.value || '',
+    password: document.getElementById('password')?.value || '',
+    confirmPassword: document.getElementById('confirmPassword')?.value || ''
   };
 }
 
-// Valida os dados do formulário
+// Valida os dados GERAIS do formulário (campos obrigatórios, formato email/data, senhas coincidem)
 function validateForm({ name, username, email, birth_date, gender, password, confirmPassword }) {
   if (!name || !username || !email || !birth_date || !gender || !password || !confirmPassword) {
-    showMessage('Por favor, preencha todos os campos.');
+    showMessage('Por favor, preencha todos os campos obrigatórios.');
     return false;
   }
 
@@ -201,9 +303,10 @@ function validateForm({ name, username, email, birth_date, gender, password, con
     return false;
   }
 
+  // A validação de tamanho mínimo da senha é feita em tempo real, mas verificamos aqui também
   if (password.length < 8) {
-    showMessage('A senha deve ter pelo menos 8 caracteres.');
-    return false;
+     showMessage('A senha deve ter pelo menos 8 caracteres.');
+     return false;
   }
 
   if (password !== confirmPassword) {
@@ -211,50 +314,19 @@ function validateForm({ name, username, email, birth_date, gender, password, con
     return false;
   }
 
-  return true;
+  return true; // Retorna true se as validações básicas passarem
 }
 
-// Validação de senha (mantida igual, mas agora é função interna)
-function validatePassword() {
-  const password = document.getElementById('password').value;
-  const requirementsDiv = document.querySelector('.password-requirements');
-
-  const validation = {
-    hasMinLength: password.length >= 8,
-    hasLetter: /[a-zA-Z]/.test(password),
-    hasNumber: /\d/.test(password),
-    hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-  };
-
-  if (!password) {
-    requirementsDiv.textContent = 'A senha deve ter pelo menos 8 caracteres com letras, números e caracteres especiais.';
-    requirementsDiv.style.color = '#888';
-    return;
-  }
-
-  const missing = [
-    !validation.hasMinLength && 'pelo menos 8 caracteres',
-    !validation.hasLetter && 'letras',
-    !validation.hasNumber && 'números',
-    !validation.hasSpecialChar && 'caracteres especiais'
-  ].filter(Boolean);
-
-  if (missing.length === 0) {
-    requirementsDiv.textContent = 'Senha forte!';
-    requirementsDiv.style.color = '#4CAF50';
-  } else {
-    requirementsDiv.textContent = `A senha deve ter: ${missing.join(', ')}`;
-    requirementsDiv.style.color = '#FFA500';
-  }
-}
-
-// Formatação de data (mantida igual, mas agora é função interna)
+// Formatação de data (mantida igual)
 function formatBirthDate() {
   const input = document.getElementById('birthDate');
-  let value = input.value.replace(/\D/g, '');
+  if (!input) return; // Segurança
 
-  if (value.length > 8) value = value.substring(0, 8);
+  let value = input.value.replace(/\D/g, ''); // Remove não-dígitos
 
+  if (value.length > 8) value = value.substring(0, 8); // Limita a 8 dígitos
+
+  // Aplica a máscara DD-MM-YYYY
   if (value.length > 4) {
     value = `${value.substring(0, 2)}-${value.substring(2, 4)}-${value.substring(4)}`;
   } else if (value.length > 2) {
