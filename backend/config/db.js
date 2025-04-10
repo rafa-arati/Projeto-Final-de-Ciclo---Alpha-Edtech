@@ -3,12 +3,6 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Verifique se as variáveis de ambiente estão sendo carregadas corretamente
-console.log("Host:", process.env.DB_HOST);
-console.log("Port:", process.env.DB_PORT);
-console.log("User:", process.env.DB_USER);
-console.log("Password:", process.env.DB_PASSWORD ? "[DEFINIDO]" : "undefined"); // Não mostre a senha completa
-console.log("Database:", process.env.DB_NAME);
 
 // Se as variáveis de ambiente não estiverem definidas, use os valores padrão
 const dbConfig = {

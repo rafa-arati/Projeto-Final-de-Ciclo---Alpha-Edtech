@@ -64,9 +64,7 @@ export default async function renderEditProfile(queryParams) {
         : `<div class="profile-image-initial">${user.name?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || 'U'}</div>`
       }
                        </div>
-                       <button id="alterar-foto-btn-display" class="profile-edit-photo" title="Alterar foto (em breve)">
-                         ${cameraIcon}
-                       </button>
+
                      </div>
                      <h2 class="user-display-name">${user.name || user.username || 'Usuário'}</h2>
                      ${isAdminUser ? `<div class="user-badge admin-badge">Administrador</div>` : ''}
@@ -629,7 +627,7 @@ function addAccountHubStyles() {
            background: var(--bg-quaternary) !important;
            color: var(--text-tertiary) !important;
            cursor: not-allowed;
-           opacity: 0.7;
+           opacity: 0.7;zz
        }
       .profile-form .btn.secondary { /* Botão Cancelar */
           background-color: var(--bg-quaternary, #3a3a3c);

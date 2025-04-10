@@ -399,21 +399,23 @@ class QRCode {
   // Obter QR Codes gerados por um usuário
   static async getUserGeneratedQRCodes(userId) {
     try {
-      const query = `
+        const query = `
             SELECT qr.*, e.event_name, e.event_date
             FROM event_qr_codes qr
             JOIN events e ON qr.event_id = e.id
-            WHERE qr.generator_user_id = $1 AND qr.status = 'gerado'
+            WHERE qr.generator_user_id = $1 
+            -- REMOVA OU COMENTE a linha abaixo:
+            -- AND qr.status = 'gerado' 
             ORDER BY qr.generation_time DESC
         `;
 
-      const { rows } = await pool.query(query, [userId]);
-      return rows;
+        const { rows } = await pool.query(query, [userId]);
+        return rows;
     } catch (error) {
-      console.error("Erro ao buscar QR Codes gerados pelo usuário:", error);
-      throw error;
+        console.error("Erro ao buscar QR Codes gerados pelo usuário:", error);
+        throw error; // Re-lança o erro para o controller tratar
     }
   }
-}
+} 
 
 module.exports = QRCode;
