@@ -50,10 +50,10 @@ export function getBenefitDescription(promoOrQr) {
  * @returns {string} Tempo restante formatado ou 'Encerrado'/'Sem prazo'.
  */
 export function getRemainingTime(dateString) {
-     if (!dateString) return 'Sem prazo';
-     try {
+    if (!dateString) return 'Sem prazo';
+    try {
         const targetDate = new Date(dateString);
-         if (isNaN(targetDate.getTime())) throw new Error("Data inválida");
+        if (isNaN(targetDate.getTime())) throw new Error("Data inválida");
         const now = new Date();
         if (targetDate <= now) return 'Encerrado';
         const diffMs = targetDate - now;
@@ -64,10 +64,10 @@ export function getRemainingTime(dateString) {
         const diffMinutes = Math.floor(diffMs / (1000 * 60));
         if (diffMinutes > 0) return `~${diffMinutes} min`;
         return 'Menos de 1 min';
-     } catch (e) {
+    } catch (e) {
         console.error("Erro ao calcular tempo restante:", dateString, e);
         return "Inválido";
-     }
+    }
 }
 
 /**
@@ -181,7 +181,7 @@ async function handleCreatePromotionSubmit(e) {
     e.preventDefault();
     console.log("[handleCreatePromotionSubmit] Iniciando submit...");
 
-    const form = e.target; 
+    const form = e.target;
     const submitButton = form.querySelector('button[type="submit"]');
     const originalButtonText = submitButton?.textContent; // Pega texto antes de desabilitar
 
@@ -190,6 +190,7 @@ async function handleCreatePromotionSubmit(e) {
     const usageDeadlineValue = form.querySelector('#qrcode-usage-deadline')?.value;
 
     // ----- ADICIONAR VALIDAÇÃO FRONTEND -----
+    // Validação 1: Se o prazo de uso (usage) é anterior ao prazo de geração (generation)
     if (generationDeadlineValue && usageDeadlineValue) {
         try {
             const generationDate = new Date(generationDeadlineValue);
@@ -198,25 +199,65 @@ async function handleCreatePromotionSubmit(e) {
             // Compara apenas se ambas as datas são válidas
             if (!isNaN(generationDate.getTime()) && !isNaN(usageDate.getTime())) {
                 if (usageDate < generationDate) {
-                     // Mostra erro para o usuário
-                     showMessage('Erro: A data limite para usar não pode ser anterior à data limite para gerar.', 'error');
-                     // NÃO continua com o submit
-                     return; 
+                    // Mostra erro para o usuário
+                    showMessage('Erro: A data limite para usar não pode ser anterior à data limite para gerar.', 'error');
+                    // NÃO continua com o submit
+                    return;
                 }
             }
         } catch (dateError) {
-             console.warn("Erro ao comparar datas no frontend:", dateError);
-             // Deixa o backend validar se houver erro aqui
+            console.warn("Erro ao comparar datas no frontend:", dateError);
+            // Deixa o backend validar se houver erro aqui
+        }
+    }
+
+    // Validação 2: Se a data de geração é no passado (pelo menos 1 dia a frente)
+    if (generationDeadlineValue) {
+        const generationDate = new Date(generationDeadlineValue);
+        if (!isNaN(generationDate.getTime())) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0); // Reset time to start of day
+
+            if (generationDate < tomorrow) {
+                showMessage('A data limite para gerar QR Codes deve ser pelo menos 1 dia no futuro.', 'error');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
+                return;
+            }
+        }
+    }
+
+    // Validação 3: Se a data de uso é no passado (pelo menos 1 dia a frente)
+    if (usageDeadlineValue) {
+        const usageDate = new Date(usageDeadlineValue);
+        if (!isNaN(usageDate.getTime())) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0); // Reset time to start of day
+
+            if (usageDate < tomorrow) {
+                showMessage('A data limite para usar QR Codes deve ser pelo menos 1 dia no futuro.', 'error');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
+                return;
+            }
         }
     }
     // ----- FIM VALIDAÇÃO FRONTEND -----
 
     // Desabilitar botão
-    if(submitButton) {
-        submitButton.disabled = true; 
+    if (submitButton) {
+        submitButton.disabled = true;
         submitButton.textContent = 'Criando...';
     }
-    
+
     // Pega outros dados do formulário...
     const discountGroup = document.getElementById('discount-group');
     const discountInput = document.getElementById('qrcode-discount');
@@ -234,32 +275,32 @@ async function handleCreatePromotionSubmit(e) {
     // Validações de outros campos...
     if (!promotionData.description || !promotionData.benefitType || !promotionData.benefitDescription) {
         showMessage("Preencha os campos obrigatórios (*)", 'error');
-        if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
+        if (submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
         return;
     }
     if (promotionData.benefitType === 'discount') {
-         if (!discountInput || !discountInput.value) {
-             showMessage("Informe o percentual de desconto.", 'error');
-             if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
-             return;
-         }
-         promotionData.discountPercentage = parseInt(discountInput.value, 10);
-         if (isNaN(promotionData.discountPercentage) || promotionData.discountPercentage < 1 || promotionData.discountPercentage > 100) {
-            showMessage("Percentual de desconto inválido (1-100).", 'error');
-            if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
+        if (!discountInput || !discountInput.value) {
+            showMessage("Informe o percentual de desconto.", 'error');
+            if (submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
             return;
-         }
+        }
+        promotionData.discountPercentage = parseInt(discountInput.value, 10);
+        if (isNaN(promotionData.discountPercentage) || promotionData.discountPercentage < 1 || promotionData.discountPercentage > 100) {
+            showMessage("Percentual de desconto inválido (1-100).", 'error');
+            if (submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
+            return;
+        }
     }
 
     try {
         // Chama API (agora com validação prévia no backend)
         await createPromotion(promotionData); // Usa a função importada do events-api.js
         showMessage('Promoção criada com sucesso!', 'success');
-        form.reset(); 
+        form.reset();
         if (discountGroup) { discountGroup.classList.remove('discount-visible'); }
         if (discountInput) { discountInput.required = false; }
         document.getElementById('qrcode-modal')?.classList.remove('active');
-        await refreshAdminPromotionsList(); 
+        await refreshAdminPromotionsList();
     } catch (error) {
         console.error('Erro ao criar promoção (frontend):', error);
         // Mostra a mensagem de erro vinda do backend (que agora inclui a validação de data)
@@ -301,15 +342,15 @@ function setupCreateModal() {
 
     // Funções de handler
     const openModal = () => {
-         console.log("[setupCreateModal] Abrindo modal...");
-         form.reset(); // Limpa o formulário
-         discountGroup.style.display = 'none'; // Garante que o campo de desconto comece escondido
-         discountInput.required = false;       // Garante que não seja obrigatório inicialmente
-         modal.classList.add('active');        // Mostra o modal
+        console.log("[setupCreateModal] Abrindo modal...");
+        form.reset(); // Limpa o formulário
+        discountGroup.style.display = 'none'; // Garante que o campo de desconto comece escondido
+        discountInput.required = false;       // Garante que não seja obrigatório inicialmente
+        modal.classList.add('active');        // Mostra o modal
     };
     const closeModal = () => {
-         console.log("[setupCreateModal] Fechando modal...");
-         modal.classList.remove('active'); // Esconde o modal
+        console.log("[setupCreateModal] Fechando modal...");
+        modal.classList.remove('active'); // Esconde o modal
     };
 
     const handleBenefitChange = (event) => {
@@ -319,9 +360,9 @@ function setupCreateModal() {
         const currentDiscountInput = document.getElementById('qrcode-discount');
 
         // Verifica se os elementos foram encontrados (boa prática)
-        if(!currentDiscountGroup || !currentDiscountInput) {
-             console.error("[handleBenefitChange] ERRO: Não encontrou #discount-group ou #qrcode-discount!");
-             return;
+        if (!currentDiscountGroup || !currentDiscountInput) {
+            console.error("[handleBenefitChange] ERRO: Não encontrou #discount-group ou #qrcode-discount!");
+            return;
         }
 
         // --- CORREÇÃO AQUI ---
@@ -339,7 +380,7 @@ function setupCreateModal() {
 
         console.log(` > Classe 'discount-visible' ${isDiscount ? 'adicionada' : 'removida'} a #discount-group`);
         console.log(` > Atributo 'required' em #qrcode-discount: ${currentDiscountInput.required}`);
-   };
+    };
 
     const closeOnClickOutside = (event) => { if (modal && event.target === modal) closeModal(); };
 
@@ -368,10 +409,10 @@ function setupCreateModal() {
     newBenefitTypeSelect.addEventListener('change', handleBenefitChange);
 
     if (newBenefitTypeSelect) {
-         console.log("[setupCreateModal] Adicionando listener 'change' ao select #qrcode-benefit-type.");
-         newBenefitTypeSelect.addEventListener('change', handleBenefitChange); // <<< Listener para mostrar/esconder
+        console.log("[setupCreateModal] Adicionando listener 'change' ao select #qrcode-benefit-type.");
+        newBenefitTypeSelect.addEventListener('change', handleBenefitChange); // <<< Listener para mostrar/esconder
     } else {
-         console.error("ERRO: Select #qrcode-benefit-type não encontrado DENTRO do formulário clonado!");
+        console.error("ERRO: Select #qrcode-benefit-type não encontrado DENTRO do formulário clonado!");
     }
     newForm.addEventListener('submit', handleCreatePromotionSubmit); // Listener para enviar
     console.log("[setupCreateModal] Listeners anexados ao #qrcode-form (clonado).");
@@ -405,7 +446,7 @@ function setupViewModal() {
 /** Atualiza a lista no modal admin/criador. */
 async function refreshAdminPromotionsList() {
     const listContainer = document.getElementById('qrcodes-list');
-    if (!listContainer || !currentEventId) { if(listContainer) listContainer.innerHTML = '<p style="color:red;">Erro ao carregar: ID do evento não definido.</p>'; return; }
+    if (!listContainer || !currentEventId) { if (listContainer) listContainer.innerHTML = '<p style="color:red;">Erro ao carregar: ID do evento não definido.</p>'; return; }
     listContainer.innerHTML = '<p>Atualizando lista...</p>';
     try {
         const promotions = await getEventPromotions(currentEventId);
@@ -419,7 +460,7 @@ async function refreshAdminPromotionsList() {
 function setupAdminListDeleteButtons() {
     console.log("[setupAdminListDeleteButtons] Configurando botões de exclusão...");
     const listContainer = document.getElementById('qrcodes-list');
-    if(!listContainer) { console.warn("[setupAdminListDeleteButtons] Container da lista não encontrado."); return; }
+    if (!listContainer) { console.warn("[setupAdminListDeleteButtons] Container da lista não encontrado."); return; }
 
     // Usa event delegation na lista para pegar cliques nos botões de deletar
     listContainer.removeEventListener('click', handleDeleteButtonClick); // Limpa listener antigo
@@ -442,10 +483,10 @@ function handleDeleteButtonClick(event) {
     const confirmMessage = document.getElementById('delete-confirm-message');
     const confirmBtn = document.getElementById('confirm-delete-qrcode'); // Pega o botão de confirmação
 
-    if(!deleteModal || !confirmMessage || !confirmBtn || !itemId) {
-         console.error("[handleDeleteButtonClick] ERRO: Elementos do modal ou ID do item faltando.");
-         return;
-     }
+    if (!deleteModal || !confirmMessage || !confirmBtn || !itemId) {
+        console.error("[handleDeleteButtonClick] ERRO: Elementos do modal ou ID do item faltando.");
+        return;
+    }
 
     // Guarda o ID que será excluído *nesta* interação específica
     const idParaExcluir = itemId;
@@ -472,7 +513,7 @@ function handleDeleteButtonClick(event) {
         console.log(`[executarExclusao] Confirmada exclusão para ID: ${idParaExcluir}`);
         newConfirmBtn.disabled = true;
         newConfirmBtn.textContent = 'Excluindo...';
-    
+
         try {
             await deleteQRCode(idParaExcluir);
             showMessage('Item excluído com sucesso!', 'success');
@@ -534,7 +575,7 @@ function setupDeleteConfirmationModal() {
     window.removeEventListener("click", closeDeleteModalOnClickOutside);
     window.addEventListener("click", closeDeleteModalOnClickOutside);
 
-     console.log("[setupDeleteConfirmationModal] Configuração de Close/Cancel concluída.");
+    console.log("[setupDeleteConfirmationModal] Configuração de Close/Cancel concluída.");
 }
 
 

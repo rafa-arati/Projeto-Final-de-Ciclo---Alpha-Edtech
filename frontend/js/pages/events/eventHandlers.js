@@ -162,12 +162,10 @@ function setupBottomNavigation() {
                     navigateTo('events');
                 }
             });
-        } else if (index === 1) { // Agenda (terceiro item)
+        } else if (index === 1) { // Agenda (segundo item agora)
             newItem.addEventListener('click', () => {
                 navigateTo('agenda');
             });
-        } else {
-            newItem.addEventListener('click', showDevelopmentMessage);
         }
     });
 }

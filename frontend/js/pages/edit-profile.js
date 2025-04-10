@@ -26,27 +26,27 @@ const profileIconNav = `<svg class="icon-svg" viewBox="0 0 24 24" fill="none" xm
  * Renderiza a página de perfil/conta do usuário.
  */
 export default async function renderEditProfile(queryParams) {
-    console.log("Rendering Account Hub Page...");
-    try {
-        const user = await fetchCompleteUserData();
-        if (!user) {
-            showMessage('Você precisa estar logado para acessar essa página');
-            navigateTo('login');
-            return;
-        }
-        console.log("User data fetched:", user);
+  console.log("Rendering Account Hub Page...");
+  try {
+    const user = await fetchCompleteUserData();
+    if (!user) {
+      showMessage('Você precisa estar logado para acessar essa página');
+      navigateTo('login');
+      return;
+    }
+    console.log("User data fetched:", user);
 
-        const isAdminUser = isAdmin();
-        const isPremiumUser = isPremium();
+    const isAdminUser = isAdmin();
+    const isPremiumUser = isPremium();
 
-        const appContainer = document.getElementById('app');
-        if (!appContainer) {
-            console.error("Container #app não encontrado!");
-            return;
-        }
+    const appContainer = document.getElementById('app');
+    if (!appContainer) {
+      console.error("Container #app não encontrado!");
+      return;
+    }
 
-        // Define o HTML da página
-        appContainer.innerHTML = `
+    // Define o HTML da página
+    appContainer.innerHTML = `
           <div class="app-wrapper account-hub-page">
             <div class="app-container">
               <header class="page-header">
@@ -60,9 +60,9 @@ export default async function renderEditProfile(queryParams) {
                     <div class="profile-image-container">
                        <div class="profile-image">
                          ${user.photo_url
-                               ? `<img src="${user.photo_url}" alt="Foto de perfil">`
-                               : `<div class="profile-image-initial">${user.name?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || 'U'}</div>`
-                         }
+        ? `<img src="${user.photo_url}" alt="Foto de perfil">`
+        : `<div class="profile-image-initial">${user.name?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || 'U'}</div>`
+      }
                        </div>
                        <button id="alterar-foto-btn-display" class="profile-edit-photo" title="Alterar foto (em breve)">
                          ${cameraIcon}
@@ -87,11 +87,6 @@ export default async function renderEditProfile(queryParams) {
                     </button>
                     ` : `
                     `}
-                    ${isAdminUser ? `
-                    <button id="metricas-btn" class="btn-profile-action">
-                        ${barChartIcon} Métricas (em breve)
-                    </button>
-                    ` : ''}
                      <button id="logout-btn" class="btn-profile-action logout-action">
                          ${logoutIcon} Sair
                      </button>
@@ -124,23 +119,19 @@ export default async function renderEditProfile(queryParams) {
                 </div>
 
               </div> </div> <footer class="bottom-nav">
-              <div class="nav-item" id="nav-home">
-                ${homeIconNav}
-                <span>Home</span>
-              </div>
-              <div class="nav-item" id="nav-agenda">
-                ${agendaIconNav}
-                <span>Agenda</span>
-              </div>
-              <div class="nav-item" id="nav-favorites">
-                ${favoritesIconNav}
-                <span>Favoritos</span>
-              </div>
-              <div class="nav-item active" id="nav-profile">
-                ${profileIconNav}
-                <span>Perfil</span>
-              </div>
-            </footer>
+                <div class="nav-item" id="nav-home">
+                  ${homeIconNav}
+                  <span>Home</span>
+                </div>
+                <div class="nav-item" id="nav-agenda">
+                  ${agendaIconNav}
+                  <span>Agenda</span>
+                </div>
+                <div class="nav-item active" id="nav-profile">
+                  ${profileIconNav}
+                  <span>Perfil</span>
+                </div>
+              </footer>
             </div> <div class="modal" id="development-modal">
             <div class="modal-content">
               <span class="close-modal" id="close-development-modal">&times;</span>
@@ -153,15 +144,15 @@ export default async function renderEditProfile(queryParams) {
           </div>
         `;
 
-        addAccountHubStyles(); // Garante que os estilos CSS sejam carregados/existam
-        setupAccountHubEvents(user); // Configura TODOS os eventos da página, incluindo a nova barra
-        setupDevelopmentModal(); // Configura o modal de "em desenvolvimento"
+    addAccountHubStyles(); // Garante que os estilos CSS sejam carregados/existam
+    setupAccountHubEvents(user); // Configura TODOS os eventos da página, incluindo a nova barra
+    setupDevelopmentModal(); // Configura o modal de "em desenvolvimento"
 
-      } catch (error) {
-        console.error('Erro fatal ao carregar Conta/Perfil:', error);
-        showMessage('Erro ao carregar seus dados. Tente novamente.', 'error');
-        navigateTo('events');
-      }
+  } catch (error) {
+    console.error('Erro fatal ao carregar Conta/Perfil:', error);
+    showMessage('Erro ao carregar seus dados. Tente novamente.', 'error');
+    navigateTo('events');
+  }
 }
 
 // --- Funções Auxiliares ---
@@ -176,10 +167,10 @@ function formatDateForInput(dateString) {
   try {
     // Cria um objeto Date. Funciona com YYYY-MM-DD ou objetos Date.
     const date = new Date(dateString);
-    
+
     // Importante: Ajusta para o fuso horário local para evitar problemas de um dia a menos/mais
     // ao converter para string ISO se a data original não tiver fuso específico.
-    date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); 
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
 
     if (isNaN(date.getTime())) return ''; // Retorna vazio se a data for inválida
 
@@ -196,68 +187,68 @@ function formatDateForInput(dateString) {
 
 // Formata número de telefone para exibição (Ex: (XX) XXXXX-XXXX)
 function formatPhoneNumber(phoneFromDB) {
-    if (!phoneFromDB) return '';
-    const numbers = phoneFromDB.toString().replace(/\D/g, '');
-    if (numbers.length === 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
-    if (numbers.length === 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    return numbers; // Retorna apenas números se não bater com 10 ou 11 dígitos
+  if (!phoneFromDB) return '';
+  const numbers = phoneFromDB.toString().replace(/\D/g, '');
+  if (numbers.length === 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+  if (numbers.length === 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+  return numbers; // Retorna apenas números se não bater com 10 ou 11 dígitos
 }
 
 // Aplica máscara enquanto o usuário digita no campo telefone
 function enforcePhoneFormat(value) {
-    const numbers = value.replace(/\D/g, '');
-    const len = numbers.length;
-    if (len === 0) return '';
-    if (len <= 2) return `(${numbers}`;
-    if (len <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    // Adapta para 8 ou 9 dígitos no número principal
-    if (len <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    // Assume 9 dígitos como padrão se passar de 10
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  const numbers = value.replace(/\D/g, '');
+  const len = numbers.length;
+  if (len === 0) return '';
+  if (len <= 2) return `(${numbers}`;
+  if (len <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+  // Adapta para 8 ou 9 dígitos no número principal
+  if (len <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+  // Assume 9 dígitos como padrão se passar de 10
+  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
 }
 
 // Configura o modal genérico de "Em desenvolvimento"
 function setupDevelopmentModal() {
-    const modal = document.getElementById("development-modal");
-    const closeModalBtn = document.getElementById("close-development-modal");
-    const okBtn = document.getElementById("ok-development");
-    if (!modal || !closeModalBtn || !okBtn) return;
+  const modal = document.getElementById("development-modal");
+  const closeModalBtn = document.getElementById("close-development-modal");
+  const okBtn = document.getElementById("ok-development");
+  if (!modal || !closeModalBtn || !okBtn) return;
 
-    const closeModalFunc = () => modal.classList.remove('active');
+  const closeModalFunc = () => modal.classList.remove('active');
 
-    // Limpeza de listeners antigos antes de adicionar novos
-    closeModalBtn.replaceWith(closeModalBtn.cloneNode(true));
-    document.getElementById("close-development-modal").addEventListener("click", closeModalFunc);
+  // Limpeza de listeners antigos antes de adicionar novos
+  closeModalBtn.replaceWith(closeModalBtn.cloneNode(true));
+  document.getElementById("close-development-modal").addEventListener("click", closeModalFunc);
 
-    okBtn.replaceWith(okBtn.cloneNode(true));
-    document.getElementById("ok-development").addEventListener("click", closeModalFunc);
+  okBtn.replaceWith(okBtn.cloneNode(true));
+  document.getElementById("ok-development").addEventListener("click", closeModalFunc);
 
-    // Fechar ao clicar fora (handler global, limpar antes de adicionar)
-    const closeDevModalOnClickOutside = (event) => { if (modal && event.target === modal) { modal.classList.remove("active"); } };
-    window.removeEventListener("click", closeDevModalOnClickOutside); // Remove anterior
-    window.addEventListener("click", closeDevModalOnClickOutside); // Adiciona novo
+  // Fechar ao clicar fora (handler global, limpar antes de adicionar)
+  const closeDevModalOnClickOutside = (event) => { if (modal && event.target === modal) { modal.classList.remove("active"); } };
+  window.removeEventListener("click", closeDevModalOnClickOutside); // Remove anterior
+  window.addEventListener("click", closeDevModalOnClickOutside); // Adiciona novo
 }
 
 // Mostra o modal de "Em desenvolvimento"
 function showDevelopmentModal() {
-    const modal = document.getElementById('development-modal');
-    if (modal) modal.classList.add('active');
+  const modal = document.getElementById('development-modal');
+  if (modal) modal.classList.add('active');
 }
 
 // Mostra o formulário de edição e esconde a lista de ações
 function showEditForm() {
-    document.getElementById('actionList')?.classList.add('is-hidden');
-    document.getElementById('userInfoDisplay')?.classList.add('is-hidden'); // Esconde também a imagem/nome
-    document.getElementById('editFormContainer')?.classList.remove('is-hidden');
-    document.getElementById('account-hub-title').textContent = 'Editar Informações'; // Muda o título do header
+  document.getElementById('actionList')?.classList.add('is-hidden');
+  document.getElementById('userInfoDisplay')?.classList.add('is-hidden'); // Esconde também a imagem/nome
+  document.getElementById('editFormContainer')?.classList.remove('is-hidden');
+  document.getElementById('account-hub-title').textContent = 'Editar Informações'; // Muda o título do header
 }
 
 // Mostra a lista de ações e esconde o formulário de edição
 function showActionList() {
-    document.getElementById('actionList')?.classList.remove('is-hidden');
-    document.getElementById('userInfoDisplay')?.classList.remove('is-hidden'); // Mostra imagem/nome de volta
-    document.getElementById('editFormContainer')?.classList.add('is-hidden');
-    document.getElementById('account-hub-title').textContent = 'Minha Conta'; // Restaura título
+  document.getElementById('actionList')?.classList.remove('is-hidden');
+  document.getElementById('userInfoDisplay')?.classList.remove('is-hidden'); // Mostra imagem/nome de volta
+  document.getElementById('editFormContainer')?.classList.add('is-hidden');
+  document.getElementById('account-hub-title').textContent = 'Minha Conta'; // Restaura título
 }
 
 /**
@@ -265,200 +256,198 @@ function showActionList() {
  * @param {object} user - Os dados do usuário atual.
  */
 function setupAccountHubEvents(user) {
-    console.log("Setting up Account Hub events...");
+  console.log("Setting up Account Hub events...");
 
-    // Função auxiliar para limpar e adicionar listeners
-    const cleanAndAddListener = (id, event, handler) => {
-        const element = document.getElementById(id);
-        if (element) {
-            const newElement = element.cloneNode(true); // Cria um clone
-            element.parentNode.replaceChild(newElement, element); // Substitui o original pelo clone (remove listeners antigos)
-            newElement.addEventListener(event, handler); // Adiciona listener ao clone
-        } else {
-            console.warn(`Elemento com ID #${id} não encontrado para adicionar listener.`);
-        }
-    };
+  // Função auxiliar para limpar e adicionar listeners
+  const cleanAndAddListener = (id, event, handler) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const newElement = element.cloneNode(true); // Cria um clone
+      element.parentNode.replaceChild(newElement, element); // Substitui o original pelo clone (remove listeners antigos)
+      newElement.addEventListener(event, handler); // Adiciona listener ao clone
+    } else {
+      console.warn(`Elemento com ID #${id} não encontrado para adicionar listener.`);
+    }
+  };
 
-    // Botão Voltar do Header Principal
-    cleanAndAddListener('profile-back-button', 'click', (e) => {
-        e.preventDefault();
-        const editFormContainer = document.getElementById('editFormContainer');
-        if (editFormContainer && !editFormContainer.classList.contains('is-hidden')) {
-            showActionList(); // Se editando, volta para lista de ações
-        } else {
-            navigateTo('events'); // Se na lista de ações, volta para eventos
-        }
+  // Botão Voltar do Header Principal
+  cleanAndAddListener('profile-back-button', 'click', (e) => {
+    e.preventDefault();
+    const editFormContainer = document.getElementById('editFormContainer');
+    if (editFormContainer && !editFormContainer.classList.contains('is-hidden')) {
+      showActionList(); // Se editando, volta para lista de ações
+    } else {
+      navigateTo('events'); // Se na lista de ações, volta para eventos
+    }
+  });
+
+  // Botão Alterar Foto (Display)
+  cleanAndAddListener('alterar-foto-btn-display', 'click', showDevelopmentModal);
+
+  // Botão Editar Informações Pessoais (mostra o formulário)
+  cleanAndAddListener('edit-info-btn', 'click', showEditForm);
+
+  // Botão Cancelar Edição (esconde o formulário)
+  cleanAndAddListener('cancel-edit-btn', 'click', (e) => {
+    e.preventDefault();
+    showActionList();
+  });
+
+  // Botão Meus Eventos
+  cleanAndAddListener('meus-eventos-btn', 'click', () => navigateTo('events', { showMyEvents: 'true' }));
+
+  // Botão Criar Evento
+  cleanAndAddListener('criar-evento-btn', 'click', () => navigateTo('create-event'));
+
+  // Botão Gerenciar Todos Eventos (Admin)
+  cleanAndAddListener('gerenciar-eventos-btn', 'click', () => navigateTo('manage-events')); // Vai para a tela de gerenciamento
+
+  // Botão Métricas (Admin)
+  //cleanAndAddListener('metricas-btn', 'click', showDevelopmentModal);
+
+  // Botão Upgrade Premium
+  cleanAndAddListener('upgrade-btn', 'click', () => navigateTo('premium'));
+
+  // Botão Logout
+  cleanAndAddListener('logout-btn', 'click', async (e) => {
+    console.log("Logout button clicked");
+    const button = e.currentTarget;
+    const originalContent = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = `${logoutIcon} Saindo...`;
+    try {
+      await logoutUser();
+      clearUser(); // Limpa dados do localStorage
+      navigateTo('welcome-screen'); // Vai para a tela de boas-vindas/login
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+      showMessage('Erro ao sair. Tente novamente.');
+      clearUser(); // Limpa dados mesmo em caso de erro
+      navigateTo('welcome-screen');
+      button.disabled = false;
+      button.innerHTML = originalContent;
+    }
+  });
+
+  // Input de Telefone (formatação no formulário)
+  const phoneInput = document.getElementById('phone');
+  if (phoneInput) {
+    const newPhoneInput = phoneInput.cloneNode(true);
+    phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
+    newPhoneInput.addEventListener('input', (e) => {
+      e.target.value = enforcePhoneFormat(e.target.value);
     });
+  }
 
-    // Botão Alterar Foto (Display)
-    cleanAndAddListener('alterar-foto-btn-display', 'click', showDevelopmentModal);
+  // Formulário de Submit (edição de perfil)
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm) {
+    const newProfileForm = profileForm.cloneNode(true);
+    profileForm.parentNode.replaceChild(newProfileForm, profileForm);
+    // --- SUBSTITUA A PARTIR DAQUI ---
+    newProfileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('name');
+      const phoneInputSubmit = document.getElementById('phone');
+      const birthDateInput = document.getElementById('birthDate');
 
-    // Botão Editar Informações Pessoais (mostra o formulário)
-    cleanAndAddListener('edit-info-btn', 'click', showEditForm);
+      // Pega os valores dos inputs
+      const name = nameInput ? nameInput.value.trim() : '';
+      const rawPhone = phoneInputSubmit ? phoneInputSubmit.value.replace(/\D/g, '') : '';
+      const birthDateValue = birthDateInput ? birthDateInput.value : null; // Formato AAAA-MM-DD ou vazio
 
-    // Botão Cancelar Edição (esconde o formulário)
-    cleanAndAddListener('cancel-edit-btn', 'click', (e) => {
-        e.preventDefault();
-        showActionList();
-    });
+      // --- Validações ---
+      if (!name) {
+        showMessage('Nome é obrigatório');
+        return;
+      }
+      if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) {
+        showMessage('Telefone inválido. Use DDD + número (10 ou 11 dígitos).');
+        return;
+      }
+      // Você pode adicionar validações para birthDateValue aqui se desejar
+      // (ex: verificar se não é uma data futura)
 
-    // Botão Meus Eventos
-    cleanAndAddListener('meus-eventos-btn', 'click', () => navigateTo('events', { showMyEvents: 'true' }));
+      // --- CORREÇÃO: Monta o objeto bodyData ANTES do fetch ---
+      const bodyData = {
+        name: name,
+        phone: rawPhone || null, // Envia null para o backend se o telefone estiver vazio
+        birth_date: birthDateValue || null // Envia null para o backend se a data estiver vazia
+      };
+      console.log("Dados que serão enviados para API:", bodyData); // Log para debug
+      // --- FIM DA CORREÇÃO ---
 
-    // Botão Criar Evento
-    cleanAndAddListener('criar-evento-btn', 'click', () => navigateTo('create-event'));
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Salvando...';
 
-    // Botão Gerenciar Todos Eventos (Admin)
-    cleanAndAddListener('gerenciar-eventos-btn', 'click', () => navigateTo('manage-events')); // Vai para a tela de gerenciamento
-
-    // Botão Métricas (Admin)
-    cleanAndAddListener('metricas-btn', 'click', showDevelopmentModal);
-
-    // Botão Upgrade Premium
-    cleanAndAddListener('upgrade-btn', 'click', () => navigateTo('premium'));
-
-    // Botão Logout
-    cleanAndAddListener('logout-btn', 'click', async (e) => {
-        console.log("Logout button clicked");
-        const button = e.currentTarget;
-        const originalContent = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = `${logoutIcon} Saindo...`;
-        try {
-            await logoutUser();
-            clearUser(); // Limpa dados do localStorage
-            navigateTo('welcome-screen'); // Vai para a tela de boas-vindas/login
-        } catch (error) {
-            console.error('Erro ao fazer logout:', error);
-            showMessage('Erro ao sair. Tente novamente.');
-            clearUser(); // Limpa dados mesmo em caso de erro
-            navigateTo('welcome-screen');
-            button.disabled = false;
-            button.innerHTML = originalContent;
-        }
-    });
-
-    // Input de Telefone (formatação no formulário)
-    const phoneInput = document.getElementById('phone');
-     if (phoneInput) {
-         const newPhoneInput = phoneInput.cloneNode(true);
-         phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
-         newPhoneInput.addEventListener('input', (e) => {
-             e.target.value = enforcePhoneFormat(e.target.value);
-         });
-     }
-
-    // Formulário de Submit (edição de perfil)
-    const profileForm = document.getElementById('profileForm');
-    if (profileForm) {
-        const newProfileForm = profileForm.cloneNode(true);
-        profileForm.parentNode.replaceChild(newProfileForm, profileForm);
-        // --- SUBSTITUA A PARTIR DAQUI ---
-        newProfileForm.addEventListener('submit', async (e) => {
-             e.preventDefault();
-            const nameInput = document.getElementById('name');
-            const phoneInputSubmit = document.getElementById('phone');
-            const birthDateInput = document.getElementById('birthDate');
-
-            // Pega os valores dos inputs
-            const name = nameInput ? nameInput.value.trim() : '';
-            const rawPhone = phoneInputSubmit ? phoneInputSubmit.value.replace(/\D/g, '') : ''; 
-            const birthDateValue = birthDateInput ? birthDateInput.value : null; // Formato AAAA-MM-DD ou vazio
-
-            // --- Validações ---
-            if (!name) {
-                showMessage('Nome é obrigatório'); 
-                return; 
-            }
-            if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) {
-                showMessage('Telefone inválido. Use DDD + número (10 ou 11 dígitos).'); 
-                return;
-            }
-            // Você pode adicionar validações para birthDateValue aqui se desejar
-            // (ex: verificar se não é uma data futura)
-
-            // --- CORREÇÃO: Monta o objeto bodyData ANTES do fetch ---
-            const bodyData = {
-                name: name,
-                phone: rawPhone || null, // Envia null para o backend se o telefone estiver vazio
-                birth_date: birthDateValue || null // Envia null para o backend se a data estiver vazia
-            };
-            console.log("Dados que serão enviados para API:", bodyData); // Log para debug
-            // --- FIM DA CORREÇÃO ---
-
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = 'Salvando...';
-
-            try {
-                // --- CORREÇÃO: Corrige o 'body' da chamada fetch ---
-                const response = await fetch('/api/auth/profile', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include', 
-                    body: JSON.stringify(bodyData) // <<< Envia o objeto bodyData corretamente formatado
-                });
-                // --- FIM DA CORREÇÃO ---
-                
-                const data = await response.json();
-                if (!response.ok) {
-                    // Tenta pegar a mensagem de erro específica do backend
-                    throw new Error(data.message || `Falha ao atualizar (Status: ${response.status})`);
-                }
-
-                showMessage('Perfil atualizado com sucesso!');
-                
-                // Atualiza dados do usuário no localStorage com a resposta (incluindo birth_date)
-                // Certifique-se que o backend retorna 'birth_date' no objeto 'data.data'
-                const updatedUserData = { 
-                    ...user, 
-                    name: data.data.name, 
-                    phone: data.data.phone, 
-                    birth_date: data.data.birth_date // <<< Pega a data atualizada da resposta
-                };
-                saveUser(updatedUserData); // Salva no localStorage
-                console.log("LocalStorage atualizado:", updatedUserData);
-                
-                // Atualiza nome exibido na tela (se visível)
-                const displayNameElement = document.querySelector('.user-display-name');
-                if (displayNameElement) {
-                   displayNameElement.textContent = updatedUserData.name || updatedUserData.username || 'Usuário';
-                }
-
-                showActionList(); // Volta para a lista de ações
-
-            } catch (error) {
-                console.error('Erro na atualização do perfil:', error);
-                showMessage(error.message || 'Erro ao atualizar perfil. Tente novamente.');
-            } finally {
-                // Garante que o botão seja reabilitado
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = originalButtonText;
-                }
-            }
+      try {
+        // --- CORREÇÃO: Corrige o 'body' da chamada fetch ---
+        const response = await fetch('/api/auth/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(bodyData) // <<< Envia o objeto bodyData corretamente formatado
         });
-     }
+        // --- FIM DA CORREÇÃO ---
 
-    // --- Listeners para a Barra de Navegação Inferior ---
-    console.log("Setting up bottom navigation listeners...");
-    cleanAndAddListener('nav-home', 'click', () => navigateTo('events'));
-    cleanAndAddListener('nav-search', 'click', showDevelopmentModal); // Altere para navigateTo('search') se implementar
-    cleanAndAddListener('nav-agenda', 'click', () => navigateTo('agenda'));
-    cleanAndAddListener('nav-favorites', 'click', showDevelopmentModal); // Altere para navigateTo('favorites') se implementar
-    cleanAndAddListener('nav-profile', 'click', () => {
-        // Se já está na página de perfil e editando, volta para a lista de ações
-        const editFormContainer = document.getElementById('editFormContainer');
-        if (editFormContainer && !editFormContainer.classList.contains('is-hidden')) {
-             showActionList();
+        const data = await response.json();
+        if (!response.ok) {
+          // Tenta pegar a mensagem de erro específica do backend
+          throw new Error(data.message || `Falha ao atualizar (Status: ${response.status})`);
         }
-        console.log("Profile nav item clicked (already on page).");
-        // Não precisa fazer nada se já estiver na visualização principal do perfil
-    });
-    // --- FIM: Listeners para a Barra de Navegação Inferior ---
 
-    console.log("Account Hub events set up complete.");
+        showMessage('Perfil atualizado com sucesso!');
+
+        // Atualiza dados do usuário no localStorage com a resposta (incluindo birth_date)
+        // Certifique-se que o backend retorna 'birth_date' no objeto 'data.data'
+        const updatedUserData = {
+          ...user,
+          name: data.data.name,
+          phone: data.data.phone,
+          birth_date: data.data.birth_date // <<< Pega a data atualizada da resposta
+        };
+        saveUser(updatedUserData); // Salva no localStorage
+        console.log("LocalStorage atualizado:", updatedUserData);
+
+        // Atualiza nome exibido na tela (se visível)
+        const displayNameElement = document.querySelector('.user-display-name');
+        if (displayNameElement) {
+          displayNameElement.textContent = updatedUserData.name || updatedUserData.username || 'Usuário';
+        }
+
+        showActionList(); // Volta para a lista de ações
+
+      } catch (error) {
+        console.error('Erro na atualização do perfil:', error);
+        showMessage(error.message || 'Erro ao atualizar perfil. Tente novamente.');
+      } finally {
+        // Garante que o botão seja reabilitado
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        }
+      }
+    });
+  }
+
+  // --- Listeners para a Barra de Navegação Inferior ---
+  console.log("Setting up bottom navigation listeners...");
+  cleanAndAddListener('nav-home', 'click', () => navigateTo('events'));
+  cleanAndAddListener('nav-agenda', 'click', () => navigateTo('agenda'));
+  cleanAndAddListener('nav-profile', 'click', () => {
+    // Se já está na página de perfil e editando, volta para a lista de ações
+    const editFormContainer = document.getElementById('editFormContainer');
+    if (editFormContainer && !editFormContainer.classList.contains('is-hidden')) {
+      showActionList();
+    }
+    console.log("Profile nav item clicked (already on page).");
+    // Não precisa fazer nada se já estiver na visualização principal do perfil
+  });
+  // --- FIM: Listeners para a Barra de Navegação Inferior ---
+
+  console.log("Account Hub events set up complete.");
 }
 
 
@@ -467,13 +456,13 @@ function setupAccountHubEvents(user) {
  * (Pode ser otimizado movendo estilos para arquivos CSS globais/específicos)
  */
 function addAccountHubStyles() {
-    const styleId = 'account-hub-styles';
-    if (document.getElementById(styleId)) return; // Já existe
+  const styleId = 'account-hub-styles';
+  if (document.getElementById(styleId)) return; // Já existe
 
-    console.log("Adding Account Hub page styles...");
-    const styles = document.createElement('style');
-    styles.id = styleId;
-    styles.textContent = `
+  console.log("Adding Account Hub page styles...");
+  const styles = document.createElement('style');
+  styles.id = styleId;
+  styles.textContent = `
       /* Estilos para a página Minha Conta / Editar Perfil */
       .account-hub-page .profile-content { padding: 0 20px 100px; /* Mais espaço inferior por causa do nav */ text-align: center; }
       /* ... (outros estilos de .profile-header, .profile-image-container, .user-display-name, .user-badge, etc. como definidos anteriormente) ... */
@@ -522,6 +511,6 @@ function addAccountHubStyles() {
 
       .is-hidden { display: none !important; }
     `;
-    document.head.appendChild(styles);
-    console.log("Account Hub styles added/ensured.");
+  document.head.appendChild(styles);
+  console.log("Account Hub styles added/ensured.");
 }

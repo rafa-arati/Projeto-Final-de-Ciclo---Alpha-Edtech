@@ -826,6 +826,23 @@ function validateForm(form) {
   if (!categoria) { showMessage('A categoria do evento é obrigatória', 'error'); return false; }
   if (!localizacao) { showMessage('A localização do evento é obrigatória', 'error'); return false; }
 
+  // NOVA VALIDAÇÃO: Verificar se a data não é passada
+  const eventDate = new Date(data);
+  const today = new Date();
+
+  // Resetar horas, minutos e segundos para comparar apenas as datas
+  today.setHours(0, 0, 0, 0);
+  eventDate.setHours(0, 0, 0, 0);
+
+  // Calcular o mínimo de data aceitável (um dia depois de hoje)
+  const minDate = new Date(today);
+  minDate.setDate(today.getDate() + 1);
+
+  if (eventDate < minDate) {
+    showMessage('A data do evento deve ser pelo menos 1 dia após a data atual', 'error');
+    return false;
+  }
+
   // Exige imagem apenas na criação, não na edição (a menos que queira obrigar sempre)
   if (!isEditing && imagemInput && imagemInput.files.length === 0) {
     // showMessage('Uma imagem para o evento é obrigatória na criação', 'error');
