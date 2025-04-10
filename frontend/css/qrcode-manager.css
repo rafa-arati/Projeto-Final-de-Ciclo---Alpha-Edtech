@@ -1,211 +1,135 @@
-/* ===== Estilos MAIS REFINADOS para a Lista de Promoções (Admin/Criador) no Modal ===== */
+/* Estilos para o modal de Criar Promoção (#qrcode-modal) */
 
-/* Ajuste no Modal de Visualização */
-#view-qrcodes-modal .modal-content {
-    max-width: 750px; /* Um pouco mais largo se necessário */
-    width: 90%;
-  }
-  
-  /* Container da Lista no Modal */
-  .admin-promotions-list {
-    max-height: 70vh; 
-    overflow-y: auto;
-    padding: 15px; 
-    margin-top: 15px;
-    border-top: 1px solid #333;
-    display: grid; /* MUDOU de flex para grid */
-    grid-template-columns: repeat(2, 1fr); /* Define 2 colunas de tamanho igual */
-    gap: 20px; /* Espaço entre os cards (horizontal e vertical) */
-  }
-  
-  /* Mensagem de "Nenhum item" */
-  .no-items-message {
-    text-align: center;
-    color: #888;
-    padding: 40px 10px;
-    font-style: italic;
-  }
-  
-  /* Card de Promoção Individual */
-  .promotion-admin-card {
-    background-color: #2f2f31; /* Um pouco diferente do anterior */
-    border: 1px solid #4a4a4f;
-    border-radius: 12px; /* Mais arredondado */
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: box-shadow 0.2s ease;
-    min-height: 180px; /* ALTURA MÍNIMA para evitar achatamento */
-  }
-  
-  .promotion-admin-card:hover {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
-  }
-  
-  /* Cabeçalho do Card */
-  .promo-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #3e3e40; /* Tom mais escuro para contraste */
-    padding: 15px 20px; /* MAIS padding horizontal e vertical */
-    border-bottom: 1px solid #4a4a4f;
-  }
-  
-  .promo-card-title {
-    margin: 0;
-    font-size: 1.2em; /* Maior */
-    font-weight: 600;
-    color: #ffffff;
-    flex-grow: 1;
-    margin-right: 15px;
-  }
-  
-  .promo-card-status {
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.8em;
-    font-weight: bold;
-    color: white;
-    white-space: nowrap;
-    flex-shrink: 0;
-    /* Cores aplicadas inline */
-  }
-  
-  /* Corpo do Card (Detalhes) */
-  .promo-card-body {
-    padding: 20px; /* MAIS padding */
-    font-size: 1em; /* Tamanho base 16px */
-    color: #d8d8d8;
-    line-height: 1.65; /* Bom espaçamento */
-    flex-grow: 1; /* Faz ocupar espaço vertical disponível */
-    display: flex; /* Usar flexbox para alinhar melhor */
-    flex-direction: column;
-    justify-content: center; /* Tenta centralizar verticalmente o conteúdo */
-  }
-  
-  .promo-card-body p {
-    margin: 0 0 12px 0; /* MAIS espaço inferior */
-  }
-  
-  .promo-card-body p:last-child {
-    margin-bottom: 0;
-  }
-  
-  .promo-card-body strong {
-    color: #ffffff; /* Rótulos em branco */
-    font-weight: 500; /* Peso médio */
-    margin-right: 6px;
-  }
-  
-  
-  .promo-card-stats {
-    font-size: 0.9em;
-    color: #c8c8c8;
-  }
-  
-  .promo-card-deadline {
-    font-size: 0.85em;
-    color: #b8b8b8;
-    opacity: 0.9;
-  }
-  
-  /* Ações do Card (Botão Excluir) */
-  .promo-card-actions {
-    padding: 15px 20px; /* MAIS padding */
-    background-color: #2f2f31; /* Mesma cor do card */
-    border-top: 1px solid #4a4a4f;
-    text-align: right;
-  }
-  
-  .delete-item-btn {
-    background-color: rgba(200, 60, 60, 0.15); /* Vermelho mais sutil */
-    color: #ff8a80; /* Tom de vermelho mais claro */
-    border: 1px solid rgba(200, 60, 60, 0.6);
-    padding: 8px 18px; /* MAIS padding horizontal */
-    border-radius: 6px; /* Um pouco mais arredondado */
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 500; /* Peso médio */
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px; /* MAIS espaço ícone/texto */
-  }
-  
-  .delete-item-btn:hover {
-    background-color: rgba(200, 60, 60, 0.3);
-    color: #ff5252; /* Vermelho mais vivo no hover */
-    border-color: rgba(200, 60, 60, 0.9);
-  }
-  
-  .delete-item-btn svg {
-      margin-bottom: -2px;
-  }
-
-  #confirm-delete-qrcode {
-    background-image: none;
-    background-color: #1c1c1e;
-    height: 40px;
-    margin-top: 10px;
-    color: #ff6359;
-    border: 1px solid #3a3a3c;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    flex: 1; 
-    cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+/* Garante fundo escuro sólido (pode herdar de .modal-content) */
+#qrcode-modal .modal-content {
+  background-color: var(--bg-tertiary, #2C2C2E);
+  border-color: var(--border-color, #444);
+  color: var(--text-primary, #E0E0E0);
+  max-width: 550px; /* Pode precisar ser um pouco maior para o formulário */
 }
 
-/* Efeito Hover */
-#confirm-delete-qrcode:hover {
-    background-color: #2c2c2e;  /* Fundo levemente mais claro */
-    border-color: #ff6359;     /* Borda fica vermelha */
-    color: #ff827a;           /* Texto vermelho mais claro */
+/* Estilo do formulário dentro do modal */
+#qrcode-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px; /* Espaço entre os campos */
+  overflow-y: auto; /* Scroll se necessário */
+  padding-right: 5px; /* Espaço para scrollbar */
+  text-align: left; /* Alinha labels à esquerda */
 }
 
-/* Estilo Desabilitado */
-#confirm-delete-qrcode:disabled {
-    background-color: #333 !important;
-    color: #666 !important;
-    border-color: #444 !important;
-    cursor: not-allowed;
-    opacity: 0.6;
+#qrcode-form .form-group {
+  margin-bottom: 0; /* Remove margem duplicada */
 }
 
-/* Garante que o botão Cancelar no mesmo modal mantenha o estilo secundário */
-#cancel-delete-qrcode {
-    background-color: var(--details-bg-quaternary, #3a3a3c); 
-    color: var(--details-text-secondary, #ccc);
-    border: 1px solid #555; 
-    /* Copie padding, border-radius, etc. de #confirm-delete-qrcode se necessário */
-    padding: 10px 20px;       
-    border-radius: 6px;        
-    font-size: 0.95rem;       
-    font-weight: 500;         
-    flex: 1;                  
+/* Labels dentro do formulário */
+#qrcode-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary, #B0B0B0); /* Cinza claro para labels */
+  font-size: 0.9rem;
+  font-weight: 500;
 }
-#cancel-delete-qrcode:hover {
-    background-color: #4a4a4c; 
-    color: #fff;
-    border-color: #777;
+/* Adiciona asterisco visualmente (opcional) */
+#qrcode-form label[for="qrcode-description"]::after,
+#qrcode-form label[for="qrcode-benefit-type"]::after,
+#qrcode-form label[for="qrcode-benefit-description"]::after,
+#qrcode-form #discount-group.discount-visible label[for="qrcode-discount"]::after {
+  content: ' *';
+  color: var(--accent-primary, #FF9100); /* Asterisco laranja */
+  font-weight: bold;
+  padding-left: 2px;
 }
 
-  
-  /* Estilos para a barra de rolagem */
-  .admin-promotions-list::-webkit-scrollbar {
-    width: 8px;
-  }
-  .admin-promotions-list::-webkit-scrollbar-track {
-    background: #2c2c2e;
-    border-radius: 4px;
-  }
-  .admin-promotions-list::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 4px;
-  }
-  .admin-promotions-list::-webkit-scrollbar-thumb:hover {
-    background-color: #777;
-  }
+
+/* Inputs, Select, Textarea */
+#qrcode-form input[type="text"],
+#qrcode-form input[type="number"],
+#qrcode-form input[type="datetime-local"],
+#qrcode-form select,
+#qrcode-form textarea {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: var(--bg-secondary, #1C1C1E); /* Fundo mais escuro que o modal */
+  border: 1px solid var(--border-color, #444);
+  border-radius: 8px;
+  color: var(--text-primary, #FFFFFF);
+  font-size: 0.95rem;
+  transition: border-color 0.3s, background-color 0.3s;
+  box-sizing: border-box; /* Garante padding correto */
+}
+
+#qrcode-form input:focus,
+#qrcode-form select:focus,
+#qrcode-form textarea:focus {
+  border-color: var(--accent-primary, #FF9100); /* Borda Laranja no foco */
+  outline: none;
+  background-color: var(--bg-tertiary, #2C2C2E); /* Fundo igual ao modal no foco */
+}
+
+#qrcode-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23B0B0B0' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"); /* Seta cinza */
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+#qrcode-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+#qrcode-form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8); /* Ícone do calendário claro */
+  cursor: pointer;
+}
+
+/* Grupo de Desconto (Mostrar/Esconder) */
+#discount-group {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+  box-sizing: border-box;
+  transition: max-height 0.35s ease-in-out, opacity 0.3s ease-in-out, margin-top 0.35s ease-in-out, padding 0.35s ease-in-out, border-width 0.35s ease-in-out;
+  visibility: hidden;
+}
+
+#discount-group.discount-visible {
+  max-height: 150px; /* Altura suficiente */
+  opacity: 1;
+  margin-top: 18px !important; /* Adiciona espaço acima quando visível */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: visible;
+  visibility: visible;
+}
+
+/* Botão de Submit no Modal */
+#qrcode-modal .modal-buttons {
+ border-top-color: var(--border-color, #444);
+ justify-content: flex-end; /* Alinha à direita */
+}
+#qrcode-modal .modal-buttons .btn[type="submit"] {
+ background: var(--accent-primary, #FF9100); /* Laranja */
+ color: var(--bg-primary, #000); /* Texto escuro */
+ flex: none; /* Não estica */
+ padding: 10px 25px; /* Padding específico */
+}
+#qrcode-modal .modal-buttons .btn[type="submit"]:hover:not(:disabled) {
+ background: var(--accent-primary-hover, #FFAB40);
+}
+#qrcode-modal .modal-buttons .btn[type="submit"]:disabled {
+ background: var(--bg-quaternary) !important;
+ color: var(--text-tertiary) !important;
+ cursor: not-allowed;
+ opacity: 0.7;
+}
+

@@ -7,8 +7,8 @@
 }
 
 body {
-    background-color: #000;
-    color: white;
+    background-color: var(--bg-primary, #000);
+    color: var(--text-primary, white); /* Usa variável */
     height: 100vh;
     display: flex;
     justify-content: center;
@@ -19,6 +19,7 @@ body {
 .app-wrapper {
     width: 100%;
     height: 100vh;
+    /* overflow-y: auto; */ /* Habilitar se o conteúdo exceder a altura */
 }
 
 /* Personalização da barra de rolagem */
@@ -27,12 +28,12 @@ body {
 }
 
 .app-wrapper::-webkit-scrollbar-track {
-    background: #222;
+    background: var(--bg-tertiary, #2C2C2E); /* Usa variável */
 }
 
 .app-wrapper::-webkit-scrollbar-thumb {
-    background: #404040;
-    border-radius: 4px;
+    background: var(--bg-quaternary, #3A3A3C); /* Usa variável */
+    border-radius: 4px; /* Mantém arredondado */
 }
 
 /* ===== CONTAINER PRINCIPAL ===== */
@@ -43,8 +44,8 @@ body {
     margin: 0 auto;
     /* Centraliza o container */
     display: flex;
-    flex-direction: column;
-    background-color: #000;
+    flex-direction: column; /* Mantém como coluna */
+    background-color: var(--bg-primary, #000);
 }
 
 /* ===== CABEÇALHO ===== */
@@ -62,47 +63,50 @@ body {
 .header-title {
     font-size: 26px;
     font-weight: bold;
+    color: var(--text-primary);
 }
 
 .header-profile {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background-color: #666;
+    background-color: var(--bg-quaternary, #3A3A3C); /* Usa variável */
     overflow: hidden;
 }
 
 /* ===== BARRA DE PESQUISA ===== */
 .search-bar {
-    display: flex;
+    display: flex; /* Mantém flex */
     align-items: center;
     justify-content: space-between;
-    background-color: #222;
+    background-color: var(--bg-secondary, #1C1C1E); /* Usa variável */
     border-radius: 10px;
     padding: 10px 15px;
     margin: 0 20px 20px 20px;
+    border: 1px solid var(--border-color); /* Adiciona borda sutil */
 }
 
 .search-input {
     background: transparent;
-    border: none;
-    color: white;
+    border: none; /* Mantém sem borda */
+    color: var(--text-primary);
     font-size: 16px;
     width: 100%;
     outline: none;
 }
 
-.search-input::placeholder {
-    color: #777;
+.search-input::placeholder { /* Placeholder */
+    color: var(--text-tertiary);
 }
 
-.search-icon {
+.search-icon { /* Ícone de Lupa */
     margin-right: 10px;
-    color: #777;
+    color: var(--text-tertiary); /* Usa variável */
 }
 
-.filter-icon {
-    color: #aaa;
+.filter-icon { /* Ícone de Filtro */
+    color: var(--text-secondary); /* Cor mais clara para ícone clicável */
+    cursor: pointer;
 }
 
 /* ===== SEÇÕES DE CARROSSEL ===== */
@@ -114,8 +118,9 @@ body {
     padding: 0 20px;
     margin-bottom: 15px;
     font-size: 14px;
-    color: #edeaea;
+    color: var(--text-secondary); /* Usa variável */
     font-weight: bold;
+    text-transform: uppercase; /* Mantém maiúsculas */
 }
 
 .carousel-container {
@@ -132,10 +137,11 @@ body {
     gap: 15px;
     padding-bottom: 10px;
     width: 100%;
+    -webkit-overflow-scrolling: touch; /* Melhora scroll em iOS */
 }
 
 .carousel::-webkit-scrollbar {
-    display: none;
+    display: none; /* Esconde scrollbar padrão */
 }
 
 .carousel-arrow {
@@ -151,6 +157,8 @@ body {
     padding: 10px;
     border-radius: 50%;
     position: absolute;
+    top: 50%; /* Centraliza verticalmente */
+    transform: translateY(-50%); /* Ajuste fino da centralização */
     z-index: 1;
     transition: background-color 0.3s ease, opacity 0.3s ease, visibility 0.3s ease; /* Adiciona transições */
 }
@@ -162,19 +170,12 @@ body {
     visibility: visible;  /* Torna visível */
 }
 
-.carousel-arrow.is-hidden {
-    opacity: 0;
-    pointer-events: none; /* Impede interação quando escondido */
-    /* Ou, se preferir esconder completamente: */
-    /* display: none; */
-}
-
 .carousel-arrow.left {
-    left: 0;
+    left: 0; /* Ajuste para não ficar colado na borda */
 }
 
 .carousel-arrow.right {
-    right: 0;
+    right: 0; /* Ajuste */
 }
 
 .carousel-arrow:hover {
@@ -183,14 +184,22 @@ body {
 
 /* ===== CARDS DE EVENTOS ===== */
 .event-card {
-    flex: 0 0 auto;
+    flex: 0 0 auto; /* Não estica, não encolhe, tamanho base automático */
     width: 200px;
     height: 250px;
     position: relative;
     border-radius: 15px;
     overflow: hidden;
-    background-color: #333;
+    background-color: var(--bg-secondary); /* Usa variável */
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 
 .event-image {
     width: 100%;
@@ -204,13 +213,12 @@ body {
     left: 0;
     right: 0;
     padding: 15px;
-    /* Você já tinha ou adicionou um gradiente aqui, mantenha-o */
-    background: linear-gradient(to top, 
-        rgba(30, 0, 50, 0.5), /* Roxo mais escuro e mais opaco na base */
-        rgba(30, 0, 50, 0.5) 90%, /* Preto semi-transparente no meio */
-        transparent 100% /* Transparente no topo */
+    /* Gradiente escuro na base */
+    background: linear-gradient(to top,
+        rgba(0, 0, 0, 0.8) 0%, /* Mais opaco na base */
+        rgba(0, 0, 0, 0.0) 100% /* Transparente no topo */
     );
-    z-index: 1; 
+    z-index: 1;
     box-sizing: border-box;
 }
 
@@ -218,21 +226,24 @@ body {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 5px;
-    color: #fff;
-    paint-order: stroke fill;           
+    color: var(--text-primary);
+    /* Efeito de contorno leve para legibilidade sobre imagem */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
 }
 
-/* Adicione também para o .event-subtitle se desejar */
 .event-subtitle {
     font-size: 14px;
-    color: #eee; /* Cor do preenchimento */
+    color: var(--text-secondary); /* Cor do preenchimento */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .event-date {
     position: absolute;
     top: 15px;
-    right: 15px;
-    background: linear-gradient(135deg, #439DFE, #8000FF);
+    right: 15px; /* Mantém posição */
+    /* Novo gradiente Laranja/Cyan */
+    background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+    color: var(--bg-primary); /* Cor do texto (preto) para contrastar com gradiente claro */
     padding: 8px;
     border-radius: 10px;
     text-align: center;
@@ -242,6 +253,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .event-month {
@@ -262,45 +274,40 @@ body {
     z-index: 100;
     display: flex;
     justify-content: space-around;
-    padding: 15px 20px;
-    background-color: #000;
-    border-top: 1px solid #222;
+    padding: 10px 0; /* Ajusta padding */
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border-color); /* Usa variável */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3); /* Sombra sutil */
 }
 
 .nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #8f8f8f;
-    font-size: 13px;
+    color: var(--text-tertiary); /* Cinza médio por padrão */
+    font-size: 12px; /* Um pouco menor */
+    flex: 1; /* Distribui espaço igualmente */
+    padding: 5px 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.nav-item:hover {
+    color: var(--text-secondary); /* Cinza claro no hover */
 }
 
 .nav-item.active {
-    color: white;
+    color: var(--accent-primary); /* Usa Laranja para ativo */
 }
 
-.nav-icon {
-    margin-bottom: 5px;
+.nav-item .icon-svg { /* Ajusta ícones */
+    width: 22px;
+    height: 22px;
+    margin-bottom: 4px;
 }
 
-.icon-svg {
-    width: 24px;
-    height: 24px;
-}
-
-
-
-
-.filter-icon {
-    color: #aaa;
-}
 
 /* ===== ESPAÇO NO FINAL DO ÚLTIMO CARROSSEL ===== */
-.carousel-div {
-    margin-bottom: 100px;
-}
-
-.filter-icon,
-#filter-btn {
-    cursor: pointer;
+.carousel-div { /* Espaço extra no final */
+    height: 80px; /* Reduzido, a nav bar é fixed */
 }

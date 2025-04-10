@@ -26,18 +26,18 @@ class User {
       placeholders.push(`$${++paramCount}`);
     };
 
-    const formatarData = (data) => {
+    /* const formatarData = (data) => {
       if (data.includes('-')) {
         const [day, month, year] = data.split('-');
         adicionarCampo('birth_date', `${year}-${month}-${day}`);
       } else {
         adicionarCampo('birth_date', data);
       }
-    };
+    }; */
 
     if (passwordHash) adicionarCampo('password_hash', passwordHash);
     if (gender) adicionarCampo('gender', gender);
-    if (birth_date) formatarData(birth_date);
+    if (birth_date) adicionarCampo('birth_date', birth_date);
     if (username) adicionarCampo('username', username);
     if (google_id) adicionarCampo('google_id', google_id);
     if (photo_url) adicionarCampo('photo_url', photo_url);

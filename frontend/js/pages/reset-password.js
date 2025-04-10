@@ -8,12 +8,11 @@ export default function renderResetPassword(queryParams) {
 
   // Se não tiver token, redireciona para login
   if (!token) {
-    // Garante que a mensagem seja mostrada antes do redirecionamento
     showMessage('Token inválido ou ausente. Solicite a recuperação novamente.');
-    // Adiciona um pequeno delay antes de redirecionar, caso showMessage seja assíncrono
-    setTimeout(() => navigateTo('login'), 50); 
-    return; // Impede a renderização do restante da página
-  }
+    // setTimeout(() => navigateTo('login'), 50); // <-- Linha antiga
+    setTimeout(() => navigateTo('welcome-screen'), 50); // <-- Linha nova
+    return;
+}
 
   const appContainer = document.getElementById('app');
   if (!appContainer) return;
@@ -104,10 +103,9 @@ export default function renderResetPassword(queryParams) {
         // Chama a função de redefinição de senha da API
         await resetPassword(token, newPass); //
 
-        showMessage('Senha alterada com sucesso! Redirecionando para login...');
-
-        // Redireciona para login após um tempo
-        setTimeout(() => navigateTo('login'), 2000);
+        showMessage('Senha alterada com sucesso! Redirecionando...');
+        setTimeout(() => navigateTo('welcome-screen'), 2000);
+        
       } catch (error) {
         // Mostra mensagem de erro
         showMessage(error.message || 'Erro ao redefinir senha. O link pode ter expirado.');

@@ -36,10 +36,9 @@ async function loadPage(page, queryParams) {
     renderPage(queryParams);
 
   } catch (error) {
-    console.error('Erro ao carregar página:', error);
-    navigateTo('login');
-    showMessage('Página não encontrada');
-  }
+    console.error('Erro ao carregar página:', error); 
+    navigateTo('welcome-screen');
+}
 }
 
 // Navega para uma página específica

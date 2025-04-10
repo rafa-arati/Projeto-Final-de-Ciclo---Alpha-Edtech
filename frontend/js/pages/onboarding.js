@@ -8,9 +8,9 @@ export default function render(queryParams) {
 
   if (!userId) {
     showMessage('Erro: ID de usuário não encontrado');
-    navigateTo('login');
+    navigateTo('welcome-screen');
     return;
-  }
+}
 
   // Renderiza o formulário de onboarding
   document.getElementById('app').innerHTML = `

@@ -64,10 +64,9 @@ export default function renderForgotPassword(queryParams) {
         await sendPasswordResetEmail(email);
         // Mensagem genérica por segurança (não confirma se o email existe)
         showMessage(`Se o email ${email} estiver cadastrado, você receberá um link de recuperação.`);
-        // Configura um timer para redirecionar após 4 segundos
         setTimeout(() => {
-          transitionToPage('forgot-password-page', 'login');
-        }, 4000); // 4000 milissegundos = 4 segundos
+            transitionToPage('forgot-password-page', 'welcome-screen');
+        }, 4000);
       } catch (error) {
         // Mesmo em caso de erro, mostrar mensagem genérica pode ser mais seguro
         showMessage(error.message || 'Ocorreu um erro. Tente novamente.');
@@ -82,9 +81,8 @@ export default function renderForgotPassword(queryParams) {
   const backButton = document.getElementById('backToLoginBtn');
   if (backButton) {
     backButton.addEventListener('click', (e) => {
-      window.history.back() ;
-      // Use a classe do container para a transição
-      transitionToPage('forgot-password-page', 'login');
+      window.history.back(); 
+      navigateTo('welcome-screen');
     });
   }
 }

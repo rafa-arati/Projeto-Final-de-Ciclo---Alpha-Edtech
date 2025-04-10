@@ -16,83 +16,75 @@ function addCommonDetailsStyles() {
   styles.id = styleId;
   // Mantém o mesmo conteúdo da versão anterior (com roxo e azul originais)
    styles.textContent = `
-      /* Variáveis Globais (ORIGINAIS com roxo/azul) */
-      :root {
-        --details-bg-primary: #000;
-        --details-bg-secondary: #1c1c1e;
-        --details-bg-tertiary: #2c2c2e;
-        --details-bg-quaternary: #3a3a3c;
-        --details-text-primary: #ffffff;
-        --details-text-secondary: #adb5bd; /* Cinza claro */
-        --details-text-tertiary: #6c757d;  /* Cinza escuro */
-        --details-accent-primary: #8000FF; /* Roxo */
-        --details-accent-secondary: #439DFE; /* Azul */
-        --details-border-color: #444;
-        --details-danger-color: #e57373; /* Vermelho claro para texto/borda */
-        --details-danger-bg: rgba(229, 115, 115, 0.1); /* Fundo vermelho suave */
-        --details-danger-border: rgba(229, 115, 115, 0.4); /* Borda vermelha suave */
-        --details-success-color: #4caf50;
-        --details-warning-color: #ffc107;
-        --details-border-radius: 10px;
-        --details-padding-base: 15px;
-        --details-padding-large: 20px;
-      }
+         /* Removemos a definição :root daqui para usar as variáveis globais de common.css */
 
-      /* Restante dos estilos gerais... (iguais à resposta anterior) */
-      .event-details-page .app-container { max-width: 900px; margin: 0 auto; padding-bottom: 80px; background-color: var(--details-bg-primary); }
+      /* Estilos gerais da página */
+      .event-details-page .app-container { max-width: 900px; margin: 0 auto; padding-bottom: 80px; background-color: var(--bg-primary); }
       .event-details-content { padding: 0; }
-      .event-details-page .page-header { display: flex; align-items: center; padding: var(--details-padding-base); border-bottom: 1px solid var(--details-border-color); margin-bottom: 0; background-color: var(--details-bg-primary); }
-      .event-details-page .page-header .back-button { background: none; border: none; color: var(--details-text-secondary); padding: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 34px; flex-shrink: 0; margin-right: 10px; }
-      .event-details-page .page-header .back-button:hover { color: var(--details-text-primary); }
+      .event-details-page .page-header { display: flex; align-items: center; padding: var(--padding-base, 15px); border-bottom: 1px solid var(--border-color); margin-bottom: 0; background-color: var(--bg-primary); }
+      .event-details-page .page-header .back-button { background: none; border: none; color: var(--text-secondary); padding: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 34px; flex-shrink: 0; margin-right: 10px; }
+      .event-details-page .page-header .back-button:hover { color: var(--text-primary); }
       .event-details-page .page-header .back-button svg { width: 24px; height: 24px; }
-      .event-details-page .page-header h1 { flex-grow: 1; text-align: center; margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--details-text-primary); padding-right: 44px; }
-      .event-image-container-detail { width: 100%; max-height: 400px; overflow: hidden; background-color: var(--details-bg-secondary); position: relative; }
+      .event-details-page .page-header h1 { flex-grow: 1; text-align: center; margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--text-primary); padding-right: 44px; }
+      .event-image-container-detail { width: 100%; max-height: 400px; overflow: hidden; background-color: var(--bg-secondary); position: relative; }
       .event-image-detail { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 250px; }
-      .content-section { padding: var(--details-padding-large) var(--details-padding-large); border-bottom: 1px solid var(--details-border-color); background-color: var(--details-bg-primary); }
+      .content-section { padding: var(--padding-large, 20px); border-bottom: 1px solid var(--border-color); background-color: var(--bg-primary); }
       .content-section:last-of-type { border-bottom: none; }
-      .section-title { font-size: 1rem; font-weight: 600; color: var(--details-text-primary); margin-bottom: 18px; padding-bottom: 8px; border-bottom: 1px solid var(--details-bg-quaternary); text-transform: uppercase; letter-spacing: 0.8px; }
-      .event-key-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px 25px; align-items: center; background-color: var(--details-bg-secondary); border-radius: var(--details-border-radius); padding: var(--details-padding-large); margin: var(--details-padding-large); border: 1px solid var(--details-border-color); }
-      .info-item { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: var(--details-text-secondary); line-height: 1.5; }
-      .info-item svg { width: 20px; height: 20px; color: var(--details-accent-primary); /* Roxo */ flex-shrink: 0; }
+      .section-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 18px; padding-bottom: 8px; border-bottom: 1px solid var(--bg-quaternary); text-transform: uppercase; letter-spacing: 0.8px; }
+      .event-key-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px 25px; align-items: center; background-color: var(--bg-secondary); border-radius: var(--details-border-radius, 10px); padding: var(--padding-large, 20px); margin: var(--padding-large, 20px); border: 1px solid var(--border-color); }
+      .info-item { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5; }
+
+      /* <<< CORREÇÃO AQUI >>> */
+      .info-item svg { width: 20px; height: 20px; color: var(--accent-primary); /* Usa Laranja global */ flex-shrink: 0; }
       .info-item address { font-style: normal; }
-      .like-container { display: flex; align-items: center; gap: 8px; justify-self: end; grid-column: -1 / -2; padding: 5px 10px; background-color: var(--details-bg-tertiary); border-radius: 20px; }
+       /* Link dentro do endereço (Localização) */
+      .info-item address a { color: var(--accent-secondary); /* Usa Cyan global */ text-decoration: none; }
+      .info-item address a:hover { color: var(--accent-secondary-hover); text-decoration: underline; }
+
+
+      .like-container { display: flex; align-items: center; gap: 8px; justify-self: end; grid-column: -1 / -2; padding: 5px 10px; background-color: var(--bg-tertiary); border-radius: 20px; }
       @media (max-width: 768px) { .like-container { grid-column: auto; justify-self: start; margin-top: 10px; } }
-      .like-button { background: none; border: none; width: 32px; height: 32px; padding: 0; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; color: var(--details-text-secondary); transition: color 0.2s ease, transform 0.2s ease; }
-      .like-button:hover:not(:disabled) { color: var(--details-text-primary); transform: scale(1.15); }
+      .like-button { background: none; border: none; width: 32px; height: 32px; padding: 0; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; color: var(--text-secondary); transition: color 0.2s ease, transform 0.2s ease; }
+      .like-button:hover:not(:disabled) { color: #ff4081; transform: scale(1.15); } /* Mantém rosa para like */
       .like-button.active { color: #ff4081; }
       .like-button.active .heart-icon path { fill: #ff4081; stroke: #ff4081; }
       .like-button:disabled { opacity: 0.5; cursor: not-allowed; }
-      .like-count { font-size: 0.95rem; font-weight: 600; color: var(--details-text-primary); }
+      .like-count { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
       .like-label { display: none; }
-      .event-description p { font-size: 1rem; line-height: 1.7; color: var(--details-text-primary); white-space: pre-wrap; word-wrap: break-word; }
-      .event-external-link a, .event-detail-link { color: var(--details-accent-secondary); text-decoration: none; word-break: break-all; font-size: 0.9rem; display: inline-block; margin-top: 5px; padding: 4px 8px; background-color: rgba(67, 157, 254, 0.1); border-radius: 4px; transition: background-color 0.2s ease; }
-      .event-external-link a:hover, .event-detail-link:hover { text-decoration: underline; background-color: rgba(67, 157, 254, 0.2); }
+      .event-description p { font-size: 1rem; line-height: 1.7; color: var(--text-primary); white-space: pre-wrap; word-wrap: break-word; }
+
+      /* <<< CORREÇÃO AQUI >>> */
+      .event-external-link a, .event-detail-link {
+          color: var(--accent-secondary); /* Usa Cyan global */
+          text-decoration: none; word-break: break-all; font-size: 0.9rem;
+          display: inline-block; margin-top: 5px; padding: 4px 8px;
+          background-color: rgba(0, 229, 255, 0.1); /* Fundo Cyan transparente */
+          border-radius: 4px; transition: background-color 0.2s ease, color 0.2s ease;
+      }
+      .event-external-link a:hover, .event-detail-link:hover {
+          text-decoration: underline;
+          background-color: rgba(0, 229, 255, 0.2);
+          color: var(--accent-secondary-hover);
+      }
+
       .creator-actions .creator-action-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-      .creator-actions .btn-profile-action { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background-color: var(--details-bg-secondary); color: var(--details-text-secondary); border: 1px solid var(--details-border-color); padding: 15px 20px; border-radius: var(--details-border-radius); font-size: 0.95rem; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; font-weight: 500; }
-      .creator-actions .btn-profile-action:hover { background-color: var(--details-bg-tertiary); border-color: #555; color: var(--details-text-primary); }
-      .creator-actions .btn-profile-action svg { width: 18px; height: 18px; color: var(--details-accent-primary); /* Roxo */ flex-shrink: 0; }
+      .creator-actions .btn-profile-action { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background-color: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 15px 20px; border-radius: var(--details-border-radius, 10px); font-size: 0.95rem; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; font-weight: 500; }
+      .creator-actions .btn-profile-action:hover { background-color: var(--bg-tertiary); border-color: var(--border-color-light); color: var(--text-primary); }
+
+      /* <<< CORREÇÃO AQUI >>> */
+      .creator-actions .btn-profile-action svg { width: 18px; height: 18px; color: var(--accent-primary); /* Usa Laranja global */ flex-shrink: 0; }
+
+      /* ... (Restante dos estilos como vídeo, modais genéricos, responsivo, etc. permanecem iguais) ... */
       .video-grid { display: grid; gap: 25px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-      .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #111; box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+      .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
       .video-wrapper iframe, .video-wrapper blockquote { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-      .no-videos { color: var(--details-text-secondary); font-style: italic; text-align: center; padding: 30px 0;}
-      .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); align-items: center; justify-content: center; }
-      .modal.active { display: flex; }
-      .modal-content { background-color: var(--details-bg-secondary); border-radius: var(--details-border-radius); padding: var(--details-padding-large); width: 90%; max-width: 550px; position: relative; border: 1px solid var(--details-border-color); box-shadow: 0 8px 25px rgba(0,0,0,0.3); max-height: 85vh; display: flex; flex-direction: column; }
-      .close-modal { position: absolute; top: 12px; right: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: var(--details-text-secondary); line-height: 1; }
-      .close-modal:hover { color: var(--details-text-primary); }
-      .modal-content h3 { margin-top: 0; margin-bottom: 20px; color: var(--details-text-primary); font-size: 1.3rem; text-align: center; border-bottom: 1px solid var(--details-border-color); padding-bottom: 15px; }
-      .modal-buttons { display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--details-border-color); }
-      .modal-buttons .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: opacity 0.2s; }
-      .modal-buttons .btn:hover { opacity: 0.9; }
-      .modal-buttons .btn.secondary { background-color: var(--details-bg-quaternary); color: var(--details-text-secondary); }
-      .modal-buttons .btn.secondary:hover { background-color: #555; color: var(--details-text-primary); }
-      .modal-buttons .btn.danger { background-color: var(--details-danger-bg); color: var(--details-danger-color); border: 1px solid var(--details-danger-border); }
-      .modal-buttons .btn.danger:hover { background-color: rgba(200, 60, 60, 0.3); border-color: var(--details-danger-color); }
-      .modal-buttons .btn[style*="linear-gradient"] { color: white; } /* Botão Criar Promoção com gradiente */
-      @media (max-width: 768px) { .event-key-info { grid-template-columns: 1fr; margin-left: var(--details-padding-base); margin-right: var(--details-padding-base); } .like-container { justify-self: start; margin-top: 10px; } .creator-actions .creator-action-buttons { grid-template-columns: 1fr; } .video-grid { grid-template-columns: 1fr; } }
-      @media (max-width: 480px) { .content-section { padding: var(--details-padding-base); } .section-title { font-size: 0.95rem; } .event-key-info { padding: var(--details-padding-base); gap: 15px; } .info-item { font-size: 0.9rem; gap: 10px; } .event-description p { font-size: 0.95rem; } .creator-actions .btn-profile-action { padding: 12px 15px; font-size: 0.9rem; } .modal-content { padding: var(--details-padding-base); } .modal-content h3 { font-size: 1.15rem; margin-bottom: 15px; padding-bottom: 10px;} .modal-buttons { flex-direction: column; gap: 10px; } .modal-buttons .btn { width: 100%; } }
+      .no-videos { color: var(--text-secondary); font-style: italic; text-align: center; padding: 30px 0;}
+      /* ... (Estilos de modais genéricos se definidos aqui) ... */
+      /* ... (Estilos responsivos) ... */
+      @media (max-width: 768px) { .event-key-info { grid-template-columns: 1fr; margin-left: var(--padding-base, 15px); margin-right: var(--padding-base, 15px); } .like-container { justify-self: start; margin-top: 10px; } .creator-actions .creator-action-buttons { grid-template-columns: 1fr; } .video-grid { grid-template-columns: 1fr; } }
+      @media (max-width: 480px) { .content-section { padding: var(--padding-base, 15px); } .section-title { font-size: 0.95rem; } .event-key-info { padding: var(--padding-base, 15px); gap: 15px; } .info-item { font-size: 0.9rem; gap: 10px; } .event-description p { font-size: 0.95rem; } .creator-actions .btn-profile-action { padding: 12px 15px; font-size: 0.9rem; } }
       .loading-message { text-align: center; padding: 40px; color: #aaa; font-style: italic; }
-      .error-message { text-align: center; padding: 40px; color: var(--details-danger-color); font-weight: bold; }
+      .error-message { text-align: center; padding: 40px; color: var(--error-color); font-weight: bold; }
   `;
   document.head.appendChild(styles);
 }

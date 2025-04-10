@@ -132,10 +132,18 @@ function setupRegisterForm() {
 
 // Helper: Link para login
 function setupLoginLink() {
-  document.getElementById('goToLogin')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    transitionToPage('register', 'login');
-  });
+  // Busca o link pelo ID
+  const loginLink = document.getElementById('goToLogin');
+
+  // Adiciona o listener apenas se o link existir
+  if (loginLink) {
+    loginLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      transitionToPage('register', 'welcome-screen');
+    });
+  } else {
+    console.warn("Elemento com ID 'goToLogin' não encontrado na página de registro.");
+  }
 }
 
 // Helper: Validação de senha em tempo real

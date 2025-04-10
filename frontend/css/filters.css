@@ -1,434 +1,172 @@
-/* Estilos para filtros */
+/* Estilos para filtros ativos e modal de filtros */
+
 .active-filters {
-    margin: 0 20px 15px 20px;
+    margin: 0 20px 15px 20px; /* Espaçamento */
 }
 
 .filter-badge {
-    background-color: #333;
-    color: white;
+    background-color: var(--bg-tertiary, #2C2C2E); /* Fundo cinza escuro */
+    color: var(--text-secondary, #B0B0B0); /* Texto cinza claro */
     border-radius: 15px;
-    padding: 5px 15px 5px 10px;
+    padding: 5px 10px 5px 10px; /* Ajuste padding */
     font-size: 12px;
     display: inline-flex;
     align-items: center;
     margin-right: 8px;
     margin-bottom: 8px;
+    border: 1px solid var(--border-color, #444); /* Borda sutil */
 }
 
 .filter-badge span:first-child {
-    margin-right: 8px;
+    margin-right: 8px; /* Espaço entre texto e botão X */
 }
 
-.filter-badge span:last-child {
+.filter-badge span.remove-filter-btn { /* Classe para o botão X */
     cursor: pointer;
     font-size: 16px;
     margin-left: 5px;
+    color: var(--text-tertiary, #757575); /* Cor do X */
+    line-height: 1;
+    padding: 0 3px;
+    transition: color 0.2s ease;
+}
+
+.filter-badge span.remove-filter-btn:hover {
+    color: var(--error-color, #FF5252); /* Vermelho no hover */
 }
 
 .filter-clear-all {
-    background-color: #333;
-    color: white;
-    border: none;
+    background-color: var(--bg-tertiary, #2C2C2E);
+    color: var(--text-secondary, #B0B0B0);
+    border: 1px solid var(--border-color, #444);
     border-radius: 15px;
-    padding: 5px 10px;
+    padding: 5px 12px; /* Aumenta padding */
     font-size: 12px;
     cursor: pointer;
+    margin-left: 5px; /* Pequeno espaço */
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.filter-clear-all:hover {
+    background-color: var(--bg-quaternary, #3A3A3C);
+    color: var(--text-primary, #FFFFFF);
+    border-color: var(--border-color-light, #555);
 }
 
 /* Modal de filtros */
+#filter-modal .modal-content { /* Estilo do conteúdo do modal */
+   background-color: var(--bg-tertiary, #2C2C2E);
+   border-color: var(--border-color, #444);
+   color: var(--text-primary, #FFFFFF);
+   max-width: 450px; /* Largura */
+}
+#filter-modal .close-modal {
+   color: var(--text-secondary, #B0B0B0);
+}
+#filter-modal .close-modal:hover {
+   color: var(--accent-primary, #FF9100); /* Laranja no hover do X */
+}
+#filter-modal h3 { /* Título */
+   color: var(--text-primary, #FFFFFF);
+   border-bottom-color: var(--border-color, #444);
+}
+
 .filter-section {
     margin-bottom: 20px;
+    text-align: left; /* Alinha conteúdo à esquerda */
 }
 
 .filter-section h4 {
     margin-bottom: 10px;
-    color: #aaa;
+    color: var(--text-secondary, #B0B0B0); /* Cor dos títulos de seção */
     font-size: 14px;
+    font-weight: 500;
 }
 
-.filter-select {
+/* Wrapper para Select (mantém layout) */
+.select-wrapper {
+    position: relative;
+    margin-bottom: 15px; /* Espaço abaixo */
+}
+.select-wrapper::after {
+    content: '▼';
+    color: var(--accent-primary, #FF9100); /* Seta Laranja */
+    /* Restante dos estilos da seta (posição, etc.) */
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 12px;
+}
+
+
+.filter-select, select { /* Estilo unificado para selects */
     width: 100%;
-    padding: 12px;
-    background-color: #222;
-    border: none;
+    padding: 12px 15px; /* Padding interno */
+    padding-right: 40px; /* Espaço para a seta customizada */
+    background-color: var(--bg-secondary, #1C1C1E); /* Fundo do select */
+    border: 1px solid var(--border-color, #444);
     border-radius: 8px;
-    color: white;
+    color: var(--text-primary, #FFFFFF);
     font-size: 16px;
-    appearance: none;
+    appearance: none; /* Remove seta padrão */
     -webkit-appearance: none;
     -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
+    background-image: none; /* Remove imagem de fundo se houver */
     cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
 }
 
+.filter-select:focus, select:focus {
+    border-color: var(--accent-primary, #FF9100); /* Borda Laranja no foco */
+    outline: none;
+    background-color: var(--bg-tertiary, #2C2C2E);
+}
+
+/* Estilo para inputs de data */
 .filter-date {
     width: 100%;
-    padding: 12px;
-    background-color: #222;
-    border: none;
+    padding: 12px 15px;
+    background-color: var(--bg-secondary, #1C1C1E);
+    border: 1px solid var(--border-color, #444);
     border-radius: 8px;
-    color: white;
+    color: var(--text-primary, #FFFFFF);
     font-size: 16px;
     cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    color-scheme: dark; /* Tenta forçar o picker de data escuro */
+}
+.filter-date:focus {
+    border-color: var(--accent-primary, #FF9100);
+    outline: none;
+    background-color: var(--bg-tertiary, #2C2C2E);
 }
 
-/* Ajuste para inputs do tipo date */
+
+/* Ajuste para ícone do calendário em inputs de data */
 input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
+    filter: invert(0.8); /* Deixa o ícone mais claro */
     cursor: pointer;
+    padding-left: 5px; /* Pequeno espaço */
 }
 
-/* Ajustes para a tela de perfil */
-.profile-header {
-    display: flex;
-    align-items: center;
-    padding: 20px;
+/* Botões no modal de filtro */
+#filter-modal .modal-buttons {
+   border-top-color: var(--border-color, #444);
+   justify-content: space-between; /* Espaça os botões */
 }
-
-.profile-header a {
-    color: white;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
+#filter-modal #apply-filters { /* Botão Aplicar */
+   background: var(--accent-primary, #FF9100);
+   color: var(--bg-primary, #000); /* Texto escuro para contraste */
 }
-
-.profile-content {
-    padding: 20px;
-    text-align: center;
+#filter-modal #apply-filters:hover {
+   background: var(--accent-primary-hover, #FFAB40);
 }
-
-.profile-image-container {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 20px auto;
+#filter-modal #reset-filters { /* Botão Limpar */
+   background-color: var(--bg-quaternary, #3A3A3C);
+   color: var(--text-secondary, #B0B0B0);
 }
-
-.profile-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    overflow: hidden;
-    background-color: #333;
-}
-
-.profile-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.profile-image-initial {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    color: #fff;
-}
-
-.profile-edit-photo {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #439DFE, #8000FF);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.admin-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 30px;
-}
-
-.admin-button {
-    background-color: #333;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-.profile-form {
-    max-width: 400px;
-    margin: 0 auto;
-    text-align: left;
-}
-
-.profile-form .form-group {
-    margin-bottom: 20px;
-}
-
-.profile-form label {
-    display: block;
-    margin-bottom: 8px;
-    color: #8000FF;
-    font-size: 14px;
-}
-
-.profile-form input {
-    width: 100%;
-    background-color: #222;
-    border: none;
-    border-radius: 8px;
-    padding: 15px;
-    color: white;
-    font-size: 16px;
-}
-
-.profile-form input:disabled {
-    background-color: #333;
-    color: #aaa;
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.profile-form small {
-    color: #666;
-    font-size: 12px;
-    margin-top: 5px;
-    display: block;
-}
-
-.profile-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 30px;
-}
-
-.btn-save {
-    background: linear-gradient(45deg, #439DFE, #8000FF);
-    border: none;
-    border-radius: 8px;
-    padding: 15px;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.btn-logout {
-    background-color: #B33A3A;
-    border: none;
-    border-radius: 8px;
-    padding: 15px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-/* Estilização dos selects para seguir o padrão do projeto */
-.form-group select {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 16px;
-    color: #fff;
-    background-color: #1d1d1d;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    cursor: pointer;
-}
-
-/* Cursor pointer para elementos de perfil */
-.header-profile,
-#profile-btn,
-.nav-item,
-.profile-image-container,
-.profile-edit-photo,
-.admin-button,
-#gerenciar-eventos-btn,
-#metricas-btn,
-#alterar-foto-btn {
-    cursor: pointer;
-}
-
-/* Destaque ao passar o mouse nos itens */
-.nav-item:hover,
-.header-profile:hover,
-#profile-btn:hover,
-.admin-button:hover,
-#gerenciar-eventos-btn:hover,
-#metricas-btn:hover {
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
-}
-
-/* Estilos específicos para os filtros */
-.filter-select {
-    width: 100%;
-    padding: 12px;
-    background-color: #222;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 16px;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    cursor: pointer;
-}
-
-.form-group select,
-select {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 16px;
-    color: #fff;
-    background-color: #1d1d1d;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    cursor: pointer;
-}
-
-/* Cursor pointer para elementos de perfil */
-.header-profile,
-#profile-btn,
-.nav-item,
-.profile-image-container,
-.profile-edit-photo,
-.admin-button,
-#gerenciar-eventos-btn,
-#metricas-btn,
-#alterar-foto-btn {
-    cursor: pointer;
-}
-
-/* Destaque ao passar o mouse nos itens */
-.nav-item:hover,
-.header-profile:hover,
-#profile-btn:hover,
-.admin-button:hover,
-#gerenciar-eventos-btn:hover,
-#metricas-btn:hover {
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
-}
-
-/* Estilos específicos para os filtros */
-.filter-select {
-    width: 100%;
-    padding: 12px;
-    background-color: #222;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 16px;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    cursor: pointer;
-}
-
-/* Modal de gerenciamento de eventos */
-#event-manager-modal .modal-content {
-    max-width: 400px;
-}
-
-#event-manager-modal .modal-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-#event-manager-modal .btn {
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
-
-#event-manager-modal .btn.secondary {
-    background-color: #333;
-}
-
-/* Destaque para os itens de perfil */
-.header-profile {
-    position: relative;
-}
-
-.header-profile:after {
-    content: "";
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    bottom: -5px;
-    left: -5px;
-    border-radius: 50%;
-    background-color: rgba(128, 0, 255, 0.1);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.header-profile:hover:after {
-    opacity: 1;
-}
-
-/* Animação suave para transições */
-.page-transition {
-    transition: all 0.3s ease;
-}
-
-.app-container {
-    transition: opacity 0.3s ease;
-}
-
-/* Ajustes de estilo para melhorar a consistência visual */
-.btn {
-    transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-}
-
-.btn:active {
-    transform: translateY(0);
+#filter-modal #reset-filters:hover {
+   background-color: var(--border-color-light, #555);
+   color: var(--text-primary, #FFFFFF);
 }

@@ -177,46 +177,55 @@ function renderPromotionsListAdmin(items) {
  */
 // frontend/js/pages/details/qrcode-manager.js
 
+// Em frontend/js/pages/details/qrcode-manager.js
+
 async function handleCreatePromotionSubmit(e) {
     e.preventDefault();
     console.log("[handleCreatePromotionSubmit] Iniciando submit...");
 
-    const form = e.target; 
+    const form = e.target;
     const submitButton = form.querySelector('button[type="submit"]');
-    const originalButtonText = submitButton?.textContent; // Pega texto antes de desabilitar
+    // <<< PEGA O DIV DE ERRO >>>
+    const errorDiv = document.getElementById('qrcode-error-message');
+    const originalButtonText = submitButton?.textContent;
 
-    // Pega valores das datas
+    // <<< LIMPA ERRO ANTERIOR AO TENTAR ENVIAR >>>
+    if (errorDiv) {
+        errorDiv.textContent = '';
+        errorDiv.style.display = 'none';
+    }
+
+    // ----- Validação Frontend (Datas) -----
     const generationDeadlineValue = form.querySelector('#qrcode-generation-deadline')?.value;
     const usageDeadlineValue = form.querySelector('#qrcode-usage-deadline')?.value;
-
-    // ----- ADICIONAR VALIDAÇÃO FRONTEND -----
     if (generationDeadlineValue && usageDeadlineValue) {
         try {
             const generationDate = new Date(generationDeadlineValue);
             const usageDate = new Date(usageDeadlineValue);
-
-            // Compara apenas se ambas as datas são válidas
             if (!isNaN(generationDate.getTime()) && !isNaN(usageDate.getTime())) {
                 if (usageDate < generationDate) {
-                     // Mostra erro para o usuário
-                     showMessage('Erro: A data limite para usar não pode ser anterior à data limite para gerar.', 'error');
-                     // NÃO continua com o submit
-                     return; 
+                    // <<< MOSTRA ERRO LOCALMENTE >>>
+                    if (errorDiv) {
+                        errorDiv.textContent = 'Erro: A data limite para usar não pode ser anterior à data limite para gerar.';
+                        errorDiv.style.display = 'block';
+                    } else {
+                        showMessage('Erro: A data limite para usar não pode ser anterior à data limite para gerar.', 'error'); // Fallback
+                    }
+                    return; // Não continua
                 }
             }
         } catch (dateError) {
              console.warn("Erro ao comparar datas no frontend:", dateError);
-             // Deixa o backend validar se houver erro aqui
         }
     }
-    // ----- FIM VALIDAÇÃO FRONTEND -----
+    // ----- Fim Validação Frontend -----
 
     // Desabilitar botão
     if(submitButton) {
-        submitButton.disabled = true; 
+        submitButton.disabled = true;
         submitButton.textContent = 'Criando...';
     }
-    
+
     // Pega outros dados do formulário...
     const discountGroup = document.getElementById('discount-group');
     const discountInput = document.getElementById('qrcode-discount');
@@ -227,43 +236,51 @@ async function handleCreatePromotionSubmit(e) {
         benefitDescription: form.querySelector('#qrcode-benefit-description')?.value.trim(),
         discountPercentage: null,
         maxCodes: form.querySelector('#qrcode-max-codes')?.value || null,
-        generationDeadline: generationDeadlineValue || null, // Envia string ou null
-        usageDeadline: usageDeadlineValue || null        // Envia string ou null
+        generationDeadline: generationDeadlineValue || null,
+        usageDeadline: usageDeadlineValue || null
     };
 
     // Validações de outros campos...
-    if (!promotionData.description || !promotionData.benefitType || !promotionData.benefitDescription) {
-        showMessage("Preencha os campos obrigatórios (*)", 'error');
+    const showError = (message) => {
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        } else {
+            showMessage(message, 'error'); // Fallback
+        }
         if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
-        return;
+    };
+
+    if (!promotionData.description || !promotionData.benefitType || !promotionData.benefitDescription) {
+        showError("Preencha os campos obrigatórios (*)"); return;
     }
     if (promotionData.benefitType === 'discount') {
-         if (!discountInput || !discountInput.value) {
-             showMessage("Informe o percentual de desconto.", 'error');
-             if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
-             return;
-         }
+         if (!discountInput || !discountInput.value) { showError("Informe o percentual de desconto."); return; }
          promotionData.discountPercentage = parseInt(discountInput.value, 10);
          if (isNaN(promotionData.discountPercentage) || promotionData.discountPercentage < 1 || promotionData.discountPercentage > 100) {
-            showMessage("Percentual de desconto inválido (1-100).", 'error');
-            if(submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText;}
-            return;
+            showError("Percentual de desconto inválido (1-100)."); return;
          }
     }
 
     try {
-        // Chama API (agora com validação prévia no backend)
+        // Chama API
         await createPromotion(promotionData); // Usa a função importada do events-api.js
+
+        // --- SUCESSO ---
         showMessage('Promoção criada com sucesso!', 'success');
-        form.reset(); 
+        form.reset();
         if (discountGroup) { discountGroup.classList.remove('discount-visible'); }
         if (discountInput) { discountInput.required = false; }
-        document.getElementById('qrcode-modal')?.classList.remove('active');
-        await refreshAdminPromotionsList(); 
+        document.getElementById('qrcode-modal')?.classList.remove('active'); // Fecha modal NO SUCESSO
+        await refreshAdminPromotionsList();
+
     } catch (error) {
+        // --- ERRO ---
         console.error('Erro ao criar promoção (frontend):', error);
-        // Mostra a mensagem de erro vinda do backend (que agora inclui a validação de data)
-        showMessage(error.message || 'Erro ao criar promoção', 'error');
+        showError(error.message || 'Erro ao criar promoção'); // <<< MOSTRA ERRO LOCALMENTE
+
+        // <<< NÃO FECHA O MODAL EM CASO DE ERRO >>>
+
     } finally {
         // Garante que o botão seja reabilitado
         if (submitButton) {

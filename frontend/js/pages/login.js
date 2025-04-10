@@ -2,6 +2,7 @@ export function getLoginFormHTML() {
   console.log("[login.js] Gerando HTML para o modal...");
   return `
       <div class="container login-container">
+            
           <div class="logo"><span>R</span>OTA<span>CULTURAL</span></div>
           <div class="welcome">Bem-vindo!</div>
 
@@ -18,6 +19,9 @@ export function getLoginFormHTML() {
                      <svg width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2"></path></svg>
                   </div>
                   <input type="password" id="loginPasswordModal" placeholder="Senha" required>
+              </div>
+
+              <div id="loginErrorMessageModal" class="login-error-message" style="display: none;">
               </div>
 
               <button type="submit" id="loginSubmitBtnModal" class="btn login-btn">LOGIN</button>

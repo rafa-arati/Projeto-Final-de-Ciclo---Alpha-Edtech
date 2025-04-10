@@ -204,82 +204,86 @@ function handleDynamicOverlayClick(event) {
 
 // --- Handlers para ações DENTRO do modal (Funções Corrigidas) ---
 
-// ***** ESTA É A FUNÇÃO QUE TRATA O LOGIN E DEVE REDIRECIONAR/FECHAR *****
+// frontend/js/pages/welcome-screen.js
+
 async function handleLoginSubmit(event) {
-    event.preventDefault(); // Previne recarregamento da página
-    console.log("[welcome modal] Submit do formulário.");
-    // IDs únicos definidos em getLoginFormHTML
-    const identifierInput = document.getElementById('loginIdentifierModal');
-    const passwordInput = document.getElementById('loginPasswordModal');
-    const loginButton = document.getElementById('loginSubmitBtnModal'); // ID específico do botão
+  event.preventDefault(); // Previne recarregamento da página
+  console.log("[welcome modal] Submit do formulário.");
 
-    // Validação básica
-    if (!identifierInput || !passwordInput || !loginButton) {
-        console.error("[welcome modal] Inputs/Botão não encontrados no submit.");
-        showMessage("Erro interno no formulário.", "error");
-        return;
-    }
-    if (!identifierInput.value || !passwordInput.value) {
-        showMessage("Por favor, preencha email/usuário e senha.", "warning");
-        return;
-    }
+  // IDs únicos definidos em getLoginFormHTML
+  const identifierInput = document.getElementById('loginIdentifierModal');
+  const passwordInput = document.getElementById('loginPasswordModal');
+  const loginButton = document.getElementById('loginSubmitBtnModal');
+  // <<< Pega o novo DIV de erro >>>
+  const errorMessageDiv = document.getElementById('loginErrorMessageModal');
 
-    const identifier = identifierInput.value;
-    const password = passwordInput.value;
+  // Validação básica e verificação dos elementos
+  if (!identifierInput || !passwordInput || !loginButton || !errorMessageDiv) { // <<< Verifica se achou o div de erro
+      console.error("[welcome modal] Elementos essenciais do formulário ou div de erro não encontrados.");
+      if (errorMessageDiv) {
+           errorMessageDiv.textContent = "Erro interno no formulário. Recarregue a página.";
+           errorMessageDiv.style.display = 'block';
+      } else {
+          showMessage("Erro interno. Recarregue a página.", "error"); // Fallback se o div não existir
+      }
+      // Reabilita o botão se possível
+      if(loginButton) {
+         loginButton.disabled = false;
+         loginButton.textContent = 'LOGIN';
+      }
+      return;
+  }
+  if (!identifierInput.value || !passwordInput.value) {
+      errorMessageDiv.textContent = "Por favor, preencha email/usuário e senha."; // <<< Exibe erro localmente
+      errorMessageDiv.style.display = 'block'; // <<< Mostra o div de erro
+      return; // Interrompe se campos vazios
+  }
 
-    // Feedback visual e desabilita botão
-    loginButton.disabled = true;
-    loginButton.textContent = 'Entrando...';
-    console.log("[welcome modal] Chamando API loginUser...");
+  const identifier = identifierInput.value;
+  const password = passwordInput.value;
 
-    try {
-        const result = await loginUser(identifier, password); // Chama a API de login
-        console.log("[welcome modal] Resposta da API loginUser:", result); // LOG IMPORTANTE
+  // <<< Limpa erro anterior e desabilita botão >>>
+  errorMessageDiv.textContent = '';
+  errorMessageDiv.style.display = 'none';
+  loginButton.disabled = true;
+  loginButton.textContent = 'Entrando...';
+  console.log("[welcome modal] Chamando API loginUser...");
 
-        // VERIFICA O RESULTADO DA API
-        // ***** IMPORTANTE: Usar a verificação CORRIGIDA baseada na resposta do SEU backend *****
-        // Se o backend AGORA envia 'success: true', esta condição está correta.
-        // Se o backend NÃO envia 'success: true', mas você sabe que deu certo se 'result.user' existe,
-        // você poderia MUDAR a condição para if (result && result.user), MAS O IDEAL É CORRIGIR O BACKEND.
-        if (result && result.success === true) {
-            console.log("[welcome modal] Login API SUCESSO.");
-            showMessage('Login bem-sucedido! Redirecionando...', 'success', 2000); // Mostra por 2s
+  try {
+      const result = await loginUser(identifier, password); // Chama a API
+      console.log("[welcome modal] Resposta da API loginUser:", result);
 
-            // <<< FECHA O MODAL >>>
-            closeDynamicLoginModal(); // Chama a função para fechar
-            console.log("[welcome modal] Modal fechado após sucesso.");
+      if (result && result.success === true) {
+          // --- SUCESSO: Fecha o modal e redireciona (como antes) ---
+          console.log("[welcome modal] Login API SUCESSO.");
+          closeDynamicLoginModal();
+          console.log("[welcome modal] Modal fechado após sucesso.");
+          setTimeout(() => {
+              if (result.user && result.user.onboarding_completed === false) {
+                  navigateTo('onboarding');
+              } else {
+                  navigateTo('events');
+              }
+          }, 150);
 
-            // <<< REDIRECIONA >>>
-            // Pequeno delay APÓS fechar o modal para garantir que a UI atualize
-            setTimeout(() => {
-                // Verifica se precisa ir para onboarding ou eventos
-                // Garanta que result.user.onboarding_completed está sendo enviado pelo backend
-                if (result.user && result.user.onboarding_completed === false) {
-                    console.log("[welcome modal] Redirecionando para ONBOARDING...");
-                    navigateTo('onboarding');
-                } else {
-                    // Redireciona para a tela de eventos como padrão se onboarding estiver completo ou indefinido
-                    console.log("[welcome modal] Redirecionando para EVENTS...");
-                    navigateTo('events');
-                }
-            }, 150); // 150ms de delay
-
-        } else {
-            // Login falhou (API retornou success: false ou algo inesperado)
-            console.warn("[welcome modal] Login API FALHA:", result?.message);
-            showMessage(result?.message || 'Falha no login. Verifique suas credenciais.', 'error');
-         
-            closeDynamicLoginModal();
-            console.log("[welcome modal] Modal fechado após falha no login.");
-        }
-    } catch (error) {
-        // Erro na comunicação com a API (ex: rede, servidor fora)
-        console.error('[welcome modal] Erro CATCH na chamada loginUser:', error);
-        showMessage(error?.message || 'Erro de comunicação. Tente novamente.', 'error');
-        closeDynamicLoginModal(); // <<< fecha modal em caso de erro
-        loginButton.disabled = false; // Reabilita o botão
-        loginButton.textContent = 'LOGIN'; // Restaura o texto
-    }
+      } else {
+          // --- FALHA (Senha/Usuário Incorreto): Exibe erro NO MODAL ---
+          console.warn("[welcome modal] Login API FALHA:", result?.message);
+          errorMessageDiv.textContent = result?.message || 'Falha no login. Verifique suas credenciais.'; // <<< Coloca msg no div
+          errorMessageDiv.style.display = 'block'; // <<< Mostra o div
+          // <<< NÃO FECHA O MODAL >>>
+          loginButton.disabled = false; // <<< Reabilita o botão
+          loginButton.textContent = 'LOGIN'; // <<< Restaura texto do botão
+      }
+  } catch (error) {
+      // --- ERRO DE COMUNICAÇÃO: Exibe erro NO MODAL ---
+      console.error('[welcome modal] Erro CATCH na chamada loginUser:', error);
+      errorMessageDiv.textContent = error?.message || 'Erro de comunicação. Tente novamente.'; // <<< Coloca msg no div
+      errorMessageDiv.style.display = 'block'; // <<< Mostra o div
+      // <<< NÃO FECHA O MODAL >>>
+      loginButton.disabled = false; // <<< Reabilita o botão
+      loginButton.textContent = 'LOGIN'; // <<< Restaura texto do botão
+  }
 }
 
 // Handler para o botão Google

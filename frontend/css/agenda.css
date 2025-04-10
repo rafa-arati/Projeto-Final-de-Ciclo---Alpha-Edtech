@@ -1,7 +1,7 @@
 /* Estilos do Calendário */
 #agenda-title {
     font-size: 20px;
-    color: rgb(238, 238, 238);
+    color: var(--text-primary);
     margin: 0;
   }
 
@@ -10,15 +10,16 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    background-color: #222;
+    background-color: var(--bg-secondary);
     border-radius: 10px;
     margin: 20px 20px 30px 20px;
+    border: 1px solid var(--border-color);
 }
 
 .month-btn {
     background: none;
     border: none;
-    color: white;
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -26,18 +27,19 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .month-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 #current-month-display {
     font-size: 18px;
     font-weight: 500;
     margin: 0;
-    color: white;
+    color: var(--text-primary);
 }
 
 .calendar-container {
@@ -56,7 +58,8 @@
     font-size: 12px;
     font-weight: 500;
     padding: 10px 0;
-    color: #888;
+    color: var(--text-tertiary); /* Cinza Médio */
+    text-transform: uppercase;
 }
 
 .calendar-days {
@@ -70,51 +73,59 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10px;
-    height: 40px;
+    padding: 5px; /* Reduzido */
+    height: 45px; /* Aumentado um pouco */
     border-radius: 8px;
     font-size: 14px;
     position: relative;
-    cursor: pointer;
+    cursor: default; /* Não clicável por padrão */
     transition: background-color 0.3s;
+    border: 1px solid transparent; /* Para espaço */
 }
 
-.day:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+.day:not(.other-month):hover { /* Hover só para dias do mês */
+    background-color: var(--bg-tertiary);
 }
 
 .day.other-month {
-    color: #666;
+    color: var(--bg-quaternary); /* Cinza bem escuro */
+    opacity: 0.6;
 }
 
 .day.today {
-    background-color: rgba(128, 0, 255, 0.2);
+    background-color: rgba(255, 145, 0, 0.15); /* Laranja transparente */
+    border: 1px solid var(--accent-primary);
     font-weight: bold;
+    color: var(--accent-primary);
 }
 
 .day.has-events {
     font-weight: bold;
     position: relative;
+    cursor: pointer; /* Clicável só se tiver eventos */
 }
 
 .event-dot {
     position: absolute;
-    bottom: 4px;
-    width: 5px;
-    height: 5px;
+    bottom: 5px; /* Ajustado */
+    width: 6px; /* Maior */
+    height: 6px; /* Maior */
     border-radius: 50%;
-    background: linear-gradient(45deg, #439DFE, #8000FF);
+    background: var(--accent-primary); /* Laranja sólido */
+    box-shadow: 0 0 3px var(--accent-primary); /* Efeito de brilho */
 }
 
 .month-events {
     padding: 0 20px;
-    margin-bottom: 70px;
+    margin-bottom: 70px; /* Espaço para nav */
 }
 
 .month-events h3 {
     font-size: 16px;
     margin-bottom: 15px;
-    color: #ccc;
+    color: var(--text-secondary);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .events-list {
@@ -123,20 +134,20 @@
     gap: 12px;
 }
 
-/* NOVO ESTILO DE CARD - mais moderno e consistente com o estilo do app */
+/* Card de Evento na Lista */
 .event-card-item {
     display: flex;
-    background-color: #222;
+    background-color: var(--bg-secondary);
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.3s;
-    border: 1px solid #333;
-    height: 100px;
+    border: 1px solid var(--border-color);
+    min-height: 100px; /* Altura mínima */
 }
 
 .event-card-item:hover {
-    background-color: #2a2a2a;
+    background-color: var(--bg-tertiary);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
@@ -147,14 +158,14 @@
     align-items: center;
     justify-content: center;
     min-width: 60px;
-    background: linear-gradient(45deg, #439DFE, #8000FF);
-    color: white;
+    background: var(--accent-primary); /* Laranja */
+    color: var(--bg-primary); /* Texto preto para contraste */
     padding: 10px;
+    font-weight: bold;
 }
 
 .event-card-day {
     font-size: 24px;
-    font-weight: bold;
     line-height: 1;
 }
 
@@ -167,6 +178,7 @@
     width: 100px;
     height: 100px;
     flex-shrink: 0;
+    background-color: var(--bg-tertiary); /* Cor de fundo para imagem */
 }
 
 .event-card-image img {
@@ -181,19 +193,26 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    overflow: hidden; /* Evita que texto vaze */
 }
 
 .event-card-title {
     font-size: 16px;
     font-weight: 600;
     margin: 0 0 5px 0;
-    color: white;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .event-card-location {
     font-size: 13px;
-    color: #aaa;
+    color: var(--text-secondary);
     margin: 0 0 8px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .event-card-details {
@@ -203,55 +222,22 @@
     font-size: 12px;
 }
 
-#event-details-modal .modal-event-description-scrollable {
-    max-height: 150px; /* <<< ALTURA MÁXIMA - Ajuste este valor conforme necessário */
-    overflow-y: auto;  /* Adiciona scroll vertical APENAS se necessário */
-    text-align: left;  /* Garante que o texto fique alinhado à esquerda */
-    padding: 8px;     /* Espaçamento interno */
-    margin-top: 10px; /* Espaço acima da descrição */
-    margin-bottom: 10px; /* Espaço abaixo da descrição */
-    background-color: --var(--details-bg-secondary); /* Fundo sutil opcional */
-    border-radius: 4px; /* Cantos arredondados opcionais */
-    padding-left: 10px; /* Espaçamento após a borda esquerda */
-    white-space: pre-wrap; /* Mantém quebras de linha do texto original */
-    word-wrap: break-word; /* Quebra palavras longas */
-    line-height: 1.5; /* Melhora legibilidade */
-    color: #fffdfd; /* Cor do texto da descrição */
-  }
-  
-  /* Estilização da barra de rolagem (para navegadores WebKit - Chrome, Safari, Edge) */
-  #event-details-modal .modal-event-description-scrollable::-webkit-scrollbar {
-    width: 8px; /* Largura da barra */
-  }
-  
-  #event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05); /* Cor do trilho */
-    border-radius: 4px;
-  }
-  
-  #event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-thumb {
-    background-color: #555; /* Cor da barra */
-    border-radius: 4px;
-    border: 1px solid #333; /* Borda sutil na barra */
-  }
-  
-  #event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-thumb:hover {
-    background-color: #777; /* Cor ao passar o mouse */
-  } 
-
 .event-card-time,
 .event-card-category {
     display: flex;
     align-items: center;
     gap: 4px;
-    color: #999;
-    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-tertiary);
+    background-color: var(--bg-tertiary);
     padding: 3px 8px;
     border-radius: 4px;
 }
+.event-card-time svg {
+    width: 1em; height: 1em; /* Tamanho do ícone */
+}
 
 .no-events {
-    color: #888;
+    color: var(--text-secondary);
     font-style: italic;
     text-align: center;
     padding: 20px 0;
@@ -261,66 +247,121 @@
 #event-details-modal .modal-content {
     max-width: 90%;
     width: 400px;
+    background-color: var(--bg-tertiary); /* Fundo do modal */
+    border-color: var(--border-color);
 }
 
 #modal-event-title {
     margin-top: 5px;
     margin-bottom: 15px;
     font-size: 20px;
+    color: var(--text-primary);
 }
 
 #modal-event-details {
     margin-bottom: 20px;
+    text-align: left; /* Alinha detalhes à esquerda */
 }
 
 #modal-event-details p {
     margin: 10px 0;
-    color: white;
+    color: var(--text-secondary);
+    line-height: 1.5;
 }
+#modal-event-details p strong {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+
+#event-details-modal .modal-event-description-scrollable {
+    max-height: 150px;
+    overflow-y: auto;
+    text-align: left;
+    padding: 8px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: var(--bg-secondary); /* Fundo sutil */
+    border-radius: 4px;
+    padding-left: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.5;
+    color: var(--text-primary); /* Cor do texto */
+}
+
+/* Estilização da barra de rolagem */
+#event-details-modal .modal-event-description-scrollable::-webkit-scrollbar { width: 8px; }
+#event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; }
+#event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-thumb { background-color: var(--border-color-light); border-radius: 4px; border: 1px solid #333; }
+#event-details-modal .modal-event-description-scrollable::-webkit-scrollbar-thumb:hover { background-color: #777; }
+
 
 .modal-buttons {
     display: flex;
     gap: 10px;
+    margin-top: 10px; /* Reduzido */
+    border-top: 1px solid var(--border-color); /* Linha separadora */
+    padding-top: 15px;
 }
 
 .modal-buttons .btn {
     flex: 1;
     height: 40px;
-    margin-top: 10px;
-    padding: 12px;
+    /* margin-top: 10px; */ /* Removido - controlado por gap */
+    padding: 0 12px; /* Padding horizontal */
     border: none;
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
+    display: inline-flex; /* Para alinhar ícone/texto */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-.modal-buttons .btn:first-child {
-    background: linear-gradient(45deg, #439DFE, #8000FF);
-    color: white;
+.modal-buttons .btn:first-child { /* Botão Detalhes */
+    background: var(--accent-primary);
+    color: var(--bg-primary); /* Texto escuro para contraste */
+}
+.modal-buttons .btn:first-child:hover {
+    background: var(--accent-primary-hover);
 }
 
-.modal-buttons .btn.secondary {
-    background-color: #444;
-    color: white;
-}
 
 /* Estilos para o modal de múltiplos eventos */
 #multiple-events-modal .modal-content {
     max-width: 90%;
     width: 450px;
     padding-bottom: 15px;
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+#multiple-events-title {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .events-modal-list {
     max-height: 60vh;
     overflow-y: auto;
     margin-bottom: 10px;
+    padding-right: 5px; /* Espaço para scrollbar */
 }
+/* Estiliza scrollbar */
+.events-modal-list::-webkit-scrollbar { width: 8px; }
+.events-modal-list::-webkit-scrollbar-track { background: var(--bg-secondary); border-radius: 4px; }
+.events-modal-list::-webkit-scrollbar-thumb { background-color: var(--border-color-light); border-radius: 4px; }
+.events-modal-list::-webkit-scrollbar-thumb:hover { background-color: #777; }
 
 .multiple-event-item {
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-color);
     padding: 12px 0;
 }
 
@@ -335,6 +376,7 @@
     margin-right: 15px;
     border-radius: 5px;
     overflow: hidden;
+    background-color: var(--bg-tertiary);
 }
 
 .multiple-event-image img {
@@ -345,18 +387,26 @@
 
 .multiple-event-details {
     flex: 1;
+    overflow: hidden; /* Para ellipsis funcionar */
 }
 
 .multiple-event-details h4 {
     margin: 0 0 5px 0;
     font-size: 16px;
     font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .multiple-event-details p {
     margin: 0 0 5px 0;
     font-size: 13px;
-    color: #aaa;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .multiple-event-meta {
@@ -368,10 +418,10 @@
 
 .multiple-event-meta .time,
 .multiple-event-meta .category {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--bg-quaternary);
     padding: 3px 8px;
     border-radius: 4px;
-    color: #999;
+    color: var(--text-tertiary);
 }
 
 .multiple-event-actions {
@@ -381,12 +431,32 @@
     margin-left: 15px;
 }
 
-/* --- Estilos Botão Google Agenda --- */
+.multiple-event-actions .btn-view,
+.multiple-event-actions .btn-gcal {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+}
 
-/* Estilo base para ambos os botões (modal único e múltiplo) */
+.multiple-event-actions .btn-view {
+    background-color: var(--accent-primary);
+    color: var(--bg-primary);
+}
+.multiple-event-actions .btn-view:hover {
+    background-color: var(--accent-primary-hover);
+}
+
+/* --- Estilos Botão Google Agenda --- */
 #add-to-gcal-btn,
 .multiple-event-actions .btn-gcal {
-  /* Aparência Google */
   background-color: #FFFFFF; /* Fundo branco */
   color: #3c4043; /* Texto cinza escuro */
   border: 1px solid #dadce0; /* Borda cinza clara */
@@ -394,99 +464,65 @@
   border-radius: 4px; /* Cantos levemente arredondados */
   cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
-  display: inline-flex; /* Para alinhar ícone e texto */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px; /* Espaço entre ícone e texto */
   text-align: center;
-  white-space: nowrap; /* Evita quebra de linha */
-
-  /* Reset/Override de outros estilos .btn ou .secondary se necessário */
-  background-image: none; /* Remove gradientes anteriores */
-  opacity: 1; /* Garante opacidade total */
+  white-space: nowrap;
+  background-image: none;
+  opacity: 1;
 }
 
 /* Estilo específico para o botão no modal de detalhes (maior) */
 #add-to-gcal-btn {
   padding: 10px 18px;
   font-size: 14px;
-  flex: 1; /* Ocupa espaço no flex container */
+  flex: 1;
 }
 
 /* Estilo específico para o botão no modal de múltiplos eventos (menor) */
 .multiple-event-actions .btn-gcal {
-  padding: 6px 12px;
+  padding: 6px 10px; /* Menor */
   font-size: 12px;
 }
 
 /* Estilos do Ícone SVG */
 #add-to-gcal-btn svg.gcal-icon,
 .multiple-event-actions .btn-gcal svg.gcal-icon {
-  width: 18px; /* Tamanho do ícone */
-  height: 18px;
-  vertical-align: middle; /* Melhor alinhamento vertical */
+  width: 16px; /* Tamanho do ícone */
+  height: 16px;
+  vertical-align: middle;
 }
 
 .multiple-event-actions .btn-gcal svg.gcal-icon {
-   width: 14px; /* Ícone menor no modal de múltiplos eventos */
-   height: 14px;
+   width: 12px; /* Ícone menor */
+   height: 12px;
 }
 
-
+/* Hover & Foco combinados */
 #add-to-gcal-btn:hover,
-.multiple-event-actions .btn-gcal:hover {
-  background-color: #f8f9fa; /* Fundo levemente cinza no hover */
-  box-shadow: 0 1px 1px 0 rgba(0,0,0,0.1); /* Sombra sutil no hover */
-  border-radius: 8px;
-  /* Aplica a borda com gradiente de 4 cores */
-  border-width: 2px; /* Deixa a borda um pouco mais grossa para o efeito */
-  border-style: solid;
-  border-color: transparent; /* A cor sólida é ignorada quando border-image é ativa */
-  border-image-source: linear-gradient(
-    to right, /* Gradiente da esquerda para a direita */
-    #4285F4 25%,   /* Azul */
-    #EA4335 25%,   /* Vermelho */
-    #EA4335 50%,
-    #FBBC05 50%,   /* Amarelo */
-    #FBBC05 75%,
-    #34A853 75%    /* Verde */
-  );
-  border-image-slice: 1; /* Usa a imagem inteira como borda */
-}
-
-/* Estilo de Foco (mantém um anel azul simples para acessibilidade) */
+.multiple-event-actions .btn-gcal:hover,
 #add-to-gcal-btn:focus,
 .multiple-event-actions .btn-gcal:focus {
-  outline: none;
-  border-radius: 8px;
-  /* Se não estiver no hover, mostra a borda azul de foco */
-  border-color: #4285F4;
-  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
-  /* Garante que border-image não aplique no foco sem hover */
-  border-image: none;
+    background-color: #f8f9fa;
+    border-color: #c0c0c0; /* Borda cinza mais escura no hover/focus */
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    /* Remove border-image para hover/focus */
+    border-image: none;
 }
 
-/* Garante que o hover tenha precedência sobre o foco para a borda */
-#add-to-gcal-btn:hover:focus,
-.multiple-event-actions .btn-gcal:hover:focus {
-    border-width: 2px;
-    border-style: solid;
-    border-radius: 8px;
-    border-color: transparent;
-    border-image-source: linear-gradient(to right, #4285F4 25%, #EA4335 25%, #EA4335 50%, #FBBC05 50%, #FBBC05 75%, #34A853 75%);
-    border-image-slice: 1;
-    box-shadow: 0 1px 1px 0 rgba(0,0,0,0.1); /* Mantém sombra do hover */
-}
-/* Estado Desabilitado (se aplicável) */
+/* Estado Desabilitado */
 #add-to-gcal-btn:disabled,
 .multiple-event-actions .btn-gcal:disabled {
     background-color: #f5f5f5;
     border-color: #e0e0e0;
     color: #bdbdbd;
     cursor: not-allowed;
-    border-radius: 8px;
     box-shadow: none;
 }
+
 /* Estilos responsivos */
 @media (max-width: 480px) {
     .calendar-days .day {
@@ -500,38 +536,52 @@
     }
 
     .event-card-item {
-        height: auto;
-        flex-wrap: wrap;
+        min-height: 90px; /* Reduz altura mínima */
+        flex-wrap: nowrap; /* Garante que não quebre linha */
     }
 
     .event-card-date {
         min-width: 50px;
         padding: 8px;
+        font-size: 12px;
     }
+    .event-card-day { font-size: 20px; }
 
     .event-card-image {
         width: 80px;
         height: 80px;
+        align-self: center; /* Centraliza a imagem se altura do card for maior */
     }
+     .event-card-info {
+        padding: 10px 12px; /* Ajusta padding */
+    }
+     .event-card-title { font-size: 15px; }
+     .event-card-location { font-size: 12px; }
+     .event-card-details { font-size: 11px; }
 
     .multiple-event-actions {
-        flex-direction: row;
-        margin-top: 10px;
+        flex-direction: row; /* Botões lado a lado */
+        margin-top: 8px; /* Espaço acima */
         margin-left: 0;
+        width: 100%; /* Ocupa largura */
+        justify-content: flex-start; /* Alinha à esquerda */
     }
 
     .multiple-event-item {
-        flex-wrap: wrap;
+        align-items: flex-start; /* Alinha topo no mobile */
     }
 
     .multiple-event-image {
         width: 50px;
         height: 50px;
     }
+     .multiple-event-details h4 { font-size: 15px; }
+     .multiple-event-details p { font-size: 12px; }
 }
 
 @media (max-width: 360px) {
     .event-card-image {
-        display: none;
+        display: none; /* Esconde imagem em telas muito pequenas */
     }
+    .event-card-info { padding-left: 15px; } /* Mais padding se imagem some */
 }

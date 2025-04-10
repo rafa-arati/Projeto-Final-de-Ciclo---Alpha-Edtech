@@ -1,16 +1,19 @@
-/* Estilo para o Grid 2x2 na seção de Gerenciar Evento na página de DETALHES */
+/* Estilos para o Validador de QR Code */
+
+/* Botão de Abrir Scan/Gerenciar na página de DETALHES */
 .creator-actions .creator-action-buttons.grid-2x2 {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* Mantém 2 colunas se couber, senão 1 */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 10px;
 }
 
-/* Estilo UNIFICADO para os botões de Ação (Gerenciar e Scan no Modal) */
+/* Estilo UNIFICADO para os botões de Ação (Gerenciar e Scan) */
 .creator-actions .creator-action-buttons.grid-2x2 .btn-profile-action,
-#scan-qrcode-modal .qrcode-validator-container #start-scan-btn {
-  background-color: #1F1F1F;
-  color: #EAEAEA;
-  border: 1px solid #383838;
+#scan-qrcode-modal .qrcode-validator-container #start-scan-btn { /* Aplica a ambos */
+  background-color: var(--bg-secondary, #1F1F1F);
+  color: var(--text-secondary, #EAEAEA);
+  border: 1px solid var(--border-color, #383838);
   border-radius: 10px;
   padding: 13px 18px;
   font-size: 0.9rem;
@@ -25,28 +28,38 @@
   box-sizing: border-box;
   background-image: none;
 }
+
+/* Diferenciação do botão de SCAN */
 #scan-qrcode-modal .qrcode-validator-container #start-scan-btn {
-    border: 1px solid #a050ff;
+    border: 1px solid var(--accent-primary, #FF9100); /* Borda Laranja */
     justify-content: center;
     text-align: center;
     font-size: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: var(--text-primary); /* Texto mais claro */
 }
+/* Tira borda específica dos outros botões */
 .creator-actions .creator-action-buttons.grid-2x2 .btn-profile-action {
-  border: 1px solid #383838;
+  border: 1px solid var(--border-color, #383838);
   text-align: left;
   justify-content: flex-start;
   box-shadow: none;
 }
+
+/* Efeito Hover */
 .creator-actions .creator-action-buttons.grid-2x2 .btn-profile-action:hover,
 #scan-qrcode-modal .qrcode-validator-container #start-scan-btn:hover {
-  background-color: #2b2b2b;
-  border-color: #4d4d4d;
+  background-color: var(--bg-tertiary, #2b2b2b);
+  border-color: var(--border-color-light, #4d4d4d);
 }
+/* Hover específico do botão SCAN */
 #scan-qrcode-modal .qrcode-validator-container #start-scan-btn:hover {
-    border-color: #bf7fff;
-    box-shadow: 0 3px 6px rgba(160, 80, 255, 0.2);
+    border-color: var(--accent-primary-hover, #FFAB40); /* Borda laranja clara */
+    box-shadow: 0 3px 6px rgba(255, 145, 0, 0.2); /* Sombra laranja */
+    background-color: var(--bg-tertiary); /* Fundo um pouco mais claro */
 }
+
+/* Efeito Active (clique) */
 .creator-actions .creator-action-buttons.grid-2x2 .btn-profile-action:active,
 #scan-qrcode-modal .qrcode-validator-container #start-scan-btn:active {
   transform: scale(0.98);
@@ -55,43 +68,61 @@
   transform: translateY(1px);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
 }
+
+/* Ícones dentro dos botões */
 .creator-actions .creator-action-buttons.grid-2x2 .btn-profile-action svg,
 #scan-qrcode-modal .qrcode-validator-container #start-scan-btn svg,
 #scan-qrcode-modal .qrcode-validator-container .camera-icon-svg {
   width: 18px;
   height: 18px;
-  color: #a050ff;
+  color: var(--accent-primary, #FF9100); /* Ícones Laranja */
   flex-shrink: 0;
-  margin-right: 8px;
+  margin-right: 8px; /* Espaço após ícone */
 }
+/* Garante que o SVG da câmera tenha a cor certa */
+#scan-qrcode-modal .qrcode-validator-container .camera-icon-svg path {
+    stroke: var(--accent-primary, #FF9100) !important; /* Força stroke laranja */
+    fill: none;
+}
+
+
+/* Botão desabilitado */
 #scan-qrcode-modal .qrcode-validator-container #start-scan-btn:disabled {
-  background-color: #333 !important;
-  color: #777 !important;
+  background-color: var(--bg-quaternary, #333) !important;
+  color: var(--text-tertiary, #777) !important;
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
-  border-color: #444 !important;
+  border-color: var(--border-color, #444) !important;
   box-shadow: none;
+}
+#scan-qrcode-modal .qrcode-validator-container #start-scan-btn:disabled svg path {
+    stroke: var(--text-tertiary, #777) !important; /* Ícone cinza quando desabilitado */
 }
 
 
 /* --- ESTILOS PARA O CONTEÚDO DO MODAL DE SCAN --- */
 
+/* Container geral do validador dentro do modal */
+.qrcode-validator-container {
+    padding: 10px; /* Adiciona um pouco de padding interno */
+}
 
+/* Área de Teste Manual */
 #qr-test-mode {
   display: flex;
   gap: 10px;
   align-items: center;
   margin-top: 20px;
   padding: 10px;
-  background-color: #1e1e1e;
-  border: 1px solid #444;
+  background-color: var(--bg-secondary, #1e1e1e);
+  border: 1px solid var(--border-color, #444);
   border-radius: 8px;
   box-sizing: border-box;
 }
 
-#qr-test-mode label {
-  color: #ccc;
+#qr-test-mode label { /* Se houver label */
+  color: var(--text-secondary, #ccc);
   font-size: 0.9rem;
   white-space: nowrap;
 }
@@ -101,9 +132,9 @@
   padding: 8px 12px;
   height: 40px;
   border-radius: 6px;
-  border: 1px solid #555;
-  background-color: #2c2c2e;
-  color: white;
+  border: 1px solid var(--border-color-light, #555);
+  background-color: var(--bg-tertiary, #2c2c2e);
+  color: var(--text-primary, white);
   font-family: monospace;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -112,22 +143,22 @@
 }
 
 #manual-qrcode-input::placeholder {
-  color: #888;
+  color: var(--text-tertiary, #888);
   font-style: italic;
 }
 
 #manual-qrcode-input:focus {
-  border-color: #a050ff;
+  border-color: var(--accent-primary, #FF9100); /* Borda Laranja */
   outline: none;
-  background-color: #333;
+  background-color: var(--bg-quaternary, #333);
 }
 
 #manual-qrcode-button {
   height: 40px;
   padding: 0 16px;
   background-color: transparent;
-  color: #ffffff;
-  border: 1px solid #a050ff;
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--accent-primary, #FF9100); /* Borda Laranja */
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -141,43 +172,133 @@
 }
 
 #manual-qrcode-button:hover {
-  background-color: rgba(160, 80, 255, 0.1);
-  color: #bf7fff;
-  border-color: #bf7fff;
+  background-color: rgba(255, 145, 0, 0.1); /* Fundo Laranja transparente */
+  color: var(--accent-primary-hover, #FFAB40);
+  border-color: var(--accent-primary-hover, #FFAB40);
 }
 
 /* --- OUTROS ESTILOS DO MODAL (Scanner, Resultados, etc.) --- */
-.scanner-container { background-color: #1a1a1a; border-radius: 8px; overflow: hidden; position: relative; width: 100%; max-width: 400px; height: 300px; margin: 15px auto 0; border: 1px solid #333; }
+.scanner-container {
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    margin: 15px auto 0;
+    border: 1px solid var(--border-color);
+}
 .scanner-container.hidden { display: none; }
-.scanner-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background-color: rgba(0,0,0,0.6); color: white; position: absolute; top: 0; left: 0; right: 0; z-index: 2; }
+.scanner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: rgba(0,0,0,0.7); /* Fundo mais escuro */
+    color: var(--text-primary);
+    position: absolute;
+    top: 0; left: 0; right: 0; z-index: 2;
+}
 .scanner-title { font-weight: bold; font-size: 0.9rem; }
-.btn-close { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0 5px; line-height: 1; }
+.btn-close { background: none; border: none; color: var(--text-secondary); font-size: 22px; cursor: pointer; padding: 0 5px; line-height: 1; }
+.btn-close:hover { color: var(--accent-primary); } /* Laranja no hover do X */
 #qr-video { display: block; width: 100%; height: 100%; object-fit: cover; }
 .scanner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; pointer-events: none; }
-.scanner-frame { width: 65%; padding-bottom: 65%; height: 0; max-width: 200px; max-height: 200px; border: 3px solid #a050ff; border-radius: 12px; box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.6); position: relative; }
-.scanner-frame::before, .scanner-frame::after { content: ''; position: absolute; width: 25px; height: 25px; border-color: #a050ff; border-style: solid; border-width: 0; }
+.scanner-frame {
+    width: 65%;
+    padding-bottom: 65%; /* Mantém quadrado */
+    height: 0;
+    max-width: 200px; max-height: 200px;
+    border: 3px solid var(--accent-primary); /* Borda Laranja */
+    border-radius: 12px;
+    box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.6);
+    position: relative;
+}
+/* Cantos decorativos */
+.scanner-frame::before, .scanner-frame::after {
+    content: ''; position: absolute; width: 25px; height: 25px;
+    border-color: var(--accent-primary); /* Laranja */
+    border-style: solid; border-width: 0;
+}
 .scanner-frame::before { top: -3px; left: -3px; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 10px; }
 .scanner-frame::after { bottom: -3px; right: -3px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 10px; }
 
-.qrcode-result { padding: 15px; background-color: #2c2c2e; border-radius: 8px; margin-top: 15px; border-left: 5px solid transparent; animation: fadeInResult 0.3s ease-out; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+/* Resultados da Validação */
+.qrcode-result {
+    padding: 15px;
+    background-color: var(--bg-tertiary);
+    border-radius: 8px;
+    margin-top: 15px;
+    border-left: 5px solid transparent;
+    animation: fadeInResult 0.3s ease-out;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto; margin-right: auto;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color); /* Borda geral sutil */
+}
 .qrcode-result.hidden { display: none; }
-.qrcode-result-success { border-color: #28a745; }
-.qrcode-result-error { border-color: #dc3545; }
-.qrcode-result-warning { border-color: #ffc107; }
-.valid-qrcode, .invalid-qrcode, .validated-qrcode { display: flex; flex-direction: column; gap: 8px; }
-.qrcode-verification-success, .qrcode-validation-success { color: #28a745; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-.qrcode-verification-error { color: #dc3545; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-.qrcode-result-warning .qrcode-verification-error { color: #ffc107; }
-.qrcode-detail-item { font-size: 0.9rem; color: #adb5bd; }
-.qrcode-detail-item strong { color: #fff; font-weight: 500; margin-right: 5px; }
-.qrcode-error-message { font-size: 0.9rem; color: #adb5bd; line-height: 1.4; }
+.qrcode-result-success { border-left-color: var(--success-color); border-color: var(--success-border); background-color: var(--success-bg); }
+.qrcode-result-error { border-left-color: var(--error-color); border-color: var(--error-border); background-color: var(--error-bg); }
+/* .qrcode-result-warning { border-left-color: #ffc107; } */ /* Manter Amarelo para warning? */
 
+.valid-qrcode, .invalid-qrcode, .validated-qrcode { display: flex; flex-direction: column; gap: 8px; }
+
+.qrcode-verification-success, .qrcode-validation-success {
+    color: var(--success-color);
+    font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;
+}
+.qrcode-verification-error {
+    color: var(--error-color);
+    font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;
+}
+/* .qrcode-result-warning .qrcode-verification-error { color: #ffc107; } */
+
+.qrcode-detail-item {
+    font-size: 0.9rem;
+    color: var(--text-secondary); /* Cinza claro para detalhes */
+    text-align: left; /* Alinha detalhes à esquerda */
+}
+.qrcode-detail-item strong {
+    color: var(--text-primary); /* Rótulo branco */
+    font-weight: 500;
+    margin-right: 5px;
+}
+.qrcode-error-message {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    text-align: left;
+}
+
+/* Botões de Ação (Validar/Cancelar) */
 .qrcode-buttons { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
 .qrcode-buttons.hidden { display: none; }
-.qrcode-buttons .btn { padding: 10px 20px; font-size: 0.95rem; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; }
-.qrcode-buttons .btn-success { background: linear-gradient(45deg, #28a745, #20c997); color: white; }
-.qrcode-buttons .btn-secondary { background-color: #3a3a3c; color: #ccc; border: 1px solid #555;}
-.qrcode-buttons .btn-secondary:hover { background-color: #4a4a4c; }
+.qrcode-buttons .btn {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+.qrcode-buttons .btn-success { /* Botão Validar Entrada */
+    background: var(--success-color);
+    color: white;
+}
+.qrcode-buttons .btn-success:hover { opacity: 0.9; }
+.qrcode-buttons .btn-secondary { /* Botão Cancelar */
+    background-color: var(--bg-quaternary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color-light);
+}
+.qrcode-buttons .btn-secondary:hover {
+    background-color: var(--border-color-light);
+    color: var(--text-primary);
+}
+
 
 @keyframes fadeInResult { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .hidden { display: none !important; }
@@ -192,10 +313,12 @@
     #scan-qrcode-modal #start-scan-btn { font-size: 0.9rem; padding: 12px 20px; min-width: auto; }
     .scanner-container { height: 250px; }
     /* Mantém lado a lado em mobile, se couber */
-    .test-input-container { max-width: 100%; gap: 5px; }
-    #test-qrcode-input { font-size: 0.85rem; padding: 8px 10px;}
-    #test-qrcode-btn { padding: 0 10px; font-size: 0.7rem; } /* Botão ainda menor */
+    #qr-test-mode { flex-wrap: wrap; } /* Permite quebrar se não couber */
+    #manual-qrcode-input { min-width: 150px; /* Largura mínima */}
+    #manual-qrcode-button { padding: 0 12px; /* Ajusta padding botão */ }
+
     .qrcode-result { padding: 12px; }
     .qrcode-verification-success, .qrcode-verification-error, .qrcode-validation-success { font-size: 1rem; }
     .qrcode-detail-item, .qrcode-error-message { font-size: 0.85rem; }
+    .qrcode-buttons .btn { padding: 8px 15px; font-size: 0.9rem;}
 }

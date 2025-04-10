@@ -1,358 +1,431 @@
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    }
-
-    body {
-        background-color: black;
-        color: #fff;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 380px;
-        padding: 40px 20px;
-        margin: 0 auto;
-    }
-
-    .logo {
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 32px;
-        font-weight: bold;
-        letter-spacing: 2px;
-    }
-
-    .logo span {
-        background: linear-gradient(45deg, #439DFE, #8000FF);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        color: transparent;
-        /* Fallback para navegadores que não suportam -webkit-text-fill-color */
-    }
-
-    .welcome {
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 18px;
-        color: #e0e0e0;
-    }
-
-    .input-group {
-        position: relative;
-        margin-bottom: 20px;
-    }
-
-    .input-group input,
-    .input-group select {
-        width: 100%;
-        padding: 15px 15px 15px 45px;
-        border: none;
-        border-radius: 8px;
-        background-color: #222;
-        color: #fff;
-        font-size: 16px;
-        outline: none;
-    }
-
-    .input-group select {
-        appearance: none;
-        cursor: pointer;
-    }
-
-    .input-group input::placeholder,
-    .input-group select::placeholder {
-        color: #888;
-        font-style: italic;
-    }
-
-    .input-icon {
-        position: absolute;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #8000FF;
-    }
-
-    .btn {
-        width: 100%;
-        padding: 15px;
-        border: none;
-        border-radius: 8px;
-        background: linear-gradient(45deg, #439DFE, #8000FF);
-        color: #fff;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-bottom: 15px;
-        transition: opacity 0.3s;
-    }
-
-    .btn:hover {
-        opacity: 0.9;
-    }
-
-    .link-text {
-        text-align: center;
-        margin: 20px 0;
-        color: #8000FF;
-        font-size: 14px;
-        cursor: pointer;
-    }
-
-    .link-text:hover {
-        text-decoration: underline;
-    }
-
-    .divider {
-        display: flex;
-        align-items: center;
-        color: #666;
-        margin: 25px 0;
-        font-size: 14px;
-    }
-
-    .divider::before,
-    .divider::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background-color: #333;
-        margin: 0 10px;
-    }
-
-    .social-login {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .social-btn {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        transition: transform 0.3s;
-    }
-
-    .social-btn:hover {
-        transform: scale(1.1);
-    }
-
-    .bottom-text {
-        text-align: center;
-        font-size: 14px;
-        color: #ccc;
-    }
-
-    .bottom-text a {
-        color: #8000FF;
-        text-decoration: none;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .bottom-text a:hover {
-        text-decoration: underline;
-    }
-
-    /* Modal styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal.active {
-        display: flex;
-    }
-
-    .modal-content {
-        background-color: #222;
-        border-radius: 8px;
-        padding: 20px;
-        width: 90%;
-        max-width: 400px;
-        position: relative;
-        text-align: center;
-        border: 1px solid #8000FF;
-    }
-
-    .close-modal {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 20px;
-        font-weight: bold;
-        cursor: pointer;
-        color: #8000FF;
-    }
-
-    #modal-message {
-        margin: 20px 0;
-        color: #e0e0e0;
-    }
-
-    /* For select dropdown arrow */
-    .select-wrapper {
-        position: relative;
-    }
-
-    .select-wrapper::after {
-        content: "▼";
-        color: #8000FF;
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
-        font-size: 12px;
-    }
-
-    .modal-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 20px;
-    }
-
-    .modal-content h3 {
-        margin-top: 5px;
-        margin-bottom: 15px;
-        color: #fff;
-    }
-
-    .btn.secondary {
-        background-color: #555;
-        opacity: 0.9;
-    }
-
-    .btn.secondary:hover {
-        opacity: 1;
-    }
-
-    /* Editar Perfil */
-    .profile-form {
-        padding: 20px;
-    }
-    
-    .profile-form .input-group {
-        margin-bottom: 25px;
-    }
-    
-    .profile-form input[disabled] {
-        background-color: #333;
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-    
-    .form-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-top: 30px;
-    }
-
-    /* Estilos para campo de telefone */
-    .input-group input[type="tel"] {
-        padding-left: 80px !important; /* Espaço para máscara */
-    }
-    
-    /* Label dos campos */
-    .input-group label {
-        display: block;
-        margin-bottom: 8px;
-        color: #8000FF;
-        font-size: 14px;
-        font-weight: 500;
-    }
-    
-    /* Botão de alterar senha */
-    .btn.secondary {
-        background: linear-gradient(45deg, #606060, #404040);
-        margin-top: 10px;
-    }
-
-    .input-hint {
-        display: block;
-        color: #666;
-        font-size: 0.8em;
-        margin-top: 0.5rem;
-        opacity: 0.8;
-    }
-
-    .page-header {
-        display: flex;
-        align-items: center;
-        padding: 15px 15px; /* Ajuste o padding conforme necessário */
-        border-bottom: 1px solid #222; /* Linha sutil opcional */
-        margin-bottom: 20px; /* Espaço abaixo do header */
-        position: relative; /* Para posicionamento absoluto do título se necessário */
-        width: 100%; /* Garante que ocupe a largura */
-        box-sizing: border-box;
-      }
-      
-      .page-header .back-button {
-        background: none;
-        border: none;
-        color: #ccc;
-        padding: 5px;
-        cursor: pointer;
-        display: inline-flex; /* Para alinhar o SVG corretamente */
-        align-items: center;
-        justify-content: center;
-        /* Define uma largura fixa para alinhar o título ao centro corretamente */
-        width: 34px; /* Ajuste conforme o tamanho do ícone + padding */
-        flex-shrink: 0; /* Impede que o botão encolha */
-      }
-      
-      .page-header .back-button:hover {
-        color: white;
-      }
-      
-      .page-header .back-button svg {
-        width: 24px;
-        height: 24px;
-      }
-      
-      .page-header h1 {
-        flex-grow: 1; /* Faz o título ocupar o espaço restante */
-        text-align: center; /* Centraliza o texto */
-        margin: 0; /* Remove margens padrão do h1 */
-        font-size: 18px; /* Ajuste o tamanho */
-        font-weight: 600;
-        color: #eee;
-        /* Compensar a largura do botão voltar para centralização real */
-        padding-right: 34px; /* Mesmo valor da largura do botão voltar */
-      }
-      
-      /* Estilos específicos para garantir que funcionem */
-      .account-hub-page .profile-header,
-      #criarEventoForm .header { /* Seletores mais específicos se necessário */
-         border-bottom: none; /* Remover borda se já existir nesses elementos */
-         margin-bottom: 0; /* Remover margem se já existir */
-         padding: 15px; /* Garantir padding padrão */
-      }
-      
-      /* Esconder a classe .header antiga de create-event se ainda existir */
-      #criarEventoForm > .header {
-          display: none; /* Esconde o header antigo se o novo for adicionado fora do form */
-      }
+/* Define as variáveis de cor globais */
+:root {
+    --accent-primary: #FF9100; /* Laranja Vibrante */
+    --accent-primary-hover: #FFAB40; /* Laranja mais claro para hover */
+    --accent-secondary: #00E5FF; /* Cyan Brilhante */
+    --accent-secondary-hover: #18FFFF; /* Cyan mais claro para hover */
+  
+    --text-primary: #FFFFFF;
+    --text-secondary: #B0B0B0;
+    --text-tertiary: #757575;
+  
+    --bg-primary: #000000;
+    --bg-secondary: #1C1C1E;
+    --bg-tertiary: #2C2C2E;
+    --bg-quaternary: #3A3A3C;
+  
+    --border-color: #444444;
+    --border-color-light: #555555;
+  
+    --error-color: #FF5252;
+    --error-bg: rgba(255, 82, 82, 0.1);
+    --error-border: rgba(255, 82, 82, 0.4);
+  
+    --success-color: #4CAF50;
+    --success-bg: rgba(76, 175, 80, 0.1);
+    --success-border: rgba(76, 175, 80, 0.4);
+  
+    /* Mapeamento para variáveis antigas de details.css (se necessário) */
+    --details-bg-primary: var(--bg-primary);
+    --details-bg-secondary: var(--bg-secondary);
+    --details-bg-tertiary: var(--bg-tertiary);
+    --details-bg-quaternary: var(--bg-quaternary);
+    --details-text-primary: var(--text-primary);
+    --details-text-secondary: var(--text-secondary);
+    --details-text-tertiary: var(--text-tertiary);
+    --details-accent-primary: var(--accent-primary);
+    --details-accent-secondary: var(--accent-secondary);
+    --details-border-color: var(--border-color);
+    --details-danger-color: var(--error-color);
+    --details-danger-bg: var(--error-bg);
+    --details-danger-border: var(--error-border);
+    --details-success-color: var(--success-color);
+    /* --details-warning-color: #ffc107; */ /* Manter amarelo para warning? */
+    --details-border-radius: 10px;
+    --details-padding-base: 15px;
+    --details-padding-large: 20px;
+  }
+  
+  * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+  
+  .container {
+      width: 100%;
+      max-width: 380px;
+      padding: 40px 20px;
+      margin: 0 auto;
+  }
+  
+  .logo {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 2px;
+  }
+  
+  .logo span {
+      background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent; /* Fallback */
+  }
+  
+  .welcome {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 18px;
+      color: var(--text-primary);
+  }
+  
+  .input-group {
+      position: relative;
+      margin-bottom: 20px;
+  }
+  
+  .input-group input,
+  .input-group select {
+      width: 100%;
+      padding: 15px 15px 15px 45px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 16px;
+      outline: none;
+      border: 1px solid var(--border-color); /* Adiciona borda sutil */
+      transition: border-color 0.2s, background-color 0.2s;
+  }
+  
+  .input-group input:focus,
+  .input-group select:focus {
+      border-color: var(--accent-primary);
+      background-color: var(--bg-tertiary);
+  }
+  
+  .input-group select {
+      appearance: none;
+      cursor: pointer;
+  }
+  
+  .input-group input::placeholder,
+  .input-group select::placeholder {
+      color: var(--text-tertiary);
+      font-style: italic;
+  }
+  
+  .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent-primary); /* Cor do ícone */
+  }
+  
+  .input-icon svg {
+      stroke: currentColor; /* Para SVGs com stroke="currentColor" */
+      fill: currentColor;   /* Para SVGs com fill="currentColor" */
+  }
+  
+  
+  .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent-primary); /* Laranja sólido */
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 15px;
+      transition: background-color 0.3s, opacity 0.3s;
+  }
+  
+  .btn:hover:not(:disabled) {
+      background: var(--accent-primary-hover);
+  }
+  
+  .btn:disabled {
+      background-color: var(--bg-quaternary) !important;
+      color: var(--text-tertiary) !important;
+      cursor: not-allowed;
+      opacity: 0.7;
+  }
+  
+  
+  .link-text {
+      text-align: center;
+      margin: 20px 0;
+      color: var(--accent-primary);
+      font-size: 14px;
+      cursor: pointer;
+  }
+  
+  .link-text:hover {
+      text-decoration: underline;
+      color: var(--accent-primary-hover);
+  }
+  
+  .divider {
+      display: flex;
+      align-items: center;
+      color: var(--text-tertiary);
+      margin: 25px 0;
+      font-size: 14px;
+  }
+  
+  .divider::before,
+  .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background-color: var(--border-color);
+      margin: 0 10px;
+  }
+  
+  .social-login {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+  }
+  
+  .social-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.3s;
+      background-color: var(--bg-secondary); /* Fundo para botões sociais */
+      border: 1px solid var(--border-color);
+  }
+  
+  .social-btn:hover {
+      transform: scale(1.1);
+      border-color: var(--border-color-light);
+  }
+  
+  .social-btn.google {
+      background-color: white; /* Mantém fundo branco para Google */
+  }
+  .social-btn.google:hover {
+      background-color: #f1f1f1;
+  }
+  
+  .bottom-text, .page-footer { /* Estilo para rodapé de texto */
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+  }
+  
+  .bottom-text a, .page-footer a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+  }
+  
+  .bottom-text a:hover, .page-footer a:hover {
+      text-decoration: underline;
+      color: var(--accent-primary-hover);
+  }
+  
+  /* Estilos gerais de Modal */
+  .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      align-items: center;
+      justify-content: center;
+  }
+  
+  .modal.active {
+      display: flex;
+  }
+  
+  .modal-content {
+      background-color: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+      text-align: center;
+      border: 1px solid var(--border-color);
+  }
+  
+  .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px; /* Aumentado para facilitar clique */
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: color 0.2s ease;
+  }
+  
+  .close-modal:hover {
+      color: var(--accent-primary);
+  }
+  
+  
+  #modal-message {
+      margin: 20px 0;
+      color: var(--text-primary);
+      line-height: 1.5;
+  }
+  
+  /* Wrapper para Select (seta) */
+  .select-wrapper {
+      position: relative;
+  }
+  
+  .select-wrapper::after {
+      content: '▼'; /* Setinha */
+      color: var(--accent-primary);
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 12px;
+  }
+  
+  .modal-buttons {
+      display: flex;
+      justify-content: center; /* Centraliza botões por padrão */
+      gap: 10px;
+      margin-top: 20px;
+  }
+  
+  .modal-content h3 {
+      margin-top: 5px;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+      font-size: 1.2rem; /* Levemente maior */
+  }
+  
+  .btn.secondary {
+      background-color: var(--bg-quaternary);
+      color: var(--text-secondary);
+      opacity: 0.9;
+  }
+  
+  .btn.secondary:hover {
+      opacity: 1;
+      background-color: var(--border-color-light);
+  }
+  
+  /* Estilos para Formulário de Perfil (se centralizado aqui) */
+  .profile-form {
+      padding: 20px;
+  }
+  
+  .profile-form .input-group {
+      margin-bottom: 25px;
+  }
+  
+  .profile-form input:disabled {
+      background-color: var(--bg-tertiary);
+      opacity: 0.7;
+      cursor: not-allowed;
+  }
+  
+  .form-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 30px;
+  }
+  
+  /* Estilos para campo de telefone */
+  .input-group input[type="tel"] {
+      /* padding-left: 80px !important; */ /* Removido - ajuste visual pode ser feito de outra forma */
+  }
+  
+  /* Label dos campos */
+  .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-secondary); /* Cor mais suave para labels */
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left; /* Garante alinhamento */
+  }
+  
+  .input-hint {
+      display: block;
+      color: var(--text-tertiary);
+      font-size: 0.8em;
+      margin-top: 0.5rem;
+      opacity: 0.8;
+  }
+  
+  /* Header Padrão de Página (Voltar + Título) */
+  .page-header {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+  }
+  
+  .page-header .back-button, .header .back-button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      padding: 5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      flex-shrink: 0;
+      margin-right: 10px;
+  }
+  
+  .page-header .back-button:hover, .header .back-button:hover {
+      color: var(--text-primary);
+  }
+  
+  .page-header .back-button svg, .header .back-button svg {
+      width: 24px;
+      height: 24px;
+  }
+  
+  .page-header h1, .header h1 {
+      flex-grow: 1;
+      text-align: center;
+      margin: 0;
+      font-size: 1.15rem; /* Ajustado */
+      font-weight: 600;
+      color: var(--text-primary);
+      padding-right: 44px; /* (largura botão + margem) */
+  }

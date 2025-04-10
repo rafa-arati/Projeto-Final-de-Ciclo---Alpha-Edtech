@@ -87,11 +87,7 @@ export default async function renderEditProfile(queryParams) {
                     </button>
                     ` : `
                     `}
-                    ${isAdminUser ? `
-                    <button id="metricas-btn" class="btn-profile-action">
-                        ${barChartIcon} Métricas (em breve)
-                    </button>
-                    ` : ''}
+
                      <button id="logout-btn" class="btn-profile-action logout-action">
                          ${logoutIcon} Sair
                      </button>
@@ -132,10 +128,6 @@ export default async function renderEditProfile(queryParams) {
                 ${agendaIconNav}
                 <span>Agenda</span>
               </div>
-              <div class="nav-item" id="nav-favorites">
-                ${favoritesIconNav}
-                <span>Favoritos</span>
-              </div>
               <div class="nav-item active" id="nav-profile">
                 ${profileIconNav}
                 <span>Perfil</span>
@@ -160,8 +152,9 @@ export default async function renderEditProfile(queryParams) {
       } catch (error) {
         console.error('Erro fatal ao carregar Conta/Perfil:', error);
         showMessage('Erro ao carregar seus dados. Tente novamente.', 'error');
-        navigateTo('events');
-      }
+        // navigateTo('login'); // <-- Linha antiga
+        navigateTo('welcome-screen'); // <-- Linha nova
+    }
 }
 
 // --- Funções Auxiliares ---
@@ -327,11 +320,11 @@ function setupAccountHubEvents(user) {
         try {
             await logoutUser();
             clearUser(); // Limpa dados do localStorage
-            navigateTo('welcome-screen'); // Vai para a tela de boas-vindas/login
+            navigateTo('welcome-screen'); 
         } catch (error) {
             console.error('Erro ao fazer logout:', error);
             showMessage('Erro ao sair. Tente novamente.');
-            clearUser(); // Limpa dados mesmo em caso de erro
+            clearUser();
             navigateTo('welcome-screen');
             button.disabled = false;
             button.innerHTML = originalContent;
@@ -466,62 +459,183 @@ function setupAccountHubEvents(user) {
  * Adiciona ou garante que os estilos CSS necessários para a página de conta/hub existam.
  * (Pode ser otimizado movendo estilos para arquivos CSS globais/específicos)
  */
+/**
+ * Adiciona ou garante que os estilos CSS necessários para a página de conta/hub existam.
+ * CORRIGIDO para usar as variáveis de cor do projeto.
+ */
 function addAccountHubStyles() {
     const styleId = 'account-hub-styles';
     if (document.getElementById(styleId)) return; // Já existe
 
-    console.log("Adding Account Hub page styles...");
+    console.log("Adding Account Hub page styles (Updated Colors)...");
     const styles = document.createElement('style');
     styles.id = styleId;
     styles.textContent = `
-      /* Estilos para a página Minha Conta / Editar Perfil */
-      .account-hub-page .profile-content { padding: 0 20px 100px; /* Mais espaço inferior por causa do nav */ text-align: center; }
-      /* ... (outros estilos de .profile-header, .profile-image-container, .user-display-name, .user-badge, etc. como definidos anteriormente) ... */
-      .account-hub-page .page-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; margin-bottom: 20px; }
-      .account-hub-page .page-header h1 { flex-grow: 1; text-align: center; margin: 0; font-size: 1.25rem; font-weight: 600; color: #eee; padding-right: 44px; /* Compensa botão voltar */ }
-      .account-hub-page .back-button { background: none; border: none; color: #ccc; padding: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 34px; flex-shrink: 0; margin-right: 10px; }
-      .account-hub-page .back-button:hover { color: white; }
-      .account-hub-page .back-button svg { width: 24px; height: 24px; }
+      /* Estilos para a página Minha Conta / Editar Perfil - Usando Variáveis Globais */
+      .account-hub-page .profile-content {
+          padding: 0 20px 100px; /* Mais espaço inferior por causa do nav */
+          text-align: center;
+      }
+      /* Header da página (usa estilos de common.css) */
+      .account-hub-page .page-header {
+          /* Estilos herdados ou definidos em common.css */
+      }
 
-      #userInfoDisplay { margin-bottom: 30px; margin-top: 10px; }
-      .profile-image-container { position: relative; width: 100px; height: 100px; margin: 0 auto 15px auto; }
-      .profile-image { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background-color: #333; display: flex; align-items: center; justify-content: center; border: 2px solid #444; }
+      /* Seção de Informação do Usuário (Foto/Nome/Badge) */
+      #userInfoDisplay {
+          margin-bottom: 30px;
+          margin-top: 10px;
+      }
+      .profile-image-container {
+          position: relative;
+          width: 100px; height: 100px;
+          margin: 0 auto 15px auto;
+      }
+      .profile-image {
+          width: 100%; height: 100%;
+          border-radius: 50%; overflow: hidden;
+          background-color: var(--bg-tertiary, #2C2C2E); /* Fundo cinza escuro */
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid var(--border-color, #444); /* Borda cinza */
+      }
       .profile-image img { width: 100%; height: 100%; object-fit: cover; }
-      .profile-image-initial { font-size: 36px; color: #fff; font-weight: bold; }
-      .profile-edit-photo { position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(45deg, #439DFE, #8000FF); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
-      .profile-edit-photo:hover { opacity: 0.9; }
-      .user-display-name { font-size: 22px; font-weight: 600; color: white; margin-bottom: 10px; }
-      .user-badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 500; margin: 0 auto 10px; border: 1px solid; }
-      .admin-badge { background-color: rgba(255, 69, 58, 0.1); color: #ff453a; border-color: rgba(255, 69, 58, 0.3); }
-      .premium-badge { background: linear-gradient(45deg, rgba(67, 157, 254, 0.1), rgba(128, 0, 255, 0.1)); color: #ae50ff; border-color: rgba(128, 0, 255, 0.3); }
-      .user-badge.user-badge { background-color: rgba(142, 142, 147, 0.1); color: #8e8e93; border-color: rgba(142, 142, 147, 0.3); }
+      .profile-image-initial { font-size: 36px; color: var(--text-primary, #fff); font-weight: bold; }
 
-      .profile-action-list { max-width: 450px; margin: 20px auto; display: flex; flex-direction: column; gap: 12px; }
-      .btn-profile-action { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background-color: #1c1c1e; color: #ddd; border: 1px solid #3a3a3c; padding: 14px 18px; border-radius: 10px; font-size: 15px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; }
-      .btn-profile-action:hover { background-color: #2c2c2e; border-color: #555; }
-      .btn-profile-action svg { width: 20px; height: 20px; color: #8000FF; flex-shrink: 0; }
-      .btn-profile-action.premium-cta svg { color: #ae50ff; }
-      .btn-profile-action.logout-action { color: #ff453a; }
-      .btn-profile-action.logout-action svg { color: #ff453a; }
-      .btn-profile-action.logout-action:hover { background-color: rgba(255, 69, 58, 0.15); border-color: rgba(255, 69, 58, 0.4); color: #ff6359; }
+      .profile-edit-photo { /* Botão de editar foto */
+          position: absolute; bottom: 0; right: 0;
+          width: 32px; height: 32px; border-radius: 50%;
+          background: var(--accent-primary, #FF9100); /* Laranja */
+          border: none; cursor: pointer; display: flex;
+          align-items: center; justify-content: center;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      }
+      .profile-edit-photo:hover { opacity: 0.9; }
+      .profile-edit-photo svg { stroke: var(--bg-primary, #000); } /* Cor do ícone câmera */
+
+      .user-display-name {
+          font-size: 22px; font-weight: 600;
+          color: var(--text-primary, white);
+          margin-bottom: 10px;
+      }
+      /* Badges de Usuário */
+      .user-badge {
+          display: inline-block; padding: 5px 12px; border-radius: 15px;
+          font-size: 12px; font-weight: 500; margin: 0 auto 10px; border: 1px solid;
+      }
+      .admin-badge { /* Mantém vermelho para admin */
+          background-color: var(--error-bg, rgba(255, 82, 82, 0.1));
+          color: var(--error-color, #FF5252);
+          border-color: var(--error-border, rgba(255, 82, 82, 0.4));
+      }
+      .premium-badge { /* Usa Laranja/Cyan sutis */
+          background: linear-gradient(45deg, rgba(0, 229, 255, 0.1), rgba(255, 145, 0, 0.1));
+          color: var(--accent-primary, #FF9100); /* Texto Laranja */
+          border-color: rgba(255, 145, 0, 0.4); /* Borda Laranja transparente */
+      }
+      .user-badge.user-badge { /* Usuário Comum */
+          background-color: rgba(142, 142, 147, 0.1);
+          color: var(--text-tertiary, #8e8e93);
+          border-color: rgba(142, 142, 147, 0.3);
+      }
+
+      /* Lista de Ações */
+      .profile-action-list {
+          max-width: 450px; margin: 20px auto;
+          display: flex; flex-direction: column; gap: 12px;
+      }
+      .btn-profile-action { /* Botões da lista */
+          display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+          background-color: var(--bg-secondary, #1c1c1e);
+          color: var(--text-secondary, #ddd);
+          border: 1px solid var(--border-color, #3a3a3c);
+          padding: 14px 18px; border-radius: 10px; font-size: 15px;
+          cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease;
+      }
+      .btn-profile-action:hover {
+          background-color: var(--bg-tertiary, #2c2c2e);
+          border-color: var(--border-color-light, #555);
+          color: var(--text-primary); /* Texto fica branco no hover */
+      }
+      .btn-profile-action svg { /* Ícones dos botões */
+          width: 20px; height: 20px;
+          color: var(--accent-primary, #FF9100); /* Ícones Laranja */
+          flex-shrink: 0;
+      }
+      /* .btn-profile-action.premium-cta svg { color: var(--accent-primary); } */ /* Removido ou ajustado se necessário */
+      .btn-profile-action.logout-action { /* Botão Sair */
+          color: var(--error-color, #ff453a); /* Vermelho */
+      }
+      .btn-profile-action.logout-action svg {
+          color: var(--error-color, #ff453a); /* Ícone Vermelho */
+      }
+      .btn-profile-action.logout-action:hover {
+          background-color: var(--error-bg, rgba(255, 69, 58, 0.15));
+          border-color: var(--error-border, rgba(255, 69, 58, 0.4));
+          color: #ff6359; /* Vermelho mais claro */
+      }
       .btn-profile-action.logout-action:hover svg { color: #ff6359; }
 
-      .profile-form-container { max-width: 450px; margin: 0 auto; /* Removido margin top */ }
-      .profile-form { text-align: left; padding-top: 20px; /* Adicionado padding top */}
+      /* Container do Formulário de Edição */
+      .profile-form-container { max-width: 450px; margin: 0 auto; }
+      .profile-form { text-align: left; padding-top: 20px; }
       .profile-form .form-group { margin-bottom: 20px; }
-      .profile-form label { display: block; margin-bottom: 8px; color: #aaa; font-size: 14px; font-weight: 500; }
-      .profile-form input { width: 100%; box-sizing: border-box; background-color: #1c1c1e; border: 1px solid #3a3a3c; border-radius: 8px; padding: 12px 15px; color: white; font-size: 16px; }
-      .profile-form input:focus { border-color: #8000FF; outline: none; background-color: #2c2c2e; }
-      .profile-form input:disabled { background-color: #2c2c2e; color: #777; opacity: 0.7; cursor: not-allowed; border-color: #3a3a3c; }
-      .input-hint { display: block; font-size: 12px; color: #666; margin-top: 6px; }
+      .profile-form label {
+          display: block; margin-bottom: 8px;
+          color: var(--text-secondary, #aaa);
+          font-size: 14px; font-weight: 500;
+      }
+      .profile-form input {
+          width: 100%; box-sizing: border-box;
+          background-color: var(--bg-secondary, #1c1c1e);
+          border: 1px solid var(--border-color, #3a3a3c);
+          border-radius: 8px; padding: 12px 15px;
+          color: var(--text-primary, white); font-size: 16px;
+          transition: border-color 0.2s, background-color 0.2s;
+      }
+      .profile-form input:focus {
+          border-color: var(--accent-primary, #FF9100); /* Laranja no foco */
+          outline: none;
+          background-color: var(--bg-tertiary, #2c2c2e);
+      }
+      .profile-form input:disabled { /* Input de email desabilitado */
+          background-color: var(--bg-tertiary, #2c2c2e);
+          color: var(--text-tertiary, #777);
+          opacity: 0.7; cursor: not-allowed;
+      }
+      .input-hint { /* Dica do formato de telefone */
+          display: block; font-size: 12px;
+          color: var(--text-tertiary, #666);
+          margin-top: 6px;
+      }
       .profile-form .form-buttons { display: flex; gap: 10px; margin-top: 25px; }
-      .profile-form .btn { flex: 1; padding: 12px; /* Ajuste padding se necessário */ }
-      .profile-form .btn-save { background: linear-gradient(45deg, #439DFE, #8000FF); color: white;}
-      .profile-form .btn.secondary { background-color: #3a3a3c; border-color: #555; color: #ccc; }
-      .profile-form .btn.secondary:hover { background-color: #4a4a4c; }
+      .profile-form .btn { flex: 1; padding: 12px; font-size: 15px; } /* Botões Salvar/Cancelar */
+      .profile-form .btn-save { /* Botão Salvar */
+          background: var(--accent-primary, #FF9100); /* Laranja */
+          color: var(--bg-primary, #000); /* Texto escuro */
+          border: none;
+      }
+       .profile-form .btn-save:hover:not(:disabled) {
+           background: var(--accent-primary-hover, #FFAB40);
+       }
+       .profile-form .btn-save:disabled {
+           background: var(--bg-quaternary) !important;
+           color: var(--text-tertiary) !important;
+           cursor: not-allowed;
+           opacity: 0.7;
+       }
+      .profile-form .btn.secondary { /* Botão Cancelar */
+          background-color: var(--bg-quaternary, #3a3a3c);
+          border: 1px solid var(--border-color-light, #555);
+          color: var(--text-secondary, #ccc);
+      }
+      .profile-form .btn.secondary:hover {
+          background-color: var(--border-color-light, #555);
+          color: var(--text-primary);
+      }
 
+      /* Classe para esconder elementos */
       .is-hidden { display: none !important; }
     `;
     document.head.appendChild(styles);
-    console.log("Account Hub styles added/ensured.");
+    console.log("Account Hub styles added/ensured (Updated Colors).");
 }

@@ -847,107 +847,145 @@ function validateForm(form) {
  */
 function addCreateEventStyles() {
   const styleId = 'create-event-styles';
-  if (document.getElementById(styleId)) return; // Já existe
+  if (document.getElementById(styleId)) return;
 
   console.log("Adding Create Event page styles...");
   const styles = document.createElement('style');
   styles.id = styleId;
   styles.textContent = `
-      /* Estilos Gerais */
-      .create-event-page .app-container { max-width: 1100px; margin: 0 auto; }
-      .create-event-page .page-header { /* Reutiliza estilos de common.css */ }
-      .create-event-content { padding: 0 15px 20px; /* Adiciona padding lateral */ }
+    /* Estilos Gerais */
+    .create-event-page .app-container { max-width: 1100px; margin: 0 auto; }
+    .create-event-page .page-header {}
+    .create-event-content { padding: 0 15px 20px; }
 
-      #criarEventoForm {
-        display: flex;
-        flex-wrap: wrap; /* Permite quebrar em telas menores */
-        gap: 30px; /* Espaço entre colunas */
-        width: 100%;
+    #criarEventoForm {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      width: 100%;
+    }
+
+    .left-column { flex: 2; min-width: 300px; }
+    .right-column {
+      flex: 1; min-width: 280px;
+      display: flex; flex-direction: column;
+    }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; margin-bottom: 8px; color: #aaa;
+      font-size: 14px; font-weight: 500; text-align: left;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="date"],
+    .form-group input[type="time"],
+    .form-group input[type="url"],
+    .form-group textarea,
+    .form-group select {
+      width: 100%; box-sizing: border-box;
+      background-color: #1c1c1e; border: 1px solid #3a3a3c;
+      border-radius: 8px; padding: 12px 15px; color: white; font-size: 15px;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: #FF9100; outline: none; background-color: #2c2c2e;
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 15px center;
+      background-size: 16px; padding-right: 40px; cursor: pointer;
+    }
+
+    .form-row { display: flex; gap: 15px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
+    .form-row + .form-group { margin-top: 20px; }
+    .form-group + .form-row { margin-top: 20px; }
+
+    .image-preview {
+      width: 100%; height: 200px; margin-top: 8px; margin-bottom: 15px;
+      border-radius: 8px; overflow: hidden;
+      background-color: #1c1c1e; border: 1px dashed #3a3a3c;
+      display: flex; justify-content: center; align-items: center; position: relative;
+    }
+    .image-preview img {
+      max-width: 100%; max-height: 100%; object-fit: cover; display: block;
+    }
+    #previewPlaceholder {
+      position: absolute; color: #555; font-size: 14px; text-align: center;
+    }
+
+    .add-photo-button {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background-color: #3a3a3c; color: #ccc; padding: 10px; border: none;
+      border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%;
+      margin-bottom: 30px;
+      transition: background-color 0.2s ease;
+    }
+    .add-photo-button:hover { background-color: #4a4a4c; }
+    .add-photo-button svg { width: 18px; height: 18px; }
+
+    .right-column { justify-content: space-between; }
+    .form-buttons {
+      display: flex; flex-direction: column; gap: 12px; margin-top: 20px;
+    }
+    .primary-button, .secondary-button {
+      padding: 14px; border-radius: 8px; font-size: 16px; cursor: pointer; border: none;
+      display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500;
+    }
+    .primary-button  color: white;
+    }
+    .primary-button:hover { opacity: 0.9; }
+    .primary-button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .secondary-button {
+      background-color: #3a3a3c; color: #ccc;
+    }
+    .secondary-button:hover { background-color: #4a4a4c; }
+
+    .video-input-section {
+      border: 1px solid #2a2a2c; padding: 15px; border-radius: 8px;
+      margin-top: 20px; background-color: #111;
+    }
+    .video-input-section label {
+      color: #aaa; font-size: 14px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    #video-input-container {
+      display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;
+    }
+    .video-url {
+      font-size: 14px !important; padding: 10px 12px !important;
+    }
+    .add-video {
+      font-size: 13px !important; padding: 8px 12px !important;
+      background-color: #3a3a3c !important; align-self: flex-start;
+    }
+    .add-video:hover { background-color: #4a4a4c !important; }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      #criarEventoForm { flex-direction: column; }
+      .left-column, .right-column {
+        flex: none; width: 100%; padding-right: 0;
       }
+      .right-column { order: -1; }
+      .add-photo-button { margin-bottom: 20px; }
+    }
 
-      .left-column {
-        flex: 2; /* Ocupa mais espaço */
-        min-width: 300px; /* Largura mínima */
-      }
-      .right-column {
-        flex: 1; /* Ocupa menos espaço */
-        min-width: 280px;
-        display: flex;
-        flex-direction: column;
-      }
-
-      /* Estilos do Formulário */
-      .form-group { margin-bottom: 20px; }
-      .form-group label { display: block; margin-bottom: 8px; color: #aaa; font-size: 14px; font-weight: 500; text-align: left;}
-      .form-group input[type="text"],
-      .form-group input[type="date"],
-      .form-group input[type="time"],
-      .form-group input[type="url"],
-      .form-group textarea,
-      .form-group select {
-        width: 100%; box-sizing: border-box;
-        background-color: #1c1c1e; border: 1px solid #3a3a3c;
-        border-radius: 8px; padding: 12px 15px; color: white; font-size: 15px;
-      }
-      .form-group input:focus,
-      .form-group textarea:focus,
-      .form-group select:focus { border-color: #8000FF; outline: none; background-color: #2c2c2e; }
-      .form-group textarea { resize: vertical; min-height: 100px; }
-      .form-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px; cursor: pointer;}
-
-      .form-row { display: flex; gap: 15px; }
-      .form-row .form-group { flex: 1; margin-bottom: 0; } /* Remove margin bottom dos grupos na linha */
-      .form-row + .form-group { margin-top: 20px; } /* Adiciona espaço acima se o próximo for grupo único */
-      .form-group + .form-row { margin-top: 20px; }
-
-      /* Preview da Imagem */
-      .image-preview {
-        width: 100%; height: 200px; margin-top: 8px; /* Espaço abaixo do label */ margin-bottom: 15px; border-radius: 8px;
-        overflow: hidden; background-color: #1c1c1e; border: 1px dashed #3a3a3c;
-        display: flex; justify-content: center; align-items: center; position: relative;
-      }
-      .image-preview img { max-width: 100%; max-height: 100%; object-fit: cover; display: block; }
-      #previewPlaceholder { position: absolute; color: #555; font-size: 14px; text-align: center; }
-
-      .add-photo-button {
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-        background-color: #3a3a3c; color: #ccc; padding: 10px; border: none;
-        border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%;
-        margin-bottom: 30px; /* Espaço antes dos botões principais */
-        transition: background-color 0.2s ease;
-      }
-       .add-photo-button:hover { background-color: #4a4a4c; }
-       .add-photo-button svg { width: 18px; height: 18px; }
-
-      /* Botões de Ação (Direita) */
-      .right-column { justify-content: space-between; } /* Empurra botões para baixo */
-      .form-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-      .primary-button, .secondary-button { /* Reutiliza estilo .btn se existir */
-          padding: 14px; border-radius: 8px; font-size: 16px; cursor: pointer; border: none;
-          display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500;
-      }
-       .primary-button { background: linear-gradient(45deg, #439DFE, #8000FF); color: white; }
-       .primary-button:hover { opacity: 0.9; }
-       .primary-button:disabled { opacity: 0.6; cursor: not-allowed; }
-       .secondary-button { background-color: #3a3a3c; color: #ccc; }
-       .secondary-button:hover { background-color: #4a4a4c; }
-
-       /* Seção de Vídeos */
-       .video-input-section { border: 1px solid #2a2a2c; padding: 15px; border-radius: 8px; margin-top: 20px; background-color: #111; }
-       .video-input-section label { color: #aaa; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;}
-       #video-input-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
-       .video-url { font-size: 14px !important; padding: 10px 12px !important; }
-       .add-video { font-size: 13px !important; padding: 8px 12px !important; background-color: #3a3a3c !important; align-self: flex-start; } /* Botão menor */
-       .add-video:hover { background-color: #4a4a4c !important; }
-
-      /* Responsividade Básica */
-      @media (max-width: 768px) {
-        #criarEventoForm { flex-direction: column; }
-        .left-column, .right-column { flex: none; width: 100%; padding-right: 0;}
-        .right-column { order: -1; } /* Move imagem para cima em telas pequenas */
-        .add-photo-button { margin-bottom: 20px; }
-      }
-    `;
+    /* Mapa oculto até o foco no input */
+    #mapContainer {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      margin-top: 15px;
+    }
+    #mapContainer.visible {
+      display: block;
+      opacity: 1;
+    }
+  `;
   document.head.appendChild(styles);
   console.log("Create Event page styles added.");
 }
