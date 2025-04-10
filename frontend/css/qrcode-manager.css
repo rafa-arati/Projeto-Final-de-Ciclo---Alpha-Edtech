@@ -133,3 +133,22 @@
  opacity: 0.7;
 }
 
+promotion-card.used-qrcode-card {
+  opacity: 0.7; /* Exemplo: Deixa o card semi-transparente */
+  border-left: 4px solid var(--accent-secondary, #00E5FF); /* Exemplo: Borda azul para indicar status */
+  /* filter: grayscale(50%); */ /* Opcional: Efeito acinzentado */
+}
+
+/* Estilo para a mensagem que substitui o QR/botão */
+.qr-code-used-message {
+  font-size: 1rem; /* Ajuste conforme necessário */
+  font-weight: 600;
+  color: var(--accent-secondary, #00E5FF); /* Cor que indica "usado" */
+  text-align: center;
+  padding: 20px 10px; /* Espaçamento interno */
+}
+
+/* Se você quiser esconder especificamente a imagem e o valor UUID */
+.promotion-card.used-qrcode-card .qr-code-display-container {
+    display: none; /* Esconde a área da imagem e UUID */
+}

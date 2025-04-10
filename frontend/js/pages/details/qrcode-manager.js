@@ -444,7 +444,6 @@ function setupAdminListDeleteButtons() {
     console.log("[setupAdminListDeleteButtons] Listener de delegação adicionado a #qrcodes-list.");
 }
 
-// <<< --- FUNÇÃO MODIFICADA PARA CORRIGIR EXCLUSÃO SEQUENCIAL --- >>>
 /** Handler para o clique no botão de deletar (usado com event delegation). */
 function handleDeleteButtonClick(event) {
     const deleteButton = event.target.closest('.delete-item-btn');

@@ -64,9 +64,7 @@ export default async function renderEditProfile(queryParams) {
                                : `<div class="profile-image-initial">${user.name?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || 'U'}</div>`
                          }
                        </div>
-                       <button id="alterar-foto-btn-display" class="profile-edit-photo" title="Alterar foto (em breve)">
-                         ${cameraIcon}
-                       </button>
+
                      </div>
                      <h2 class="user-display-name">${user.name || user.username || 'Usuário'}</h2>
                      ${isAdminUser ? `<div class="user-badge admin-badge">Administrador</div>` : ''}
@@ -264,9 +262,9 @@ function setupAccountHubEvents(user) {
     const cleanAndAddListener = (id, event, handler) => {
         const element = document.getElementById(id);
         if (element) {
-            const newElement = element.cloneNode(true); // Cria um clone
-            element.parentNode.replaceChild(newElement, element); // Substitui o original pelo clone (remove listeners antigos)
-            newElement.addEventListener(event, handler); // Adiciona listener ao clone
+            const newElement = element.cloneNode(true);
+            element.parentNode.replaceChild(newElement, element);
+            newElement.addEventListener(event, handler);
         } else {
             console.warn(`Elemento com ID #${id} não encontrado para adicionar listener.`);
         }
@@ -621,7 +619,7 @@ function addAccountHubStyles() {
            background: var(--bg-quaternary) !important;
            color: var(--text-tertiary) !important;
            cursor: not-allowed;
-           opacity: 0.7;
+           opacity: 0.7;zz
        }
       .profile-form .btn.secondary { /* Botão Cancelar */
           background-color: var(--bg-quaternary, #3a3a3c);

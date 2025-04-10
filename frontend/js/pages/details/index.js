@@ -17,6 +17,7 @@ import { renderQRCodeValidator, setupQRCodeValidator, addQRCodeValidatorStyles }
  * @param {URLSearchParams} queryParams - Parâmetros da URL
  */
 export default async function renderEventDetails(queryParams) {
+    console.log("Chamando setupWebSocketConnection...");
     const appContainer = document.getElementById('app');
     const eventId = queryParams.get('id');
     const user = getLoggedInUser(); // Pega usuário do localStorage

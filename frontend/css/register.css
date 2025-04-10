@@ -42,3 +42,17 @@
   color: #ffa500;
   /* Cor para senha fraca */
 }
+
+/* Classe para esconder elementos */
+.hidden {
+  display: none !important; /* Garante que comece escondido */
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  margin-top: 0 !important; /* Remove margens quando escondido */
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important; /* Remove bordas se houver */
+  transition: opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease, border-width 0.3s ease;
+}
