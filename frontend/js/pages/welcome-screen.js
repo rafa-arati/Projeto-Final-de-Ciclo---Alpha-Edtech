@@ -44,6 +44,9 @@ export default function renderHome(queryParams) {
               <h3 class="existing-account-title">Já tem uma conta?</h3>
               <button class="login-button project-outlined" id="login-btn">Entrar</button> 
             </div>
+            <div class="terms">
+                Ao se inscrever, você concorda com os <a href="#">Termos de Serviço</a> e a <a href="#">Política de Privacidade</a>, incluindo o <a href="#">Uso de Cookies</a>.
+            </div>
           </div>
         </div>
     </div>
