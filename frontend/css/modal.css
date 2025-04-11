@@ -165,3 +165,76 @@
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Estilos Adicionais para Modais de Informação (Complementa modal.css) */
+
+.generic-info-modal .modal-content {
+  max-width: 650px; /* Um pouco maior para texto */
+  text-align: left; /* Alinha texto à esquerda */
+  padding: 25px 30px; /* Ajusta padding */
+}
+
+.generic-info-modal h3 {
+  text-align: center;
+  margin-bottom: 25px; /* Mais espaço abaixo do título */
+  color: var(--text-primary);
+  font-size: 1.3rem; /* Título um pouco maior */
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.modal-scrollable-content {
+  max-height: 65vh; /* Limita altura para caber na tela */
+  overflow-y: auto; /* Habilita rolagem vertical */
+  padding-right: 15px; /* Espaço para a barra de rolagem */
+  color: var(--text-secondary); /* Cor padrão do texto */
+  line-height: 1.6;
+  font-size: 14px; /* Tamanho base do texto */
+}
+
+/* Estilo para subtítulos dentro do conteúdo do modal */
+.modal-scrollable-content h4 {
+  color: var(--text-primary); /* Branco para subtítulos */
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 1rem; /* Tamanho do subtítulo */
+  font-weight: 600;
+}
+.modal-scrollable-content h4:first-of-type {
+  margin-top: 0; /* Remove margem do primeiro subtítulo */
+}
+
+/* Estilos para listas dentro do modal */
+.modal-scrollable-content ul,
+.modal-scrollable-content ol {
+  margin-left: 25px; /* Indentação da lista */
+  margin-bottom: 15px;
+}
+
+.modal-scrollable-content li {
+  margin-bottom: 8px; /* Espaço entre itens da lista */
+}
+
+.modal-scrollable-content p {
+  margin-bottom: 15px; /* Espaço abaixo dos parágrafos */
+}
+.modal-scrollable-content p:last-child {
+  margin-bottom: 0; /* Remove margem do último parágrafo */
+}
+
+/* Estilização da Barra de Rolagem (Opcional, mas melhora aparência no tema escuro) */
+.modal-scrollable-content::-webkit-scrollbar {
+  width: 8px;
+}
+.modal-scrollable-content::-webkit-scrollbar-track {
+  background: var(--bg-secondary); /* Fundo da trilha escuro */
+  border-radius: 4px;
+}
+.modal-scrollable-content::-webkit-scrollbar-thumb {
+  background-color: var(--border-color-light); /* Cor da barra de rolagem */
+  border-radius: 4px;
+  border: 1px solid var(--bg-tertiary); /* Borda sutil na barra */
+}
+.modal-scrollable-content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-tertiary); /* Cor mais clara no hover */
+}

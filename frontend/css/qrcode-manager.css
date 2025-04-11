@@ -76,6 +76,7 @@
   background-size: 16px;
   padding-right: 40px;
   cursor: pointer;
+  overflow-y: auto;
 }
 
 #qrcode-form textarea {
@@ -152,3 +153,86 @@ promotion-card.used-qrcode-card {
 .promotion-card.used-qrcode-card .qr-code-display-container {
     display: none; /* Esconde a área da imagem e UUID */
 }
+
+/* --- Melhorias de Responsividade MAIS COMPACTAS para Telas Pequenas --- */
+
+@media (max-width: 500px) { /* Alvo: Telas como Galaxy S9, iPhone SE e menores */
+
+  #qrcode-modal .modal-content {
+    width: 96%; /* Quase 100% da largura */
+    max-width: none;
+    padding: 15px 12px; /* Padding interno ainda menor */
+    box-sizing: border-box;
+  }
+
+  #qrcode-modal h3 {
+    font-size: 1.05rem; /* Título menor */
+    margin-bottom: 15px;
+    padding-bottom: 6px;
+  }
+
+  #qrcode-form {
+    gap: 10px; /* Espaço MÍNIMO entre campos */
+    padding-right: 0;
+  }
+
+  /* Labels ainda menores */
+  #qrcode-form label {
+    font-size: 0.78rem; /* ~12.5px */
+    margin-bottom: 4px; /* Menos espaço abaixo */
+  }
+
+  /* Inputs, Select, Textarea BEM menores */
+  #qrcode-form input[type="text"],
+  #qrcode-form input[type="number"],
+  #qrcode-form input[type="datetime-local"],
+  #qrcode-form select,
+  #qrcode-form textarea {
+    padding: 8px 10px;   /* Padding interno reduzido */
+    font-size: 0.82rem; /* Fonte menor (~13px) */
+    border-radius: 6px; /* Raio menor */
+  }
+
+  /* Ajuste específico para select (seta) */
+   #qrcode-form select {
+       padding-right: 30px; /* Menos espaço para a seta */
+       background-position: right 10px center;
+       background-size: 14px;
+   }
+
+  /* Textarea menor */
+  #qrcode-form textarea {
+    min-height: 65px;
+  }
+
+  /* Grupo de Desconto */
+  #discount-group.discount-visible {
+    margin-top: 10px !important;
+    max-height: 100px; /* Ajuste se necessário */
+  }
+
+   /* Mensagem de Erro Inline */
+   #qrcode-error-message {
+       font-size: 0.75rem; /* Fonte bem pequena */
+       padding: 6px 8px;
+       margin-bottom: 8px;
+   }
+
+  /* Botão de Submit menor */
+  #qrcode-modal .modal-buttons {
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+
+  #qrcode-modal .modal-buttons .btn[type="submit"] {
+    padding: 9px 18px;  /* Padding menor */
+    font-size: 0.85rem; /* Fonte menor */
+    border-radius: 6px;
+  }
+
+  /* Remove qualquer altura mínima que possa estar atrapalhando */
+  #qrcode-modal .modal-content, #qrcode-form {
+      min-height: initial;
+  }
+
+} /* Fim do @media query */

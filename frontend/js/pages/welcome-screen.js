@@ -10,6 +10,75 @@ import { loginUser } from '../modules/auth.js'; // Função da API de Login
 // Variável global no escopo do módulo para rastrear o modal
 let dynamicLoginModal = null;
 
+/**
+ * Configura um modal genérico para abrir e fechar.
+ * @param {string} modalId ID do elemento do modal.
+ * @param {string} openLinkId ID do link que abre o modal.
+ * @param {string} closeBtnId ID do botão de fechar (X) dentro do modal.
+ */
+function setupGenericModal(modalId, openLinkId, closeBtnId) {
+  const modal = document.getElementById(modalId);
+  const openLink = document.getElementById(openLinkId);
+  const closeBtn = document.getElementById(closeBtnId);
+
+  if (!modal || !openLink || !closeBtn) {
+      console.warn(`Elementos não encontrados para o modal ${modalId}`);
+      return;
+  }
+
+  // Função para abrir o modal
+  const openModal = (e) => {
+      e.preventDefault(); // Previne a navegação padrão do link
+      modal.style.display = 'flex'; // Mostra o modal (o CSS fará a transição)
+      requestAnimationFrame(() => {
+          modal.classList.add('visible');
+          document.body.style.overflow = 'hidden'; // Trava scroll do fundo
+      });
+  };
+
+  // Função para fechar o modal
+  const closeModal = () => {
+      modal.classList.remove('visible');
+      document.body.style.overflow = ''; // Libera scroll
+      // Espera a transição CSS terminar antes de esconder com display:none
+      modal.addEventListener('transitionend', () => {
+           // Verifica se a classe 'visible' AINDA NÃO está presente antes de esconder
+          if (!modal.classList.contains('visible')) {
+              modal.style.display = 'none';
+          }
+      }, { once: true });
+       // Fallback: esconde após um tempo caso a transição não dispare o evento
+       setTimeout(() => {
+          if (!modal.classList.contains('visible')) {
+              modal.style.display = 'none';
+          }
+      }, 350); // Tempo ligeiramente maior que a transição CSS
+  };
+
+  // Função para fechar ao clicar fora
+  const closeOnClickOutside = (event) => {
+      if (event.target === modal) {
+          closeModal();
+      }
+  };
+
+  // Limpa listeners antigos e adiciona novos
+  const newOpenLink = openLink.cloneNode(true);
+  openLink.parentNode.replaceChild(newOpenLink, openLink);
+  newOpenLink.addEventListener('click', openModal);
+
+  const newCloseBtn = closeBtn.cloneNode(true);
+  closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+  newCloseBtn.addEventListener('click', closeModal);
+
+  // Listener para fechar clicando fora (adiciona uma vez por modal)
+  // É importante remover listeners antigos se esta função for chamada múltiplas vezes
+  modal.removeEventListener('click', closeOnClickOutside); // Remove listener antigo do overlay
+  modal.addEventListener('click', closeOnClickOutside); // Adiciona novo listener ao overlay
+
+  console.log(`Modal genérico ${modalId} configurado.`);
+}
+
 // Função principal que renderiza a tela inicial
 export default function renderHome(queryParams) {
   const appContainer = document.getElementById('app');
@@ -45,7 +114,7 @@ export default function renderHome(queryParams) {
               <button class="login-button project-outlined" id="login-btn">Entrar</button> 
             </div>
             <div class="terms">
-                Ao se inscrever, você concorda com os <a href="#">Termos de Serviço</a> e a <a href="#">Política de Privacidade</a>, incluindo o <a href="#">Uso de Cookies</a>.
+                Ao se inscrever, você concorda com os <a href="#" id="terms-link">Termos de Serviço</a> e a <a href="#" id="privacy-link">Política de Privacidade</a>, incluindo o <a href="#" id="cookies-link">Uso de Cookies</a>.
             </div>
           </div>
         </div>
@@ -72,6 +141,10 @@ function setupWelcomeScreenEvents() {
   if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', () => window.location.href = '/api/auth/google');
   }
+
+  setupGenericModal('terms-modal',    'terms-link',   'close-terms-modal');
+    setupGenericModal('privacy-modal',  'privacy-link', 'close-privacy-modal');
+    setupGenericModal('cookies-modal',  'cookies-link', 'close-cookies-modal');
 }
 
 // --- LÓGICA DO MODAL DINÂMICO ---
