@@ -6,7 +6,8 @@ import {
   categorias,
   highlightedEvents,
   personalizedEvents,
-  todayEvents
+  todayEvents,
+  activeFilters
 } from './index.js';
 
 /**
@@ -18,6 +19,10 @@ export function renderCarousels() {
   const paraVoceContainer = document.getElementById("para-voce-eventos");
   const hojeContainer = document.getElementById("hoje-eventos");
   const paraVoceSection = document.getElementById("para-voce-section");
+
+  // Obter referências às seções de carrosséis
+  const destaqueSection = document.querySelector(".carousel-section:has(#destaque-eventos)");
+  const hojeSection = document.querySelector(".carousel-section:has(#hoje-eventos)");
 
   if (!categoriasContainer || !destaqueContainer || !hojeContainer) return;
 
@@ -34,72 +39,126 @@ export function renderCarousels() {
     return;
   }
 
-  // Renderizar eventos em destaque (mais curtidos)
-  renderEventsInCarousel(destaqueContainer, highlightedEvents);
+  // Verificar se existem filtros ativos
+  const hasActiveFilters = Object.keys(activeFilters).length > 0;
 
-  // Verificar se há um usuário logado antes de mostrar "PARA VOCÊ"
-  const user = getLoggedInUser();
-  /*
-  if (user && paraVoceContainer && paraVoceSection) {
-      // Se o usuário estiver logado, mostrar a seção "PARA VOCÊ"
-      paraVoceSection.style.display = 'block';
-      renderEventsInCarousel(paraVoceContainer, personalizedEvents);
-  } else if (paraVoceSection) {
-      // Se não estiver logado, ocultar a seção
+  // Se houver filtros ativos, mostrar apenas EVENTOS FILTRADOS
+  if (hasActiveFilters) {
+    // Ocultar outras seções
+    if (destaqueSection) destaqueSection.style.display = 'none';
+    if (hojeSection) hojeSection.style.display = 'none';
+    if (paraVoceSection) paraVoceSection.style.display = 'none';
+    categoriasContainer.style.display = 'none';
+
+    // Criar ou atualizar a seção de eventos filtrados
+    let filteredSection = document.getElementById("filtered-section");
+
+    if (!filteredSection) {
+      // Criar novo elemento se não existir
+      filteredSection = document.createElement("section");
+      filteredSection.className = "carousel-section";
+      filteredSection.id = "filtered-section";
+      filteredSection.innerHTML = `
+        <h2 class="section-title">EVENTOS FILTRADOS</h2>
+        <div class="carousel-container">
+          <button class="carousel-arrow left" id="filtered-left">&#10094;</button>
+          <div class="carousel" id="filtered-eventos"></div>
+          <button class="carousel-arrow right" id="filtered-right">&#10095;</button>
+        </div>
+      `;
+
+      // Inserir a seção de eventos filtrados como primeiro elemento depois dos filtros ativos
+      const appContainer = document.querySelector(".app-container");
+      const activeFiltersSection = document.getElementById("active-filters");
+
+      if (appContainer && activeFiltersSection) {
+        appContainer.insertBefore(filteredSection, activeFiltersSection.nextSibling);
+      }
+    } else {
+      // Se já existe, garantir que esteja visível
+      filteredSection.style.display = 'block';
+
+      // E limpar o carrossel para atualização
+      const filteredCarousel = document.getElementById("filtered-eventos");
+      if (filteredCarousel) {
+        filteredCarousel.innerHTML = '';
+      }
+    }
+
+    // Renderizar eventos filtrados no carrossel
+    const filteredCarousel = document.getElementById("filtered-eventos");
+    if (filteredCarousel) {
+      renderEventsInCarousel(filteredCarousel, eventos);
+    }
+  }
+  // Se não houver filtros ativos, mostrar o layout normal
+  else {
+    // Remover a seção de eventos filtrados se existir
+    const filteredSection = document.getElementById("filtered-section");
+    if (filteredSection) {
+      filteredSection.remove();
+    }
+
+    // Restaurar visibilidade das seções normais
+    if (destaqueSection) destaqueSection.style.display = 'block';
+    if (hojeSection) hojeSection.style.display = 'block';
+    categoriasContainer.style.display = 'block';
+
+    // Renderizar eventos em destaque
+    renderEventsInCarousel(destaqueContainer, highlightedEvents);
+
+    // Configurar seção "PARA VOCÊ" (sempre oculta conforme código original)
+    if (paraVoceSection) {
       paraVoceSection.style.display = 'none';
-  }
-  */
-  // Sempre ocultar a seção independentemente do estado de login
-  if (paraVoceSection) {
-    paraVoceSection.style.display = 'none';
-  }
-
-  // Renderizar eventos de hoje
-  renderEventsInCarousel(hojeContainer, todayEvents);
-
-  // Agrupar eventos por categoria para criar carrosséis por categoria
-  const eventosPorCategoria = {};
-
-  eventos.forEach((evento) => {
-    const categoriaId = evento.category_id || 'sem-categoria';
-    const categoriaNome = evento.category_name || 'Sem categoria';
-
-    if (!eventosPorCategoria[categoriaId]) {
-      eventosPorCategoria[categoriaId] = {
-        nome: categoriaNome,
-        eventos: []
-      };
     }
 
-    eventosPorCategoria[categoriaId].eventos.push(evento);
-  });
+    // Renderizar eventos de hoje
+    renderEventsInCarousel(hojeContainer, todayEvents);
 
-  // Criar carrosséis por categoria
-  Object.keys(eventosPorCategoria).forEach((categoriaId) => {
-    const categoria = eventosPorCategoria[categoriaId];
+    // Agrupar eventos por categoria para criar carrosséis por categoria
+    const eventosPorCategoria = {};
 
-    // Pular se for "sem categoria"
-    if (categoriaId === 'sem-categoria') return;
+    eventos.forEach((evento) => {
+      const categoriaId = evento.category_id || 'sem-categoria';
+      const categoriaNome = evento.category_name || 'Sem categoria';
 
-    const categoriaSection = document.createElement("section");
-    categoriaSection.className = "carousel-section";
-    categoriaSection.innerHTML = `
-      <h2 class="section-title">${categoria.nome.toUpperCase()}</h2>
-      <div class="carousel-container">
-        <button class="carousel-arrow left" id="${categoriaId}-left">&#10094;</button>
-        <div class="carousel" id="${categoriaId}-eventos"></div>
-        <button class="carousel-arrow right" id="${categoriaId}-right">&#10095;</button>
-      </div>
-    `;
+      if (!eventosPorCategoria[categoriaId]) {
+        eventosPorCategoria[categoriaId] = {
+          nome: categoriaNome,
+          eventos: []
+        };
+      }
 
-    categoriasContainer.appendChild(categoriaSection);
+      eventosPorCategoria[categoriaId].eventos.push(evento);
+    });
 
-    const categoriaCarrossel = document.getElementById(`${categoriaId}-eventos`);
-    if (categoriaCarrossel) {
-      // Renderizar eventos da categoria no carrossel
-      renderEventsInCarousel(categoriaCarrossel, categoria.eventos);
-    }
-  });
+    // Criar carrosséis por categoria
+    Object.keys(eventosPorCategoria).forEach((categoriaId) => {
+      const categoria = eventosPorCategoria[categoriaId];
+
+      // Pular se for "sem categoria"
+      if (categoriaId === 'sem-categoria') return;
+
+      const categoriaSection = document.createElement("section");
+      categoriaSection.className = "carousel-section";
+      categoriaSection.innerHTML = `
+        <h2 class="section-title">${categoria.nome.toUpperCase()}</h2>
+        <div class="carousel-container">
+          <button class="carousel-arrow left" id="${categoriaId}-left">&#10094;</button>
+          <div class="carousel" id="${categoriaId}-eventos"></div>
+          <button class="carousel-arrow right" id="${categoriaId}-right">&#10095;</button>
+        </div>
+      `;
+
+      categoriasContainer.appendChild(categoriaSection);
+
+      const categoriaCarrossel = document.getElementById(`${categoriaId}-eventos`);
+      if (categoriaCarrossel) {
+        // Renderizar eventos da categoria no carrossel
+        renderEventsInCarousel(categoriaCarrossel, categoria.eventos);
+      }
+    });
+  }
 
   // Configurar setas dos carrosséis
   setupCarouselArrows();
@@ -315,6 +374,13 @@ function setupCarouselArrows() {
 
     setupCarouselNavigation(leftArrow, rightArrow, categoryCarousel);
   });
+
+  // Configurar setas para o carrossel "Eventos Filtrados" (se existir)
+  const filteredLeftArrow = document.getElementById("filtered-left");
+  const filteredRightArrow = document.getElementById("filtered-right");
+  const filteredCarousel = document.getElementById("filtered-eventos");
+
+  setupCarouselNavigation(filteredLeftArrow, filteredRightArrow, filteredCarousel);
 }
 
 /**
