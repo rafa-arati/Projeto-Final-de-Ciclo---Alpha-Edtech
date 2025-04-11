@@ -73,3 +73,42 @@
 .password-requirements.weak { color: var(--warning-color, #FFA500); }
 .password-requirements.error { color: var(--error-color, #FF5252); } /* Cor se falhar validação final */
 
+
+/* Estilo base para a mensagem (pode já existir como .form-error-message) */
+#registerErrorMessage {
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: center;
+  display: none; /* Começa escondido */
+  animation: fadeInError 0.3s ease-out; /* Opcional: animação */
+  box-sizing: border-box;
+  border: 1px solid transparent; /* Borda base */
+}
+
+/* Estilo para MENSAGEM DE ERRO */
+#registerErrorMessage.error-message {
+  color: var(--error-color, #FF5252);
+  background-color: var(--error-bg, rgba(255, 82, 82, 0.1));
+  border-color: var(--error-border, rgba(255, 82, 82, 0.4));
+}
+
+/* NOVO: Estilo para MENSAGEM DE SUCESSO */
+#registerErrorMessage.success-message {
+  color: #4CAF50 !important; /* Verde específico - !important como último recurso */
+  background-color: rgba(76, 175, 80, 0.1);
+  border-color: rgba(76, 175, 80, 0.4);
+  font-weight: 500;
+}
+/* Classe para esconder (pode já existir) */
+.is-hidden {
+  display: none !important;
+}
+
+/* Animação opcional */
+@keyframes fadeInError {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -2,6 +2,46 @@ import { registerUser } from '../modules/auth.js';
 import { showMessage, transitionToPage } from '../modules/utils.js';
 import { navigateTo } from '../modules/router.js';
 
+/**
+ * Mostra uma mensagem inline (erro ou sucesso) no div especificado.
+ * @param {string} message - A mensagem a ser exibida.
+ * @param {'error' | 'success'} type - O tipo de mensagem ('error' ou 'success').
+ * @param {string} elementId - O ID do elemento onde mostrar a mensagem.
+ */
+function showInlineFeedback(message, type = 'error', elementId = 'registerErrorMessage') {
+    const feedbackDiv = document.getElementById(elementId);
+    if (feedbackDiv) {
+        feedbackDiv.textContent = message;
+        feedbackDiv.classList.remove('is-hidden');
+        feedbackDiv.style.display = 'block'; // Garante visibilidade
+  
+        // Remove classes de tipo anteriores e adiciona a nova
+        feedbackDiv.classList.remove('error-message', 'success-message');
+        if (type === 'success') {
+            feedbackDiv.classList.add('success-message');
+        } else {
+            feedbackDiv.classList.add('error-message'); // Mantém error como padrão visual se type for inválido
+        }
+    } else {
+        console.error(`Div de feedback #${elementId} não encontrado!`);
+        alert(message); // Fallback
+    }
+  }
+  
+  /**
+   * Esconde a mensagem inline.
+   * @param {string} elementId - O ID do elemento da mensagem.
+   */
+  function hideInlineFeedback(elementId = 'registerErrorMessage') {
+    const feedbackDiv = document.getElementById(elementId);
+    if (feedbackDiv) {
+        feedbackDiv.textContent = '';
+        feedbackDiv.classList.add('is-hidden');
+        feedbackDiv.style.display = 'none'; // Garante que está escondido
+        feedbackDiv.classList.remove('error-message', 'success-message'); // Limpa classes de tipo
+    }
+  }
+
 // Exporta a função principal da página
 export default function renderRegisterForm(queryParams) {
   const appContainer = document.getElementById('app');
@@ -322,7 +362,7 @@ async function handleRegistration() {
       // --- SUCESSO ---
       // Mantém o modal (showMessage) para sucesso, pois é uma confirmação importante
       // ou poderia também usar o showInlineError com estilo de sucesso.
-      showMessage('Cadastro realizado com sucesso! Redirecionando para login...');
+      showInlineFeedback('Registro feito com sucesso!', 'success');
       setTimeout(() => navigateTo('welcome-screen'), 2000); // Navega após a mensagem
 
   } catch (error) {
