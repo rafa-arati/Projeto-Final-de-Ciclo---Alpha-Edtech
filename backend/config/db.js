@@ -5,6 +5,14 @@ dotenv.config();
 
 // Verifique se as variáveis de ambiente estão sendo carregadas corretamente
 // Se as variáveis de ambiente não estiverem definidas, use os valores padrão
+const dbConfig = {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 5432,
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+};
+
 // Verificação adicional de segurança
 if (!dbConfig.host || !dbConfig.user || !dbConfig.password || !dbConfig.database) {
   console.error("ERRO: Variáveis de ambiente de banco de dados não configuradas corretamente!");
