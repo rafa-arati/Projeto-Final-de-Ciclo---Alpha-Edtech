@@ -164,7 +164,7 @@ function renderPromotionsList(promotionsToRender, currentLocalUserQRCodes) {
             }
         } else if (isAvailable && !isEsgotado) {
             // 4. SEM QR CODE e PROMOÇÃO DISPONÍVEL/NÃO ESGOTADA: Mostra botão "Gerar"
-            actionContent = `<button class="btn generate-qrcode-btn" data-promotion-id="${promotion.promotion_id}">Gerar meu QR Code</button>`;
+            actionContent = `<button class="btn generate-qrcode-btn" data-promotion-id="${promotion.promotion_id}" style = "color: black">Gerar meu QR Code</button>`;
         } else {
             // 5. SEM QR CODE e PROMOÇÃO INDISPONÍVEL/ESGOTADA: Mostra botão desabilitado
             const reason = isEsgotado ? 'esgotada' : (remainingTime === 'Encerrado' ? 'encerrada' : 'indisponível');

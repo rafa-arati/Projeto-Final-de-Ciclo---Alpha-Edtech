@@ -265,6 +265,18 @@ body {
     font-size: 20px;
 }
 
+.event-card .icon-button.edit-event,
+.event-card .icon-button.delete-event {
+  cursor: pointer; /* Muda o cursor para a "mãozinha" */
+  transition: opacity 0.2s ease; /* Adiciona transição suave (opcional) */
+}
+
+/* Opcional: Adiciona um leve efeito visual no hover */
+.event-card .icon-button.edit-event:hover,
+.event-card .icon-button.delete-event:hover {
+  opacity: 0.8; /* Deixa um pouco transparente ao passar o mouse */
+}
+
 /* ===== MENU INFERIOR ===== */
 .bottom-nav {
     position: fixed;
