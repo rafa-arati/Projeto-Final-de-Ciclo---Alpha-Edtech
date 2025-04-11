@@ -127,9 +127,25 @@ function showDevelopmentModal() {
 }
 
 
+// Função para resetar o estado do botão de salvar (declarada fora da setupAccountHubEvents)
+function resetSaveButtonState() {
+  const submitButton = document.querySelector('#profileForm button[type="submit"]');
+  if (submitButton) {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Salvar Alterações';
+  }
+
+  // Também esconder mensagens de erro
+  hideInlineError();
+}
+
 // --- Configuração dos Eventos da Página ---
 function setupAccountHubEvents(user) {
   console.log("Setting up Account Hub events...");
+
+  // Chamada para resetar o estado do botão logo no início
+  resetSaveButtonState();
+
   const cleanAndAddListener = (id, event, handler) => {
     const element = document.getElementById(id);
     if (element) {
@@ -199,27 +215,62 @@ function setupAccountHubEvents(user) {
       const bodyData = { name, phone: rawPhone || null, birth_date: birthDateValue || null };
       if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'Salvando...'; }
 
+      // NOVA LINHA: Adicionar timeout para garantir que o botão volte ao normal
+      const resetTimeout = setTimeout(() => {
+        console.log('Timeout atingido, resetando botão');
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        }
+      }, 10000); // 10 segundos
+
       try {
-        const response = await fetch('/api/auth/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(bodyData) });
+        const response = await fetch('/api/auth/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(bodyData)
+        });
+
+        // Limpar o timeout quando receber resposta
+        clearTimeout(resetTimeout);
+
         const data = await response.json();
         if (!response.ok || data.success === false) { throw new Error(data.message || 'Falha ao atualizar'); }
 
         // Sucesso
+        // 1. Desbloquear o botão ANTES de navegar
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        }
+
+        // 2. Mostrar mensagem de sucesso
         showMessage('Perfil atualizado com sucesso!');
-        const updatedUserData = { ...user, ...data.data }; // Assume backend retorna dados atualizados em data.data
+
+        // 3. Atualizar os dados no armazenamento local
+        const updatedUserData = { ...user, ...data.data };
         saveUser(updatedUserData);
+
+        // 4. Atualizar o nome na interface atual
         const displayNameElement = document.querySelector('.user-display-name');
         if (displayNameElement) displayNameElement.textContent = updatedUserData.name || updatedUserData.username || 'Usuário';
-        showActionList();
+
+        // 5. Adicionar um delay curto antes de navegar para a próxima tela
+        setTimeout(() => {
+          showActionList();
+        }, 1000); // Espera 1 segundo para que o usuário veja a mensagem
 
       } catch (error) {
+        // Limpar o timeout para evitar duplicação
+        clearTimeout(resetTimeout);
+
         console.error('Erro na atualização do perfil:', error);
         showInlineError(error.message || 'Erro ao atualizar perfil.'); // Mostra erro inline
         if (submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
       }
     });
   }
-
   // Navegação Inferior
   cleanAndAddListener('nav-home', 'click', () => navigateTo('events'));
   cleanAndAddListener('nav-agenda', 'click', () => navigateTo('agenda'));
