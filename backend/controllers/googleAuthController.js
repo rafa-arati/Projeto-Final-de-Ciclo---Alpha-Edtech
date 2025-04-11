@@ -54,6 +54,25 @@ const completeOnboarding = async (req, res) => {
     return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
   }
 
+  if (birth_date) {
+    try {
+        const parts = birth_date.split('-');
+        if (parts.length !== 3) throw new Error("Formato DD-MM-AAAA esperado");
+        // Atenção: Mês é 0-11
+        const birthDateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (birthDateObj > today) {
+            console.log("Tentativa de onboarding com data futura:", birth_date);
+            return res.status(400).json({ message: 'Insira uma data de nascimento válida' });
+        }
+    } catch (parseError) {
+         console.error("Erro ao parsear data de nascimento no backend (onboarding):", birth_date, parseError);
+         return res.status(400).json({ message: 'Formato de data de nascimento inválido (DD-MM-AAAA).' });
+    }
+  }
+
   try {
     // Atualiza as informações do usuário e marca onboarding como completo
     const updatedUser = await User.completeOnboarding(userId, {

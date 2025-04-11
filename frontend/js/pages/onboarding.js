@@ -1,6 +1,27 @@
 import { navigateTo } from '../modules/router.js';
-import { showMessage } from '../modules/utils.js';
+import { showMessage} from '../modules/utils.js';
 import { saveUser } from '../modules/store.js';
+
+function showInlineError(message, errorDivId = 'onboardingErrorMessage') {
+  const errorDiv = document.getElementById(errorDivId);
+  if (errorDiv) {
+      errorDiv.textContent = message;
+      errorDiv.classList.remove('is-hidden');
+      errorDiv.style.display = 'block';
+  } else {
+      console.error(`Div de erro #${errorDivId} não encontrado!`);
+      alert(message); // Fallback
+  }
+}
+
+function hideInlineError(errorDivId = 'onboardingErrorMessage') {
+  const errorDiv = document.getElementById(errorDivId);
+  if (errorDiv) {
+      errorDiv.textContent = '';
+      errorDiv.classList.add('is-hidden');
+      errorDiv.style.display = 'none';
+  }
+}
 
 export default function render(queryParams) {
   // Obtém o ID do usuário da URL
@@ -52,6 +73,8 @@ export default function render(queryParams) {
             <option value="Outro">Outro</option>
           </select>
         </div>
+
+        <div id="onboardingErrorMessage" class="form-error-message is-hidden"></div>
         
         <button type="submit" class="btn">CONCLUIR CADASTRO</button>
       </form>
@@ -101,6 +124,21 @@ async function completeOnboarding() {
   // Validação básica
   if (!userId || !birthDate || !gender) {
     showMessage('Por favor, preencha todos os campos.');
+    return;
+  }
+
+  if (birthDate && /^\d{2}-\d{2}-\d{4}$/.test(birthDate)) {
+    const parts = birthDate.split('-');
+    const birthDateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (birthDateObj > today) {
+        showInlineError('Insira uma data de nascimento válida');
+        return; // Para a submissão
+    }
+  } else if (birthDate) { // Se o formato já estava inválido
+    showInlineError('Formato de data inválido. Use DD-MM-AAAA.');
     return;
   }
 

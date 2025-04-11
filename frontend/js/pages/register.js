@@ -283,6 +283,23 @@ async function handleRegistration() {
       showInlineError('As senhas não coincidem.');
       return;
   }
+
+  if (userData.birth_date && /^\d{2}-\d{2}-\d{4}$/.test(userData.birth_date)) {
+    const parts = userData.birth_date.split('-');
+    // Atenção: Mês no objeto Date é 0-11, então subtraia 1
+    const birthDateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Zera a hora para comparar só a data
+
+      if (birthDateObj > today) {
+          showInlineError('Insira uma data de nascimento válida');
+          return; // Para a submissão
+      }
+  } else if (userData.birth_date) { // Se o formato já estava inválido
+      showInlineError('Formato de data inválido. Use DD-MM-AAAA.');
+      return;
+  }
+
   // Validação de força da senha (exemplo)
   const password = userData.password;
   const isPasswordStrong = password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password);

@@ -22,6 +22,23 @@ const updateProfile = async (req, res) => {
     if (allowedUpdates.includes(field) && req.body.hasOwnProperty(field)) { 
       updates[field] = req.body[field]; // Adiciona ao objeto 'updates'
     }
+
+    if (field === 'birth_date' && value) { // Só valida se não for nulo/vazio
+      try {
+          const birthDateObj = new Date(value); // value está em YYYY-MM-DD
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          if (birthDateObj > today) {
+              console.log("Tentativa de update com data de nascimento futura:", value);
+              // Retorna erro específico para o frontend tratar
+              return res.status(400).json({ success: false, message: 'Insira uma data de nascimento válida' });
+          }
+      } catch (parseError) {
+           console.error("Erro ao parsear data de nascimento no backend (updateProfile):", value, parseError);
+            return res.status(400).json({ success: false, message: 'Formato de data de nascimento inválido.' });
+      }
+    }
   }
   // ----- FIM DA CORREÇÃO -----
 

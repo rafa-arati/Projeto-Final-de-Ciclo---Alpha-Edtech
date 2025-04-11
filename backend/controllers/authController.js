@@ -40,6 +40,21 @@ const register = async (req, res) => {
     const formattedDate = `${year}-${month}-${day}`;
     console.log("Data formatada:", formattedDate);
 
+    try { // Adiciona try/catch para parsing seguro
+      const birthDateObj = new Date(formattedDate); // formattedDate está em YYYY-MM-DD
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Zera a hora de hoje
+ 
+      if (birthDateObj > today) {
+          console.log("Tentativa de registro com data de nascimento futura:", formattedDate);
+          return res.status(400).json({ message: 'Insira uma data de nascimento válida' });
+      }
+    } catch (parseError) {
+          console.error("Erro ao parsear data de nascimento no backend (register):", formattedDate, parseError);
+          // Decide se retorna erro ou continua sem data (depende da sua regra de negócio)
+          return res.status(400).json({ message: 'Formato de data de nascimento inválido.' });
+    }
+
     // Cria o usuário com a data formatada
     const newUser = await User.create({
       name,
