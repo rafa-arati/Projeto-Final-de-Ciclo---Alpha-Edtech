@@ -6,6 +6,7 @@ import { navigateTo } from '../modules/router.js';
 // --- Funções auxiliares show/hide inline (Apenas para a MENSAGEM DE SUCESSO neste caso) ---
 // Você pode manter ou remover se não usar showInlineError para erros
 function showInlineMessage(messageHtml, elementId = 'recovery-success-message') {
+
   const messageDiv = document.getElementById(elementId);
   if (messageDiv) {
     messageDiv.innerHTML = messageHtml; // Usa innerHTML para permitir tags
@@ -100,6 +101,7 @@ function setupForgotPasswordEvents() {
 
 // --- Handler de Submit ATUALIZADO ---
 async function handleForgotPasswordSubmit(e) {
+
   e.preventDefault();
   const emailInput = document.getElementById('recoveryEmail');
   const email = emailInput ? emailInput.value.trim() : null;
@@ -150,6 +152,7 @@ async function handleForgotPasswordSubmit(e) {
             <p>Se o e-mail <strong>${email}</strong> estiver cadastrado, você receberá um link para redefinir sua senha em breve.</p>
             <p style="font-size: 0.9em; margin-top:15px;">(Não se esqueça de verificar sua caixa de spam).</p>
         `;
+
     showInlineMessage(successHtml); // Usa a função helper para mostrar
 
     // Não redireciona automaticamente
@@ -170,7 +173,3 @@ async function handleForgotPasswordSubmit(e) {
     submitButton.textContent = 'Enviar Link de Recuperação';
   }
 }
-
-// A função addForgotPasswordStyles() foi REMOVIDA.
-// Os estilos para .recovery-message, .success-message, .form-error-message, .is-hidden
-// devem estar nos arquivos CSS apropriados (forgot-password.css ou common.css).
