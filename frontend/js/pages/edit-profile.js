@@ -18,228 +18,235 @@ const profileIconNav = `<svg class="icon-svg" viewBox="0 0 24 24" fill="none" xm
 
 // --- Funções auxiliares ---
 function formatDateForInput(dateString) {
-    if (!dateString) return '';
-    try {
-        const date = new Date(dateString);
-        date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajuste fuso
-        if (isNaN(date.getTime())) return '';
-        return date.toISOString().split('T')[0]; // Formato AAAA-MM-DD
-    } catch (e) { console.error("Erro formatar data:", e); return ''; }
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajuste fuso
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0]; // Formato AAAA-MM-DD
+  } catch (e) { console.error("Erro formatar data:", e); return ''; }
 }
 
 function formatPhoneNumber(phoneFromDB) {
-    if (!phoneFromDB) return '';
-    const numbers = phoneFromDB.toString().replace(/\D/g, '');
-    if (numbers.length === 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
-    if (numbers.length === 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    return numbers;
+  if (!phoneFromDB) return '';
+  const numbers = phoneFromDB.toString().replace(/\D/g, '');
+  if (numbers.length === 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+  if (numbers.length === 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+  return numbers;
 }
 
 function enforcePhoneFormat(value) {
-    const numbers = value.replace(/\D/g, '');
-    const len = numbers.length;
-    if (len === 0) return '';
-    if (len <= 2) return `(${numbers}`;
-    if (len <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    if (len <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  const numbers = value.replace(/\D/g, '');
+  const len = numbers.length;
+  if (len === 0) return '';
+  if (len <= 2) return `(${numbers}`;
+  if (len <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+  if (len <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
 }
 
 function showInlineError(message, errorDivId = 'profileEditErrorMessage') {
-    const errorDiv = document.getElementById(errorDivId);
-    if (errorDiv) {
-        errorDiv.textContent = message;
-        errorDiv.classList.remove('is-hidden');
-        errorDiv.style.display = 'block';
-    } else { console.error(`Div erro #${errorDivId} não achado!`); alert(message); }
+  const errorDiv = document.getElementById(errorDivId);
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('is-hidden');
+    errorDiv.style.display = 'block';
+  } else { console.error(`Div erro #${errorDivId} não achado!`); alert(message); }
 }
 
 function hideInlineError(errorDivId = 'profileEditErrorMessage') {
-    const errorDiv = document.getElementById(errorDivId);
-    if (errorDiv) {
-        errorDiv.textContent = '';
-        errorDiv.classList.add('is-hidden');
-        errorDiv.style.display = 'none';
-    }
+  const errorDiv = document.getElementById(errorDivId);
+  if (errorDiv) {
+    errorDiv.textContent = '';
+    errorDiv.classList.add('is-hidden');
+    errorDiv.style.display = 'none';
+  }
 }
 
 function showEditForm() {
-    document.getElementById('actionList')?.classList.add('is-hidden');
-    document.getElementById('userInfoDisplay')?.classList.add('is-hidden');
-    document.getElementById('editFormContainer')?.classList.remove('is-hidden');
-    const titleElement = document.getElementById('account-hub-title');
-    if (titleElement) titleElement.textContent = 'Editar Informações';
-    hideInlineError(); // Esconde erro ao mostrar
+  document.getElementById('actionList')?.classList.add('is-hidden');
+  document.getElementById('userInfoDisplay')?.classList.add('is-hidden');
+  document.getElementById('editFormContainer')?.classList.remove('is-hidden');
+  const titleElement = document.getElementById('account-hub-title');
+  if (titleElement) titleElement.textContent = 'Editar Informações';
+  hideInlineError(); // Esconde erro ao mostrar
 }
 
 function showActionList() {
-    document.getElementById('actionList')?.classList.remove('is-hidden');
-    document.getElementById('userInfoDisplay')?.classList.remove('is-hidden');
-    document.getElementById('editFormContainer')?.classList.add('is-hidden');
-    const titleElement = document.getElementById('account-hub-title');
-    if(titleElement) titleElement.textContent = 'Minha Conta';
-    hideInlineError(); // Esconde erro ao voltar
+  document.getElementById('actionList')?.classList.remove('is-hidden');
+  document.getElementById('userInfoDisplay')?.classList.remove('is-hidden');
+  document.getElementById('editFormContainer')?.classList.add('is-hidden');
+  const titleElement = document.getElementById('account-hub-title');
+  if (titleElement) titleElement.textContent = 'Minha Conta';
+  hideInlineError(); // Esconde erro ao voltar
 }
+
+document.addEventListener('click', function (e) {
+  if (e.target && e.target.id === 'cancel-edit-btn') {
+    e.preventDefault();
+    showActionList();
+  }
+});
 
 // EXPANDIDO: Configura o modal genérico de "Em desenvolvimento"
 function setupDevelopmentModal() {
-    const modal = document.getElementById("development-modal");
-    const closeModalBtn = document.getElementById("close-development-modal");
-    const okBtn = document.getElementById("ok-development");
-    if (!modal || !closeModalBtn || !okBtn) {
-        console.warn("Elementos do modal de desenvolvimento não encontrados.");
-        return;
-    }
+  const modal = document.getElementById("development-modal");
+  const closeModalBtn = document.getElementById("close-development-modal");
+  const okBtn = document.getElementById("ok-development");
+  if (!modal || !closeModalBtn || !okBtn) {
+    console.warn("Elementos do modal de desenvolvimento não encontrados.");
+    return;
+  }
 
-    const closeModalFunc = () => modal.classList.remove('active');
+  const closeModalFunc = () => modal.classList.remove('active');
 
-    // Limpa listeners antigos antes de adicionar novos
-    const newCloseModalBtn = closeModalBtn.cloneNode(true);
-    closeModalBtn.parentNode.replaceChild(newCloseModalBtn, closeModalBtn);
-    newCloseModalBtn.addEventListener("click", closeModalFunc);
+  // Limpa listeners antigos antes de adicionar novos
+  const newCloseModalBtn = closeModalBtn.cloneNode(true);
+  closeModalBtn.parentNode.replaceChild(newCloseModalBtn, closeModalBtn);
+  newCloseModalBtn.addEventListener("click", closeModalFunc);
 
-    const newOkBtn = okBtn.cloneNode(true);
-    okBtn.parentNode.replaceChild(newOkBtn, okBtn);
-    newOkBtn.addEventListener("click", closeModalFunc);
+  const newOkBtn = okBtn.cloneNode(true);
+  okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+  newOkBtn.addEventListener("click", closeModalFunc);
 
-    // Fechar ao clicar fora
-    const closeDevModalOnClickOutside = (event) => { if (modal && event.target === modal) { modal.classList.remove("active"); } };
-    window.removeEventListener("click", closeDevModalOnClickOutside); // Remove anterior
-    window.addEventListener("click", closeDevModalOnClickOutside); // Adiciona novo
-    console.log("Modal de desenvolvimento configurado.");
+  // Fechar ao clicar fora
+  const closeDevModalOnClickOutside = (event) => { if (modal && event.target === modal) { modal.classList.remove("active"); } };
+  window.removeEventListener("click", closeDevModalOnClickOutside); // Remove anterior
+  window.addEventListener("click", closeDevModalOnClickOutside); // Adiciona novo
+  console.log("Modal de desenvolvimento configurado.");
 }
 
 // EXPANDIDO: Mostra o modal de "Em desenvolvimento"
 function showDevelopmentModal() {
-    const modal = document.getElementById('development-modal');
-    if (modal) {
-        modal.classList.add('active');
-    } else {
-        console.warn("Modal de desenvolvimento não encontrado para exibir.");
-    }
+  const modal = document.getElementById('development-modal');
+  if (modal) {
+    modal.classList.add('active');
+  } else {
+    console.warn("Modal de desenvolvimento não encontrado para exibir.");
+  }
 }
 
 
 // --- Configuração dos Eventos da Página ---
 function setupAccountHubEvents(user) {
-    console.log("Setting up Account Hub events...");
-    const cleanAndAddListener = (id, event, handler) => {
-        const element = document.getElementById(id);
-        if (element) {
-            const newElement = element.cloneNode(true);
-            element.parentNode.replaceChild(newElement, element);
-            newElement.addEventListener(event, handler);
-        } else { console.warn(`Elemento #${id} não encontrado.`); }
-    };
+  console.log("Setting up Account Hub events...");
+  const cleanAndAddListener = (id, event, handler) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const newElement = element.cloneNode(true);
+      element.parentNode.replaceChild(newElement, element);
+      newElement.addEventListener(event, handler);
+    } else { console.warn(`Elemento #${id} não encontrado.`); }
+  };
 
-    // Botões Principais e Ações
-    cleanAndAddListener('profile-back-button', 'click', (e) => {
-         e.preventDefault();
-         if (document.getElementById('editFormContainer')?.classList.contains('is-hidden') === false) {
-             showActionList();
-         } else { navigateTo('events'); }
+  // Botões Principais e Ações
+  cleanAndAddListener('profile-back-button', 'click', (e) => {
+    e.preventDefault();
+    if (document.getElementById('editFormContainer')?.classList.contains('is-hidden') === false) {
+      showActionList();
+    } else { navigateTo('events'); }
+  });
+  cleanAndAddListener('edit-info-btn', 'click', showEditForm);
+  cleanAndAddListener('cancel-edit-btn', 'click', (e) => { e.preventDefault(); showActionList(); });
+  cleanAndAddListener('meus-eventos-btn', 'click', () => navigateTo('events', { showMyEvents: 'true' }));
+  cleanAndAddListener('criar-evento-btn', 'click', () => navigateTo('create-event'));
+  cleanAndAddListener('logout-btn', 'click', async (e) => {
+    const button = e.currentTarget;
+    const originalContent = button.innerHTML;
+    button.disabled = true; button.innerHTML = `${logoutIcon} Saindo...`;
+    try { await logoutUser(); clearUser(); navigateTo('welcome-screen'); }
+    catch (error) { console.error('Logout error:', error); showMessage('Erro ao sair.'); button.disabled = false; button.innerHTML = originalContent; }
+  });
+  // cleanAndAddListener('upgrade-btn', 'click', () => navigateTo('premium')); // Se tiver botão de upgrade
+
+  // Input de Telefone
+  const phoneInput = document.getElementById('phone');
+  if (phoneInput) {
+    const newPhoneInput = phoneInput.cloneNode(true);
+    phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
+    newPhoneInput.addEventListener('input', (e) => { e.target.value = enforcePhoneFormat(e.target.value); });
+  }
+
+  // Formulário de Edição (Submit)
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm) {
+    const newProfileForm = profileForm.cloneNode(true);
+    profileForm.parentNode.replaceChild(newProfileForm, profileForm);
+    newProfileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton?.textContent || 'Salvar Alterações';
+
+      hideInlineError(); // Esconde erro
+
+      // Coleta e Valida
+      const name = document.getElementById('name')?.value.trim();
+      const rawPhone = document.getElementById('phone')?.value.replace(/\D/g, '');
+      const birthDateValue = document.getElementById('birthDate')?.value; // YYYY-MM-DD
+
+      if (!name) { showInlineError('O nome é obrigatório.'); return; }
+      if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) { showInlineError('Telefone inválido (10 ou 11 dígitos).'); return; }
+      if (birthDateValue) { // Valida data futura
+        try {
+          const birthDateObj = new Date(birthDateValue);
+          const today = new Date(); today.setHours(0, 0, 0, 0);
+          birthDateObj.setMinutes(birthDateObj.getMinutes() + birthDateObj.getTimezoneOffset()); // Ajuste Fuso
+          if (birthDateObj > today) { showInlineError('Insira uma data de nascimento válida.'); return; }
+        } catch (e) { showInlineError('Data de nascimento inválida.'); return; }
+      }
+
+      // Prepara e Envia
+      const bodyData = { name, phone: rawPhone || null, birth_date: birthDateValue || null };
+      if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'Salvando...'; }
+
+      try {
+        const response = await fetch('/api/auth/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(bodyData) });
+        const data = await response.json();
+        if (!response.ok || data.success === false) { throw new Error(data.message || 'Falha ao atualizar'); }
+
+        // Sucesso
+        showMessage('Perfil atualizado com sucesso!');
+        const updatedUserData = { ...user, ...data.data }; // Assume backend retorna dados atualizados em data.data
+        saveUser(updatedUserData);
+        const displayNameElement = document.querySelector('.user-display-name');
+        if (displayNameElement) displayNameElement.textContent = updatedUserData.name || updatedUserData.username || 'Usuário';
+        showActionList();
+
+      } catch (error) {
+        console.error('Erro na atualização do perfil:', error);
+        showInlineError(error.message || 'Erro ao atualizar perfil.'); // Mostra erro inline
+        if (submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
+      }
     });
-    cleanAndAddListener('edit-info-btn', 'click', showEditForm);
-    cleanAndAddListener('cancel-edit-btn', 'click', (e) => { e.preventDefault(); showActionList(); });
-    cleanAndAddListener('meus-eventos-btn', 'click', () => navigateTo('events', { showMyEvents: 'true' }));
-    cleanAndAddListener('criar-evento-btn', 'click', () => navigateTo('create-event'));
-    cleanAndAddListener('logout-btn', 'click', async (e) => {
-        const button = e.currentTarget;
-        const originalContent = button.innerHTML;
-        button.disabled = true; button.innerHTML = `${logoutIcon} Saindo...`;
-        try { await logoutUser(); clearUser(); navigateTo('welcome-screen'); }
-        catch (error) { console.error('Logout error:', error); showMessage('Erro ao sair.'); button.disabled = false; button.innerHTML = originalContent; }
-    });
-    // cleanAndAddListener('upgrade-btn', 'click', () => navigateTo('premium')); // Se tiver botão de upgrade
+  }
 
-    // Input de Telefone
-    const phoneInput = document.getElementById('phone');
-     if (phoneInput) {
-         const newPhoneInput = phoneInput.cloneNode(true);
-         phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
-         newPhoneInput.addEventListener('input', (e) => { e.target.value = enforcePhoneFormat(e.target.value); });
-     }
+  // Navegação Inferior
+  cleanAndAddListener('nav-home', 'click', () => navigateTo('events'));
+  cleanAndAddListener('nav-agenda', 'click', () => navigateTo('agenda'));
+  cleanAndAddListener('nav-profile', 'click', () => { if (document.getElementById('editFormContainer')?.classList.contains('is-hidden') === false) showActionList(); });
 
-    // Formulário de Edição (Submit)
-    const profileForm = document.getElementById('profileForm');
-    if (profileForm) {
-        const newProfileForm = profileForm.cloneNode(true);
-        profileForm.parentNode.replaceChild(newProfileForm, profileForm);
-        newProfileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton?.textContent || 'Salvar Alterações';
-
-            hideInlineError(); // Esconde erro
-
-            // Coleta e Valida
-            const name = document.getElementById('name')?.value.trim();
-            const rawPhone = document.getElementById('phone')?.value.replace(/\D/g, '');
-            const birthDateValue = document.getElementById('birthDate')?.value; // YYYY-MM-DD
-
-            if (!name) { showInlineError('O nome é obrigatório.'); return; }
-            if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) { showInlineError('Telefone inválido (10 ou 11 dígitos).'); return; }
-            if (birthDateValue) { // Valida data futura
-                 try {
-                     const birthDateObj = new Date(birthDateValue);
-                     const today = new Date(); today.setHours(0,0,0,0);
-                     birthDateObj.setMinutes(birthDateObj.getMinutes() + birthDateObj.getTimezoneOffset()); // Ajuste Fuso
-                     if (birthDateObj > today) { showInlineError('Insira uma data de nascimento válida.'); return;}
-                 } catch(e) { showInlineError('Data de nascimento inválida.'); return; }
-             }
-
-            // Prepara e Envia
-            const bodyData = { name, phone: rawPhone || null, birth_date: birthDateValue || null };
-            if(submitButton) { submitButton.disabled = true; submitButton.textContent = 'Salvando...'; }
-
-            try {
-                const response = await fetch('/api/auth/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(bodyData) });
-                const data = await response.json();
-                if (!response.ok || data.success === false) { throw new Error(data.message || 'Falha ao atualizar'); }
-
-                // Sucesso
-                showMessage('Perfil atualizado com sucesso!');
-                const updatedUserData = { ...user, ...data.data }; // Assume backend retorna dados atualizados em data.data
-                saveUser(updatedUserData);
-                const displayNameElement = document.querySelector('.user-display-name');
-                if (displayNameElement) displayNameElement.textContent = updatedUserData.name || updatedUserData.username || 'Usuário';
-                showActionList();
-
-            } catch (error) {
-                console.error('Erro na atualização do perfil:', error);
-                showInlineError(error.message || 'Erro ao atualizar perfil.'); // Mostra erro inline
-                if (submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
-            }
-        });
-     }
-
-    // Navegação Inferior
-    cleanAndAddListener('nav-home', 'click', () => navigateTo('events'));
-    cleanAndAddListener('nav-agenda', 'click', () => navigateTo('agenda'));
-    cleanAndAddListener('nav-profile', 'click', () => { if (document.getElementById('editFormContainer')?.classList.contains('is-hidden') === false) showActionList(); });
-
-    console.log("Account Hub events set up complete.");
+  console.log("Account Hub events set up complete.");
 }
 
 
 // --- Função Principal de Renderização ---
 export default async function renderEditProfile(queryParams) {
-    console.log("Rendering Account Hub Page...");
-    try {
-        const user = await fetchCompleteUserData();
-        if (!user) {
-            showMessage('Você precisa estar logado para acessar essa página');
-            navigateTo('welcome-screen'); // Redireciona para welcome-screen se não logado
-            return;
-        }
+  console.log("Rendering Account Hub Page...");
+  try {
+    const user = await fetchCompleteUserData();
+    if (!user) {
+      showMessage('Você precisa estar logado para acessar essa página');
+      navigateTo('welcome-screen'); // Redireciona para welcome-screen se não logado
+      return;
+    }
 
-        const isAdminUser = isAdmin();
-        const isPremiumUser = isPremium();
-        const appContainer = document.getElementById('app');
-        if (!appContainer) { console.error("Container #app não encontrado!"); return; }
+    const isAdminUser = isAdmin();
+    const isPremiumUser = isPremium();
+    const appContainer = document.getElementById('app');
+    if (!appContainer) { console.error("Container #app não encontrado!"); return; }
 
-        // HTML da página (com placeholder de erro)
-        appContainer.innerHTML = `
+    // HTML da página (com placeholder de erro)
+    appContainer.innerHTML = `
           <div class="app-wrapper account-hub-page">
             <div class="app-container">
               <header class="page-header">
@@ -296,29 +303,29 @@ export default async function renderEditProfile(queryParams) {
           </div>
         `;
 
-        // Define data máxima para nascimento APÓS renderizar HTML
-         try {
-            const birthDateInput = document.getElementById('birthDate');
-            if (birthDateInput) {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                const todayString = `${year}-${month}-${day}`; // <<< FORMATO CORRETO YYYY-MM-DD >>>
-                birthDateInput.setAttribute('max', todayString);
-                console.log(`Data máxima para nascimento definida como: ${todayString}`);
-            }
-        } catch(e) { console.error("Erro ao definir data máxima:", e); }
-
-        // --- CHAMADA DE SETUP APÓS INNERHTML ---
-        setupAccountHubEvents(user); // Configura listeners
-        setupDevelopmentModal();   // Configura modal genérico (se usado)
-
-      } catch (error) {
-        console.error('Erro fatal ao carregar Conta/Perfil:', error);
-        showMessage('Erro ao carregar seus dados. Tente novamente.', 'error');
-        navigateTo('welcome-screen');
+    // Define data máxima para nascimento APÓS renderizar HTML
+    try {
+      const birthDateInput = document.getElementById('birthDate');
+      if (birthDateInput) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayString = `${year}-${month}-${day}`; // <<< FORMATO CORRETO YYYY-MM-DD >>>
+        birthDateInput.setAttribute('max', todayString);
+        console.log(`Data máxima para nascimento definida como: ${todayString}`);
       }
+    } catch (e) { console.error("Erro ao definir data máxima:", e); }
+
+    // --- CHAMADA DE SETUP APÓS INNERHTML ---
+    setupAccountHubEvents(user); // Configura listeners
+    setupDevelopmentModal();   // Configura modal genérico (se usado)
+
+  } catch (error) {
+    console.error('Erro fatal ao carregar Conta/Perfil:', error);
+    showMessage('Erro ao carregar seus dados. Tente novamente.', 'error');
+    navigateTo('welcome-screen');
+  }
 }
 
 // A função addAccountHubStyles() foi REMOVIDA.
