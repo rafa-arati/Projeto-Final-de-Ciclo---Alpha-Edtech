@@ -12,32 +12,36 @@ const updateProfile = async (req, res) => {
 
   // ----- CORREÇÃO PRINCIPAL -----
   // Adicione 'birth_date' à lista de campos permitidos!
-  const allowedUpdates = ['name', 'phone', 'birth_date']; 
+  const allowedUpdates = ['name', 'phone', 'birth_date'];
   const updates = {};
 
   // Filtra o req.body para conter apenas os campos permitidos
   for (const field in req.body) {
-    // Verifica se o campo está na lista permitida E se foi enviado no body
-    // Usamos req.body.hasOwnProperty(field) para garantir que o campo realmente veio na requisição
-    if (allowedUpdates.includes(field) && req.body.hasOwnProperty(field)) { 
-      updates[field] = req.body[field]; // Adiciona ao objeto 'updates'
-    }
+    // Obter o valor do campo
+    const value = req.body[field];
 
-    if (field === 'birth_date' && value) { // Só valida se não for nulo/vazio
-      try {
+    // Verifica se o campo está na lista permitida E se foi enviado no body
+    if (allowedUpdates.includes(field) && req.body.hasOwnProperty(field)) {
+      // Validação específica para birth_date
+      if (field === 'birth_date' && value) { // Só valida se não for nulo/vazio
+        try {
           const birthDateObj = new Date(value); // value está em YYYY-MM-DD
           const today = new Date();
           today.setHours(0, 0, 0, 0);
 
           if (birthDateObj > today) {
-              console.log("Tentativa de update com data de nascimento futura:", value);
-              // Retorna erro específico para o frontend tratar
-              return res.status(400).json({ success: false, message: 'Insira uma data de nascimento válida' });
+            console.log("Tentativa de update com data de nascimento futura:", value);
+            // Retorna erro específico para o frontend tratar
+            return res.status(400).json({ success: false, message: 'Insira uma data de nascimento válida' });
           }
-      } catch (parseError) {
-           console.error("Erro ao parsear data de nascimento no backend (updateProfile):", value, parseError);
-            return res.status(400).json({ success: false, message: 'Formato de data de nascimento inválido.' });
+        } catch (parseError) {
+          console.error("Erro ao parsear data de nascimento no backend (updateProfile):", value, parseError);
+          return res.status(400).json({ success: false, message: 'Formato de data de nascimento inválido.' });
+        }
       }
+
+      // Se chegou aqui, o campo é válido e pode ser adicionado
+      updates[field] = value;
     }
   }
   // ----- FIM DA CORREÇÃO -----
@@ -48,12 +52,12 @@ const updateProfile = async (req, res) => {
   }
 
   // Log para ver o que será ENVIADO para o Model
-  console.log('[CONTROLLER LOG] Objeto "updates" filtrado (enviando para User.updateProfile):', updates); 
+  console.log('[CONTROLLER LOG] Objeto "updates" filtrado (enviando para User.updateProfile):', updates);
 
   try {
     // Chama o método do Model passando o ID do usuário autenticado (req.user.id vindo do middleware)
     // e o objeto 'updates' que agora *inclui* birth_date se ele foi enviado e é permitido
-    const updatedUser = await User.updateProfile(req.user.id, updates); 
+    const updatedUser = await User.updateProfile(req.user.id, updates);
 
     // Verifica se o Model retornou um usuário (pode retornar null se usuário não for encontrado)
     if (!updatedUser) {
