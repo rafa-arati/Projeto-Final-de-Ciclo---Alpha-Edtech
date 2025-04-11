@@ -56,3 +56,20 @@
   border-width: 0 !important; /* Remove bordas se houver */
   transition: opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease, border-width 0.3s ease;
 }
+
+.password-requirements {
+  font-size: 0.8em;
+  color: var(--text-tertiary, #888); /* Cor padrão */
+  margin-top: 5px;
+  margin-bottom: 15px;
+  height: auto;
+  overflow: visible;
+  line-height: 1.4;
+  text-align: left; /* Alinha requisitos à esquerda */
+  transition: color 0.3s ease; /* Transição suave da cor */
+}
+/* Estilos para senha forte/fraca (se usados pela validação em tempo real) */
+.password-requirements.strong { color: var(--success-color, #4CAF50); }
+.password-requirements.weak { color: var(--warning-color, #FFA500); }
+.password-requirements.error { color: var(--error-color, #FF5252); } /* Cor se falhar validação final */
+

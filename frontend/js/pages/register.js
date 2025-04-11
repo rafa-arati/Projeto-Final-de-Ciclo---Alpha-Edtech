@@ -104,6 +104,9 @@ export default function renderRegisterForm(queryParams) {
                     <input type="password" id="confirmPassword" placeholder="Confirmar Senha" required>
                 </div>
 
+                <div id="registerErrorMessage" class="form-error-message is-hidden">
+                </div>
+
                 <button type="submit" class="btn">CADASTRAR</button>
             </form>
 
@@ -114,6 +117,29 @@ export default function renderRegisterForm(queryParams) {
     `;
   setupRegisterEvents();
 }
+
+function showInlineError(message, errorDivId = 'registerErrorMessage') {
+  const errorDiv = document.getElementById(errorDivId);
+  if (errorDiv) {
+      errorDiv.textContent = message;
+      errorDiv.classList.remove('is-hidden');
+      errorDiv.style.display = 'block'; // Garante visibilidade
+  } else {
+      // Fallback caso o div não seja encontrado (improvável)
+      alert(message); // ou use showMessage(message, 'error');
+  }
+}
+
+// --- NOVO: Função auxiliar para esconder erro inline ---
+function hideInlineError(errorDivId = 'registerErrorMessage') {
+  const errorDiv = document.getElementById(errorDivId);
+  if (errorDiv) {
+      errorDiv.textContent = '';
+      errorDiv.classList.add('is-hidden');
+      errorDiv.style.display = 'none'; // Garante que está escondido
+  }
+}
+
 
 // Configura eventos da página
 function setupRegisterEvents() {
@@ -233,44 +259,67 @@ function setupBirthDateInput() {
 // Manipula o envio do formulário
 async function handleRegistration() {
   const userData = collectFormData();
+  const errorMessageDiv = document.getElementById('registerErrorMessage'); // Referência ao div de erro
+  const registerForm = document.getElementById('registerForm');
+  const submitButton = registerForm?.querySelector('button[type="submit"]');
 
-  if (!validateForm(userData)) return; // Valida os dados gerais
+  // 1. Esconde erro anterior
+  hideInlineError();
 
-  // Validação específica de força da senha antes de enviar
-  const password = userData.password;
-  const requirementsDiv = document.querySelector('.password-requirements');
-  const isPasswordStrong = password.length >= 8 &&
-                           /[a-zA-Z]/.test(password) &&
-                           /\d/.test(password) &&
-                           /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-  if (!isPasswordStrong) {
-      showMessage('A senha não atende a todos os requisitos de segurança.');
-      if (requirementsDiv) requirementsDiv.style.color = 'var(--error-color, #FF5252)'; // Destaca em vermelho
-      return; // Não envia se a senha for fraca
+  // 2. Validações do Frontend (agora usam showInlineError)
+  if (!userData.name || !userData.username || !userData.email || !userData.birth_date || !userData.gender || !userData.password || !userData.confirmPassword) {
+      showInlineError('Por favor, preencha todos os campos obrigatórios.');
+      return;
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
+      showInlineError('Por favor, insira um email válido.');
+      return;
+  }
+  if (!/^(\d{2})-(\d{2})-(\d{4})$/.test(userData.birth_date)) {
+      showInlineError('Por favor, insira a data no formato DD-MM-AAAA.');
+      return;
+  }
+  if (userData.password !== userData.confirmPassword) {
+      showInlineError('As senhas não coincidem.');
+      return;
+  }
+  // Validação de força da senha (exemplo)
+  const password = userData.password;
+  const isPasswordStrong = password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  if (!isPasswordStrong) {
+      showInlineError('A senha não atende aos requisitos de segurança (mín. 8 caracteres, letras, números, especiais).');
+      // Poderia também mudar a cor da div .password-requirements aqui se quisesse
+      return;
+  }
+  // --- Fim Validações ---
 
-  // Desabilitar botão (exemplo)
-   const submitButton = document.querySelector('#registerForm button[type="submit"]');
-   if (submitButton) {
-       submitButton.disabled = true;
-       submitButton.textContent = 'CADASTRANDO...';
-   }
+
+  // 3. Desabilitar botão e tentar registrar
+  if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'CADASTRANDO...';
+  }
 
   try {
-    await registerUser(userData);
-    showMessage('Cadastro realizado com sucesso! Redirecionando para login...');
-    // Aguarda um pouco antes de transicionar para o usuário ver a mensagem
-    setTimeout(() => transitionToPage('register', 'welcome-screen'), 2000);
+      await registerUser(userData);
+      // --- SUCESSO ---
+      // Mantém o modal (showMessage) para sucesso, pois é uma confirmação importante
+      // ou poderia também usar o showInlineError com estilo de sucesso.
+      showMessage('Cadastro realizado com sucesso! Redirecionando para login...');
+      setTimeout(() => navigateTo('welcome-screen'), 2000); // Navega após a mensagem
+
   } catch (error) {
-    showMessage(error.message || 'Erro ao cadastrar. Tente novamente.');
-    // Reabilitar botão em caso de erro
-    if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = 'CADASTRAR';
-    }
+      // --- ERRO DA API ---
+      // Mostra o erro da API no div da tela
+      showInlineError(error.message || 'Erro ao cadastrar. Tente novamente.');
+      // Reabilita o botão
+      if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'CADASTRAR';
+      }
   }
 }
+
 
 // Coleta dados do formulário
 function collectFormData() {

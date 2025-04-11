@@ -14,7 +14,7 @@ const server = http.createServer(app);
 // 2. Inicializa o Socket.IO anexado ao servidor HTTP
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000", // Permite conexão do seu frontend
+    origin: process.env.FRONTEND_URL || "https://equipe01.alphaedtech.org.br/", 
     methods: ["GET", "POST"]
   }
 });
