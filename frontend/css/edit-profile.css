@@ -174,3 +174,10 @@
     font-size: 14px;
     text-align: center;
 }
+.profile-form #profileEditErrorMessage.success-message {
+    color: var(--success-color, #4CAF50);
+    /* Mantenha background e border */
+    background-color: var(--success-bg, rgba(76, 175, 80, 0.1));
+    border-color: var(--success-border, rgba(76, 175, 80, 0.4));
+    /* ... outros estilos ... */
+}

@@ -17,6 +17,47 @@ const profileIconNav = `<svg class="icon-svg" viewBox="0 0 24 24" fill="none" xm
 
 
 // --- Funções auxiliares ---
+
+/**
+ * Mostra uma mensagem inline (erro ou sucesso) no div especificado.
+ * @param {string} message - A mensagem a ser exibida.
+ * @param {'error' | 'success'} type - O tipo de mensagem ('error' ou 'success').
+ * @param {string} elementId - O ID do elemento onde mostrar a mensagem.
+ */
+function showInlineFeedback(message, type = 'error', elementId = 'profileEditErrorMessage') {
+  const feedbackDiv = document.getElementById(elementId);
+  if (feedbackDiv) {
+      feedbackDiv.textContent = message;
+      feedbackDiv.classList.remove('is-hidden');
+      feedbackDiv.style.display = 'block'; // Garante visibilidade
+
+      // Remove classes de tipo anteriores e adiciona a nova
+      feedbackDiv.classList.remove('error-message', 'success-message');
+      if (type === 'success') {
+          feedbackDiv.classList.add('success-message');
+      } else {
+          feedbackDiv.classList.add('error-message'); // Padrão para erro
+      }
+  } else {
+      console.error(`Div de feedback #${elementId} não encontrado!`);
+      alert(`${type === 'success' ? 'Sucesso' : 'Erro'}: ${message}`); // Fallback
+  }
+}
+
+/**
+ * Esconde a mensagem inline.
+ * @param {string} elementId - O ID do elemento da mensagem.
+ */
+function hideInlineFeedback(elementId = 'profileEditErrorMessage') {
+  const feedbackDiv = document.getElementById(elementId);
+  if (feedbackDiv) {
+      feedbackDiv.textContent = '';
+      feedbackDiv.classList.add('is-hidden');
+      feedbackDiv.style.display = 'none'; // Garante que está escondido
+      feedbackDiv.classList.remove('error-message', 'success-message'); // Limpa classes
+  }
+}
+
 function formatDateForInput(dateString) {
   if (!dateString) return '';
   try {
@@ -193,22 +234,27 @@ function setupAccountHubEvents(user) {
       const submitButton = e.target.querySelector('button[type="submit"]');
       const originalButtonText = submitButton?.textContent || 'Salvar Alterações';
 
-      hideInlineError(); // Esconde erro
+      const feedbackElementId = 'profileEditErrorMessage'; 
+
+      hideInlineFeedback(feedbackElementId)
 
       // Coleta e Valida
       const name = document.getElementById('name')?.value.trim();
       const rawPhone = document.getElementById('phone')?.value.replace(/\D/g, '');
       const birthDateValue = document.getElementById('birthDate')?.value; // YYYY-MM-DD
 
-      if (!name) { showInlineError('O nome é obrigatório.'); return; }
-      if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) { showInlineError('Telefone inválido (10 ou 11 dígitos).'); return; }
+      if (!name) { showInlineFeedback('O nome é obrigatório.', 'error', feedbackElementId);}
+      if (rawPhone && (rawPhone.length < 10 || rawPhone.length > 11)) { showInlineFeedback('Telefone inválido (10 ou 11 dígitos).', 'error', feedbackElementId); // <- Usa a função local
+        return;}
       if (birthDateValue) { // Valida data futura
         try {
           const birthDateObj = new Date(birthDateValue);
           const today = new Date(); today.setHours(0, 0, 0, 0);
           birthDateObj.setMinutes(birthDateObj.getMinutes() + birthDateObj.getTimezoneOffset()); // Ajuste Fuso
-          if (birthDateObj > today) { showInlineError('Insira uma data de nascimento válida.'); return; }
-        } catch (e) { showInlineError('Data de nascimento inválida.'); return; }
+          if (birthDateObj > today) {showInlineFeedback('Insira uma data de nascimento válida.', 'error', feedbackElementId); // <- Usa a função local
+            return; }
+        } catch (e) { showInlineFeedback('Data de nascimento inválida.', 'error', feedbackElementId); // <- Usa a função local
+          return; }
       }
 
       // Prepara e Envia
@@ -246,7 +292,7 @@ function setupAccountHubEvents(user) {
         }
 
         // 2. Mostrar mensagem de sucesso
-        showMessage('Perfil atualizado com sucesso!');
+        showInlineFeedback('Perfil atualizado com sucesso!', 'success', feedbackElementId); // <--- AQUI (Usa a função local)
 
         // 3. Atualizar os dados no armazenamento local
         const updatedUserData = { ...user, ...data.data };
