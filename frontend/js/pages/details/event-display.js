@@ -170,9 +170,9 @@ export function formatEventDate(dateString, timeString) {
       throw new Error("Data/hora inválida recebida");
     }
 
-    // 2. Compensação do fuso horário
+    // 2. Compensação do fuso horário - CORREÇÃO AQUI
     const timezoneOffset = dateObj.getTimezoneOffset() * 60000;
-    const localDate = new Date(dateObj.getTime() - timezoneOffset);
+    const localDate = new Date(dateObj.getTime() + timezoneOffset); // + em vez de -
 
     // 3. Formatação
     const dateOptions = {
