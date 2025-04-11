@@ -704,18 +704,29 @@ async function loadEventForEditing(eventId) {
 
     // Preencher data e hora
     if (evento.event_date) {
-      // Formato YYYY-MM-DD é necessário para input type="date"
       try {
+        // Cria a data no fuso horário local
         const date = new Date(evento.event_date);
-        // Adiciona 1 dia por causa de problemas de fuso horário ao converter
-        date.setUTCDate(date.getUTCDate() + 1);
-        document.getElementById('data').value = date.toISOString().split('T')[0];
-      } catch (e) { console.error("Erro ao formatar data:", evento.event_date, e); }
-    }
-    if (evento.event_time) {
-      document.getElementById('horario').value = evento.event_time;
+
+        // Compensa o offset do fuso horário para obter a data correta
+        const timezoneOffset = date.getTimezoneOffset() * 60000;
+        const localDate = new Date(date.getTime() + timezoneOffset);
+
+        // Formata para YYYY-MM-DD (input type="date")
+        const year = localDate.getFullYear();
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const day = String(localDate.getDate()).padStart(2, '0');
+
+        document.getElementById('data').value = `${year}-${month}-${day}`;
+      } catch (e) {
+        console.error("Erro ao formatar data:", evento.event_date, e);
+      }
     }
 
+    if (evento.event_time) {
+      // Mantém o horário como estava (formato HH:MM)
+      document.getElementById('horario').value = evento.event_time;
+    }
     // Preencher imagem
     const imgPreview = document.getElementById('imagemPrevia');
     const placeholder = document.getElementById('previewPlaceholder');

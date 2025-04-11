@@ -8,7 +8,7 @@ servers:
     description: Servidor local / Produção
 
 components:
-  schemas:
+  schemas: # Schemas remain here
     UserBase:
       type: object
       properties:
@@ -98,16 +98,16 @@ components:
     EventCreateUpdateRequest:
       type: object
       properties:
-        title: { type: string }
+        title: { type: string } # Should maybe be event_name to match EventBase? Consistency check needed.
         description: { type: string }
-        start_date: { type: string, format: date }
-        start_time: { type: string, format: time, nullable: true }
+        start_date: { type: string, format: date } # Should maybe be event_date? Consistency check needed.
+        start_time: { type: string, format: time, nullable: true } # Should maybe be event_time? Consistency check needed.
         location: { type: string }
         event_link: { type: string, format: url, nullable: true }
         category_id: { type: integer }
         subcategory_id: { type: integer, nullable: true }
         video_urls: { type: string, description: "Array de URLs (YouTube/TikTok) em formato JSON string. Ex: '[\"url1\", \"url2\"]'", nullable: true }
-        imagem: { type: string, format: binary }
+        imagem: { type: string, format: binary } # Should maybe be photo? Consistency check needed.
 
     LikeResponse:
       type: object
@@ -271,30 +271,55 @@ components:
             used_at: { type: string, format: date-time }
             used_by: { type: integer }
 
-    BadRequest:
-      description: Requisição inválida...
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Não autorizado...
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    InternalServerError:
-      description: Erro interno inesperado...
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-
-    Error:
+    Error: # The generic Error schema remains in schemas
       type: object
       properties:
         message: { type: string }
         error: { type: string, nullable: true }
+
+  responses: # <<< CORRECT SECTION FOR REUSABLE RESPONSES >>>
+    BadRequest:
+      description: Requisição inválida (400)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example: { message: "Erro de validação", error: "O campo 'email' é obrigatório." }
+    Unauthorized:
+      description: Não autorizado (401)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example: { message: "Token de autenticação inválido ou ausente." }
+    Forbidden: # <<< ADDED >>>
+      description: Acesso proibido (403)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example: { message: "Permissão negada. Requer privilégios de administrador." }
+    NotFound: # <<< ADDED >>>
+      description: Recurso não encontrado (404)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example: { message: "Recurso não encontrado.", error: "Evento com ID 123 não existe." }
+    TooManyRequests: # <<< ADDED >>>
+      description: Muitas requisições (429)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example: { message: "Limite de taxa excedido. Tente novamente mais tarde." }
+    InternalServerError:
+      description: Erro interno do servidor (500)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example: { message: "Ocorreu um erro inesperado no servidor." }
 
   securitySchemes:
     JWT:
@@ -323,8 +348,8 @@ paths:
         '201':
           description: Usuário registrado com sucesso
           content: { application/json: { schema: { $ref: '#/components/schemas/UserResponse' }}}
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '500': { $ref: '#/components/responses/InternalServerError' }
+        '400': { $ref: '#/components/responses/BadRequest' } # Now points to the correct location
+        '500': { $ref: '#/components/responses/InternalServerError' } # Now points to the correct location
 
   /auth/login:
     post:
@@ -524,7 +549,7 @@ paths:
       description: Aberto para todos.
       responses:
         '200': { description: "Lista de categorias", content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Category' }}}}}
-        '500': { $ref: '#/components/responses/InternalServerError' }
+        '500': { $ref: '#/components/responses/InternalServerError' } # Now points to the correct location
     post:
       tags: [Categories]
       summary: Criar uma nova categoria (Admin)
@@ -722,7 +747,7 @@ paths:
         - { name: eventId, in: query, schema: { type: integer }}
       responses:
         '200': { description: "Resultado da validação", content: { application/json: { schema: { $ref: '#/components/schemas/QRCodeValidateResponse' }}}}
-        '400': { description: "QR Code inválido/expirado/usado", content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}}
+        '400': { description: "QR Code inválido/expirado/usado", content: { application/json: { schema: { $ref: '#/components/schemas/Error' }}}} # Can refine this to use BadRequest response component
         '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/InternalServerError' }
 
