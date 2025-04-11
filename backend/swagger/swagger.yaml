@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API para gerenciamento de eventos culturais e interação de usuários.
 servers:
-  - url: http://localhost:3000/api
+  - url: /api
     description: Servidor local / Produção
 
 components:

@@ -140,54 +140,70 @@ export function formatEventDate(dateString, timeString) {
   if (!dateString) return 'Data não definida';
 
   try {
-    // Tenta criar um objeto Date diretamente da string principal.
-    // O construtor Date() lida bem com YYYY-MM-DD e ISO 8601 (YYYY-MM-DDTHH:MM:SS.sssZ).
-    const dateObj = new Date(dateString);
+    // 1. Cria o objeto Date e verifica validade
+    let dateObj;
 
-    // Verifica se a data criada é válida
+    // Tenta criar a data diretamente da string principal
+    if (dateString.includes('T')) {
+      // Se já tem informação de timezone (ISO 8601)
+      dateObj = new Date(dateString);
+    } else {
+      // Se é apenas data (YYYY-MM-DD), trata como UTC para evitar problemas de fuso
+      const [year, month, day] = dateString.split('-');
+      dateObj = new Date(Date.UTC(year, month - 1, day));
+    }
+
+    // Se a data é inválida, tenta combinar com timeString
+    if (isNaN(dateObj.getTime()) && timeString) {
+      const [hours, minutes] = timeString.split(':');
+      dateObj = new Date(Date.UTC(
+        parseInt(dateString.split('-')[0]), // ano
+        parseInt(dateString.split('-')[1]) - 1, // mês (0-11)
+        parseInt(dateString.split('-')[2]), // dia
+        parseInt(hours),
+        parseInt(minutes)
+      ));
+    }
+
+    // Se ainda inválida, lança erro
     if (isNaN(dateObj.getTime())) {
-      // Se falhou, tenta combinar dateString (assumindo YYYY-MM-DD) com timeString (HH:MM)
-      if (timeString) {
-        const combinedDate = new Date(`${dateString}T${timeString}:00`);
-        if (!isNaN(combinedDate.getTime())) {
-          // Usa a data combinada se for válida
-          dateObj.setTime(combinedDate.getTime());
-        } else {
-          throw new Error("Data/hora inválida recebida");
-        }
-      } else {
-        // Se não tem timeString e a dataString inicial falhou, considera inválido
-        throw new Error("Data inválida recebida");
-      }
+      throw new Error("Data/hora inválida recebida");
     }
 
-    // Agora temos um dateObj válido. Vamos formatar.
+    // 2. Compensação do fuso horário - CORREÇÃO AQUI
+    const timezoneOffset = dateObj.getTimezoneOffset() * 60000;
+    const localDate = new Date(dateObj.getTime() + timezoneOffset); // + em vez de -
 
-    // Opções para a parte da data
-    const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' }; // Ex: 15 de abril de 2025
+    // 3. Formatação
+    const dateOptions = {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    };
 
-    // Formata a parte da data usando o fuso horário local do navegador
-    let formattedString = dateObj.toLocaleDateString('pt-BR', dateOptions);
+    let formattedString = localDate.toLocaleDateString('pt-BR', dateOptions);
 
-    // Verifica se a data original tinha informação de hora significativa
-    // (desconsidera T00:00:00.000Z que pode ser adicionado automaticamente para datas sem hora)
-    const hasSignificantTime = (dateString.includes('T') && !dateString.endsWith('T00:00:00.000Z') && !dateString.endsWith('T00:00:00Z')) ||
-      (timeString && timeString !== '00:00'); // Ou se um timeString foi fornecido
+    // 4. Verifica se precisa incluir horário
+    const hasTime = timeString ||
+      (dateString.includes('T') &&
+        !dateString.endsWith('T00:00:00.000Z') &&
+        !dateString.endsWith('T00:00:00Z'));
 
-    if (hasSignificantTime) {
-      // Opções para a parte da hora (formato 24h)
-      const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
-      // Formata a hora usando o fuso horário local do navegador
-      formattedString += ` às ${dateObj.toLocaleTimeString('pt-BR', timeOptions)}`;
+    if (hasTime) {
+      const timeOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      };
+      formattedString += ` às ${localDate.toLocaleTimeString('pt-BR', timeOptions)}`;
     }
-    // Se não tinha hora significativa, retorna apenas a data formatada.
 
     return formattedString;
 
   } catch (e) {
     console.error("Erro ao formatar data/hora:", dateString, timeString, e);
-    // Fallback: retorna a data original (pode ser a string ISO) ou 'Data inválida'
-    return dateString || 'Data inválida';
+    // Fallback: mostra a data original ou mensagem de erro
+    return dateString ? dateString.split('T')[0] : 'Data inválida';
   }
 }
 

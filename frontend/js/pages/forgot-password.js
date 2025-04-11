@@ -6,24 +6,25 @@ import { navigateTo } from '../modules/router.js';
 // --- Funções auxiliares show/hide inline (Apenas para a MENSAGEM DE SUCESSO neste caso) ---
 // Você pode manter ou remover se não usar showInlineError para erros
 function showInlineMessage(messageHtml, elementId = 'recovery-success-message') {
-    const messageDiv = document.getElementById(elementId);
-    if (messageDiv) {
-        messageDiv.innerHTML = messageHtml; // Usa innerHTML para permitir tags
-        messageDiv.classList.remove('is-hidden');
-        messageDiv.style.display = 'block';
-    } else {
-        console.error(`Div de mensagem #${elementId} não encontrado!`);
-        alert('Solicitação enviada! Verifique seu email.'); // Fallback para sucesso
-    }
+
+  const messageDiv = document.getElementById(elementId);
+  if (messageDiv) {
+    messageDiv.innerHTML = messageHtml; // Usa innerHTML para permitir tags
+    messageDiv.classList.remove('is-hidden');
+    messageDiv.style.display = 'block';
+  } else {
+    console.error(`Div de mensagem #${elementId} não encontrado!`);
+    alert('Solicitação enviada! Verifique seu email.'); // Fallback para sucesso
+  }
 }
 
 function hideInlineMessage(elementId = 'recovery-success-message') {
-    const messageDiv = document.getElementById(elementId);
-    if (messageDiv) {
-        messageDiv.innerHTML = '';
-        messageDiv.classList.add('is-hidden');
-        messageDiv.style.display = 'none';
-    }
+  const messageDiv = document.getElementById(elementId);
+  if (messageDiv) {
+    messageDiv.innerHTML = '';
+    messageDiv.classList.add('is-hidden');
+    messageDiv.style.display = 'none';
+  }
 }
 
 
@@ -80,93 +81,95 @@ export default function renderForgotPassword(queryParams) {
 
 // --- Configuração dos Eventos ---
 function setupForgotPasswordEvents() {
-    const forgotForm = document.getElementById('forgotPasswordForm');
-    if (forgotForm) {
-        const newForm = forgotForm.cloneNode(true);
-        forgotForm.parentNode.replaceChild(newForm, forgotForm);
-        newForm.addEventListener('submit', handleForgotPasswordSubmit);
-    }
+  const forgotForm = document.getElementById('forgotPasswordForm');
+  if (forgotForm) {
+    const newForm = forgotForm.cloneNode(true);
+    forgotForm.parentNode.replaceChild(newForm, forgotForm);
+    newForm.addEventListener('submit', handleForgotPasswordSubmit);
+  }
 
-    const backButton = document.getElementById('backToLoginBtn');
-    if (backButton) {
-         const newBackButton = backButton.cloneNode(true);
-         backButton.parentNode.replaceChild(newBackButton, backButton);
-         newBackButton.addEventListener('click', (e) => {
-             e.preventDefault();
-             window.history.back(); // Volta no histórico
-         });
-     }
+  const backButton = document.getElementById('backToLoginBtn');
+  if (backButton) {
+    const newBackButton = backButton.cloneNode(true);
+    backButton.parentNode.replaceChild(newBackButton, backButton);
+    newBackButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.history.back(); // Volta no histórico
+    });
+  }
 }
 
 // --- Handler de Submit ATUALIZADO ---
 async function handleForgotPasswordSubmit(e) {
-    e.preventDefault();
-    const emailInput = document.getElementById('recoveryEmail');
-    const email = emailInput ? emailInput.value.trim() : null;
 
-    const submitButton = e.target.querySelector('.send-button');
-    const recoveryContentDiv = document.getElementById('recovery-content'); // Div com form/descrição
-    const successMessageDiv = document.getElementById('recovery-success-message'); // Div de sucesso
-    const formErrorDiv = document.getElementById('forgotPasswordError'); // Div de erro do form
+  e.preventDefault();
+  const emailInput = document.getElementById('recoveryEmail');
+  const email = emailInput ? emailInput.value.trim() : null;
 
-    // Esconde erro anterior do formulário
-    if(formErrorDiv) {
-        formErrorDiv.textContent = '';
-        formErrorDiv.classList.add('is-hidden');
-        formErrorDiv.style.display = 'none';
+  const submitButton = e.target.querySelector('.send-button');
+  const recoveryContentDiv = document.getElementById('recovery-content'); // Div com form/descrição
+  const successMessageDiv = document.getElementById('recovery-success-message'); // Div de sucesso
+  const formErrorDiv = document.getElementById('forgotPasswordError'); // Div de erro do form
+
+  // Esconde erro anterior do formulário
+  if (formErrorDiv) {
+    formErrorDiv.textContent = '';
+    formErrorDiv.classList.add('is-hidden');
+    formErrorDiv.style.display = 'none';
+  }
+
+
+  if (!email) {
+    // Mostra erro de validação inline no form
+    if (formErrorDiv) {
+      formErrorDiv.textContent = 'Por favor, digite seu e-mail.';
+      formErrorDiv.classList.remove('is-hidden');
+      formErrorDiv.style.display = 'block';
+    } else {
+      alert('Por favor, digite seu e-mail.');
     }
+    return;
+  }
+  if (!submitButton || !recoveryContentDiv || !successMessageDiv) {
+    console.error("Elementos do DOM não encontrados para recuperação de senha.");
+    alert('Erro interno na página. Tente recarregar.');
+    return;
+  }
 
+  submitButton.disabled = true;
+  submitButton.textContent = 'Enviando...';
 
-    if (!email) {
-        // Mostra erro de validação inline no form
-        if(formErrorDiv){
-            formErrorDiv.textContent = 'Por favor, digite seu e-mail.';
-            formErrorDiv.classList.remove('is-hidden');
-            formErrorDiv.style.display = 'block';
-        } else {
-            alert('Por favor, digite seu e-mail.');
-        }
-        return;
-    }
-    if (!submitButton || !recoveryContentDiv || !successMessageDiv) {
-         console.error("Elementos do DOM não encontrados para recuperação de senha.");
-         alert('Erro interno na página. Tente recarregar.');
-         return;
-     }
+  try {
+    await sendPasswordResetEmail(email);
 
-    submitButton.disabled = true;
-    submitButton.textContent = 'Enviando...';
+    // --- SUCESSO ---
+    // Esconde o formulário e textos originais
+    recoveryContentDiv.style.display = 'none';
 
-    try {
-        await sendPasswordResetEmail(email);
-
-        // --- SUCESSO ---
-        // Esconde o formulário e textos originais
-        recoveryContentDiv.style.display = 'none';
-
-        // Preenche e mostra a mensagem de sucesso inline
-        const successHtml = `
+    // Preenche e mostra a mensagem de sucesso inline
+    const successHtml = `
             <p style="font-size: 1.2em; margin-bottom: 10px;">✅ Solicitação enviada!</p>
             <p>Se o e-mail <strong>${email}</strong> estiver cadastrado, você receberá um link para redefinir sua senha em breve.</p>
             <p style="font-size: 0.9em; margin-top:15px;">(Não se esqueça de verificar sua caixa de spam).</p>
         `;
-        showInlineMessage(successHtml); // Usa a função helper para mostrar
 
-        // Não redireciona automaticamente
+    showInlineMessage(successHtml); // Usa a função helper para mostrar
 
-    } catch (error) {
-        // --- ERRO ---
-        console.error("Erro ao enviar email:", error);
-        // Mostra erro inline no form
-         if(formErrorDiv){
-            formErrorDiv.textContent = error.message || 'Ocorreu um erro. Tente novamente.';
-            formErrorDiv.classList.remove('is-hidden');
-            formErrorDiv.style.display = 'block';
-        } else {
-            alert(error.message || 'Ocorreu um erro. Tente novamente.'); // Fallback
-        }
-        // Reabilita o botão
-        submitButton.disabled = false;
-        submitButton.textContent = 'Enviar Link de Recuperação';
+    // Não redireciona automaticamente
+
+  } catch (error) {
+    // --- ERRO ---
+    console.error("Erro ao enviar email:", error);
+    // Mostra erro inline no form
+    if (formErrorDiv) {
+      formErrorDiv.textContent = error.message || 'Ocorreu um erro. Tente novamente.';
+      formErrorDiv.classList.remove('is-hidden');
+      formErrorDiv.style.display = 'block';
+    } else {
+      alert(error.message || 'Ocorreu um erro. Tente novamente.'); // Fallback
     }
+    // Reabilita o botão
+    submitButton.disabled = false;
+    submitButton.textContent = 'Enviar Link de Recuperação';
+  }
 }

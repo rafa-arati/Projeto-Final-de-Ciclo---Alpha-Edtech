@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-
+// Verifique se as variáveis de ambiente estão sendo carregadas corretamente
 // Se as variáveis de ambiente não estiverem definidas, use os valores padrão
 const dbConfig = {
   host: process.env.DB_HOST,
