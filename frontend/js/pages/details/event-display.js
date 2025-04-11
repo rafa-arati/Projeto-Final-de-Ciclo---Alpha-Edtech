@@ -136,6 +136,7 @@ function setupDeleteConfirmationModal() {
  * @param {string | null} timeString - String da hora (HH:MM), usada como fallback se dateString não tiver hora.
  * @returns {string} Data e hora formatadas (ex: "15 de abril de 2025 às 00:00") ou 'Data não definida'.
  */
+
 export function formatEventDate(dateString, timeString) {
   if (!dateString) return 'Data não definida';
 
@@ -170,9 +171,9 @@ export function formatEventDate(dateString, timeString) {
       throw new Error("Data/hora inválida recebida");
     }
 
-    // 2. Compensação do fuso horário - CORREÇÃO AQUI
+    // 2. Compensação do fuso horário
     const timezoneOffset = dateObj.getTimezoneOffset() * 60000;
-    const localDate = new Date(dateObj.getTime() + timezoneOffset); // + em vez de -
+    const localDate = new Date(dateObj.getTime() + timezoneOffset);
 
     // 3. Formatação
     const dateOptions = {
@@ -184,7 +185,8 @@ export function formatEventDate(dateString, timeString) {
     let formattedString = localDate.toLocaleDateString('pt-BR', dateOptions);
 
     // 4. Verifica se precisa incluir horário
-    const hasTime = timeString ||
+    // ALTERAÇÃO: Não incluir horário se timeString estiver presente, já que será exibido separadamente
+    const hasTime = !timeString &&
       (dateString.includes('T') &&
         !dateString.endsWith('T00:00:00.000Z') &&
         !dateString.endsWith('T00:00:00Z'));
