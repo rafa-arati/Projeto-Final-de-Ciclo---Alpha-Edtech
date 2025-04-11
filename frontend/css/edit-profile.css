@@ -1,176 +1,330 @@
 /* Estilos para a página Minha Conta / Editar Perfil - Usando Variáveis Globais */
 .account-hub-page .profile-content {
-    padding: 0 20px 100px; /* Mais espaço inferior por causa do nav */
-    text-align: center;
+  padding: 0 20px 100px;
+  /* Mais espaço inferior por causa do nav */
+  text-align: center;
 }
+
 /* Header da página (usa estilos de common.css) */
 .account-hub-page .page-header {
-    /* Estilos herdados ou definidos em common.css */
+  /* Estilos herdados ou definidos em common.css */
 }
 
 /* Seção de Informação do Usuário (Foto/Nome/Badge) */
 #userInfoDisplay {
-    margin-bottom: 30px;
-    margin-top: 10px;
+  margin-bottom: 30px;
+  margin-top: 10px;
 }
+
 .profile-image-container {
-    position: relative;
-    width: 100px; height: 100px;
-    margin: 0 auto 15px auto;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 15px auto;
 }
+
 .profile-image {
-    width: 100%; height: 100%;
-    border-radius: 50%; overflow: hidden;
-    background-color: var(--bg-tertiary, #2C2C2E); /* Fundo cinza escuro */
-    display: flex; align-items: center; justify-content: center;
-    border: 2px solid var(--border-color, #444); /* Borda cinza */
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--bg-tertiary, #2C2C2E);
+  /* Fundo cinza escuro */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border-color, #444);
+  /* Borda cinza */
 }
-.profile-image img { width: 100%; height: 100%; object-fit: cover; }
-.profile-image-initial { font-size: 36px; color: var(--text-primary, #fff); font-weight: bold; }
+
+.profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-image-initial {
+  font-size: 36px;
+  color: var(--text-primary, #fff);
+  font-weight: bold;
+}
 
 /* Botão de editar foto (Opcional, não funcional ainda) */
 .profile-edit-photo {
-    position: absolute; bottom: 0; right: 0;
-    width: 32px; height: 32px; border-radius: 50%;
-    background: var(--accent-primary, #FF9100); /* Laranja */
-    border: none; cursor: pointer; display: flex;
-    align-items: center; justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-primary, #FF9100);
+  /* Laranja */
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
-.profile-edit-photo:hover { opacity: 0.9; }
-.profile-edit-photo svg { stroke: var(--bg-primary, #000); } /* Cor do ícone câmera */
+
+.profile-edit-photo:hover {
+  opacity: 0.9;
+}
+
+.profile-edit-photo svg {
+  stroke: var(--bg-primary, #000);
+}
+
+/* Cor do ícone câmera */
 
 .user-display-name {
-    font-size: 22px; font-weight: 600;
-    color: var(--text-primary, white);
-    margin-bottom: 10px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary, white);
+  margin-bottom: 10px;
 }
+
 /* Badges de Usuário */
 .user-badge {
-    display: inline-block; padding: 5px 12px; border-radius: 15px;
-    font-size: 12px; font-weight: 500; margin: 0 auto 10px; border: 1px solid;
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0 auto 10px;
+  border: 1px solid;
 }
-.admin-badge { /* Mantém vermelho para admin */
-    background-color: var(--error-bg, rgba(255, 82, 82, 0.1));
-    color: var(--error-color, #FF5252);
-    border-color: var(--error-border, rgba(255, 82, 82, 0.4));
+
+.admin-badge {
+  /* Mantém vermelho para admin */
+  background-color: var(--error-bg, rgba(255, 82, 82, 0.1));
+  color: var(--error-color, #FF5252);
+  border-color: var(--error-border, rgba(255, 82, 82, 0.4));
 }
-.premium-badge { /* Usa Laranja/Cyan sutis */
-    background: linear-gradient(45deg, rgba(0, 229, 255, 0.1), rgba(255, 145, 0, 0.1));
-    color: var(--accent-primary, #FF9100); /* Texto Laranja */
-    border-color: rgba(255, 145, 0, 0.4); /* Borda Laranja transparente */
+
+.premium-badge {
+  /* Usa Laranja/Cyan sutis */
+  background: linear-gradient(45deg, rgba(0, 229, 255, 0.1), rgba(255, 145, 0, 0.1));
+  color: var(--accent-primary, #FF9100);
+  /* Texto Laranja */
+  border-color: rgba(255, 145, 0, 0.4);
+  /* Borda Laranja transparente */
 }
-.user-badge.user-badge { /* Usuário Comum */
-    background-color: rgba(142, 142, 147, 0.1);
-    color: var(--text-tertiary, #8e8e93);
-    border-color: rgba(142, 142, 147, 0.3);
+
+.user-badge.user-badge {
+  /* Usuário Comum */
+  background-color: rgba(142, 142, 147, 0.1);
+  color: var(--text-tertiary, #8e8e93);
+  border-color: rgba(142, 142, 147, 0.3);
 }
 
 /* Lista de Ações */
 .profile-action-list {
-    max-width: 450px; margin: 20px auto;
-    display: flex; flex-direction: column; gap: 12px;
+  max-width: 450px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.btn-profile-action { /* Botões da lista */
-    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
-    background-color: var(--bg-secondary, #1c1c1e);
-    color: var(--text-secondary, #ddd);
-    border: 1px solid var(--border-color, #3a3a3c);
-    padding: 14px 18px; border-radius: 10px; font-size: 15px;
-    cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease;
+
+.btn-profile-action {
+  /* Botões da lista */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background-color: var(--bg-secondary, #1c1c1e);
+  color: var(--text-secondary, #ddd);
+  border: 1px solid var(--border-color, #3a3a3c);
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
+
 .btn-profile-action:hover {
-    background-color: var(--bg-tertiary, #2c2c2e);
-    border-color: var(--border-color-light, #555);
-    color: var(--text-primary); /* Texto fica branco no hover */
+  background-color: var(--bg-tertiary, #2c2c2e);
+  border-color: var(--border-color-light, #555);
+  color: var(--text-primary);
+  /* Texto fica branco no hover */
 }
-.btn-profile-action svg { /* Ícones dos botões */
-    width: 20px; height: 20px;
-    color: var(--accent-primary, #FF9100); /* Ícones Laranja */
-    flex-shrink: 0;
+
+.btn-profile-action svg {
+  /* Ícones dos botões */
+  width: 20px;
+  height: 20px;
+  color: var(--accent-primary, #FF9100);
+  /* Ícones Laranja */
+  flex-shrink: 0;
 }
-.btn-profile-action.logout-action { /* Botão Sair */
-    color: var(--error-color, #ff453a); /* Vermelho */
+
+.btn-profile-action.logout-action {
+  /* Botão Sair */
+  color: var(--error-color, #ff453a);
+  /* Vermelho */
 }
+
 .btn-profile-action.logout-action svg {
-    color: var(--error-color, #ff453a); /* Ícone Vermelho */
+  color: var(--error-color, #ff453a);
+  /* Ícone Vermelho */
 }
+
 .btn-profile-action.logout-action:hover {
-    background-color: var(--error-bg, rgba(255, 69, 58, 0.15));
-    border-color: var(--error-border, rgba(255, 69, 58, 0.4));
-    color: #ff6359; /* Vermelho mais claro */
+  background-color: var(--error-bg, rgba(255, 69, 58, 0.15));
+  border-color: var(--error-border, rgba(255, 69, 58, 0.4));
+  color: #ff6359;
+  /* Vermelho mais claro */
 }
-.btn-profile-action.logout-action:hover svg { color: #ff6359; }
+
+.btn-profile-action.logout-action:hover svg {
+  color: #ff6359;
+}
 
 /* Container do Formulário de Edição */
-.profile-form-container { max-width: 450px; margin: 0 auto; }
-.profile-form { text-align: left; padding-top: 20px; }
-.profile-form .form-group { margin-bottom: 20px; }
+.profile-form-container {
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.profile-form {
+  text-align: left;
+  padding-top: 20px;
+}
+
+.profile-form .form-group {
+  margin-bottom: 20px;
+}
+
 .profile-form label {
-    display: block; margin-bottom: 8px;
-    color: var(--text-secondary, #aaa);
-    font-size: 14px; font-weight: 500;
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary, #aaa);
+  font-size: 14px;
+  font-weight: 500;
 }
+
 .profile-form input {
-    width: 100%; box-sizing: border-box;
-    background-color: var(--bg-secondary, #1c1c1e);
-    border: 1px solid var(--border-color, #3a3a3c);
-    border-radius: 8px; padding: 12px 15px;
-    color: var(--text-primary, white); font-size: 16px;
-    transition: border-color 0.2s, background-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg-secondary, #1c1c1e);
+  border: 1px solid var(--border-color, #3a3a3c);
+  border-radius: 8px;
+  padding: 12px 15px;
+  color: var(--text-primary, white);
+  font-size: 16px;
+  transition: border-color 0.2s, background-color 0.2s;
 }
+
 .profile-form input:focus {
-    border-color: var(--accent-primary, #FF9100); /* Laranja no foco */
-    outline: none;
-    background-color: var(--bg-tertiary, #2c2c2e);
+  border-color: var(--accent-primary, #FF9100);
+  /* Laranja no foco */
+  outline: none;
+  background-color: var(--bg-tertiary, #2c2c2e);
 }
-.profile-form input:disabled { /* Input de email desabilitado */
-    background-color: var(--bg-tertiary, #2c2c2e);
-    color: var(--text-tertiary, #777);
-    opacity: 0.7; cursor: not-allowed;
+
+.profile-form input:disabled {
+  /* Input de email desabilitado */
+  background-color: var(--bg-tertiary, #2c2c2e);
+  color: var(--text-tertiary, #777);
+  opacity: 0.7;
+  cursor: not-allowed;
 }
-.input-hint { /* Dica do formato de telefone */
-    display: block; font-size: 12px;
-    color: var(--text-tertiary, #666);
-    margin-top: 6px;
+
+.input-hint {
+  /* Dica do formato de telefone */
+  display: block;
+  font-size: 12px;
+  color: var(--text-tertiary, #666);
+  margin-top: 6px;
 }
-.profile-form .form-buttons { display: flex; gap: 10px; margin-top: 25px; }
-.profile-form .btn { flex: 1; padding: 12px; font-size: 15px; } /* Botões Salvar/Cancelar */
-.profile-form .btn-save { /* Botão Salvar */
-    background: var(--accent-primary, #FF9100); /* Laranja */
-    color: var(--bg-primary, #000); /* Texto escuro */
-    border: none;
+
+.profile-form .form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
 }
- .profile-form .btn-save:hover:not(:disabled) {
-     background: var(--accent-primary-hover, #FFAB40);
- }
- .profile-form .btn-save:disabled {
-     background: var(--bg-quaternary) !important;
-     color: var(--text-tertiary) !important;
-     cursor: not-allowed;
-     opacity: 0.7;
- }
-.profile-form .btn.secondary { /* Botão Cancelar */
-    background-color: var(--bg-quaternary, #3a3a3c);
-    border: 1px solid var(--border-color-light, #555);
-    color: var(--text-secondary, #ccc);
+
+.profile-form .btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 15px;
 }
+
+/* Botões Salvar/Cancelar */
+.profile-form .btn-save {
+  /* Botão Salvar */
+  background: var(--accent-primary, #FF9100);
+  /* Laranja */
+  color: var(--bg-primary, #000);
+  /* Texto escuro */
+  border: none;
+}
+
+.profile-form .btn-save:hover:not(:disabled) {
+  background: var(--accent-primary-hover, #FFAB40);
+}
+
+.profile-form .btn-save:disabled {
+  background: var(--bg-quaternary) !important;
+  color: var(--text-tertiary) !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.profile-form .btn.secondary {
+  /* Botão Cancelar */
+  background-color: var(--bg-quaternary, #3a3a3c);
+  border: 1px solid var(--border-color-light, #555);
+  color: var(--text-secondary, #ccc);
+}
+
 .profile-form .btn.secondary:hover {
-    background-color: var(--border-color-light, #555);
-    color: var(--text-primary);
+  background-color: var(--border-color-light, #555);
+  color: var(--text-primary);
 }
 
 /* Classe para esconder elementos (pode estar em common.css) */
-.is-hidden { display: none !important; }
+.is-hidden {
+  display: none !important;
+}
 
 /* Estilos para a mensagem de erro inline (pode estar em common.css ou modal.css) */
 .form-error-message {
-    color: var(--error-color, #FF5252);
-    background-color: var(--error-bg, rgba(255, 82, 82, 0.1));
-    border: 1px solid var(--error-border, rgba(255, 82, 82, 0.4));
-    border-radius: 6px;
-    padding: 10px 15px;
-    margin-bottom: 20px; /* Espaço antes dos botões */
-    font-size: 14px;
-    text-align: center;
+  color: var(--error-color, #FF5252);
+  background-color: var(--error-bg, rgba(255, 82, 82, 0.1));
+  border: 1px solid var(--error-border, rgba(255, 82, 82, 0.4));
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  /* Espaço antes dos botões */
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Classe para esconder elementos (pode estar em common.css) */
+.is-hidden {
+  display: none !important;
+}
+
+/* Estilos para a mensagem de erro inline (pode estar em common.css ou modal.css) */
+.form-error-message {
+  color: var(--error-color, #FF5252);
+  background-color: var(--error-bg, rgba(255, 82, 82, 0.1));
+  border: 1px solid var(--error-border, rgba(255, 82, 82, 0.4));
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  /* Espaço antes dos botões */
+  font-size: 14px;
+  text-align: center;
+}
+
+.profile-form #profileEditErrorMessage.success-message {
+  color: var(--success-color, #4CAF50);
+  /* Mantenha background e border */
+  background-color: var(--success-bg, rgba(76, 175, 80, 0.1));
+  border-color: var(--success-border, rgba(76, 175, 80, 0.4));
+  /* ... outros estilos ... */
 }
